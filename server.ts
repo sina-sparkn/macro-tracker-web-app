@@ -8,9 +8,20 @@ dotenv.config();
 const app = express();
 const PORT = 3000;
 
-// Set up body parser with sufficient limits for handling base64 photos from camera
-app.use(express.json({ limit: "15mb" }));
-app.use(express.urlencoded({ limit: "15mb", extended: true }));
+// Safe body parsing middleware for both local and Vercel serverless environments
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === "object" && Object.keys(req.body).length > 0) {
+    return next();
+  }
+  express.json({ limit: "15mb" })(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === "object" && Object.keys(req.body).length > 0) {
+    return next();
+  }
+  express.urlencoded({ limit: "15mb", extended: true })(req, res, next);
+});
 
 // Lazy-initialized Google GenAI client
 let aiClient: GoogleGenAI | null = null;
@@ -158,7 +169,14 @@ app.post("/api/scan-label", async (req, res) => {
     }
 
     if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "Gemini API Key is not configured on the server." });
+      console.warn("GEMINI_API_KEY is not defined. Falling back to high-fidelity demo data with warning...");
+      const randomIndex = Math.floor(Math.random() * FALLBACK_FOODS.length);
+      const fallbackItem = {
+        ...FALLBACK_FOODS[randomIndex],
+        isDemoFallback: true,
+        apiKeyMissingNotice: true,
+      };
+      return res.json(fallbackItem);
     }
 
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");

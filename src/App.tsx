@@ -1214,7 +1214,21 @@ export default function App() {
             {/* Scrollable sheet body */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               
-              {scannedResult.isDemoFallback && (
+              {scannedResult.apiKeyMissingNotice ? (
+                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-xs text-rose-900 leading-relaxed">
+                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-extrabold text-rose-950 uppercase tracking-wider text-[10px] mb-0.5 font-sans">
+                      {currentLang === "fa" ? "کلید API یافت نشد (حالت شبیه‌ساز)" : "API Key Missing (Demo Mode)"}
+                    </p>
+                    <p className="opacity-90">
+                      {currentLang === "fa" 
+                        ? "متغیر محیطی GEMINI_API_KEY روی سرور تنظیم نشده است. برنامه با موفقیت به حالت شبیه‌ساز منتقل شد. برای فعال‌سازی اسکن واقعی، GEMINI_API_KEY را در تنظیمات ورسل (Vercel Project Settings > Environment Variables) تعریف کنید." 
+                        : "The GEMINI_API_KEY environment variable is not configured on your server (e.g., Vercel). The app has gracefully transitioned to Demo Mode with simulated data. To activate real live scanning, please add your GEMINI_API_KEY to your Vercel project's Environment Variables."}
+                    </p>
+                  </div>
+                </div>
+              ) : scannedResult.isDemoFallback ? (
                 <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed">
                   <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
@@ -1228,7 +1242,7 @@ export default function App() {
                     </p>
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {/* Product Header */}
               <div className="flex justify-between items-start gap-3">

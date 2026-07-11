@@ -30,6 +30,7 @@ export interface ScannedLabel {
   scannedAt?: string;
   id?: string;
   isDemoFallback?: boolean;
+  apiKeyMissingNotice?: boolean;
 }
 
 export interface FoodLogItem {
