@@ -358,12 +358,22 @@ app.post("/api/scan-label", async (req, res) => {
     }
 
     if (!responseText) {
-      console.warn("Gemini API call failed completely or timed out. Activating high-fidelity local demo fallback...");
+      console.error("==================================================");
+      console.error("GEMINI API SCAN CALL COMPLETED WITH FAILURE!");
+      console.error(`- Max attempts (${maxAttempts}) reached or call timed out.`);
+      console.error(`- Last API error encountered:`, lastError?.message || String(lastError || "Unknown API error"));
+      if (lastError?.stack) {
+        console.error(`- Last error stack:\n`, lastError.stack);
+      }
+      console.error("Activating local high-fidelity fallback to keep app running smoothly...");
+      console.error("==================================================");
+
       // Pick a random fallback food to keep the app working for the user beautifully
       const randomIndex = Math.floor(Math.random() * FALLBACK_FOODS.length);
       const fallbackItem = {
         ...FALLBACK_FOODS[randomIndex],
-        isDemoFallback: true
+        isDemoFallback: true,
+        originalScanError: lastError?.message || String(lastError || "Unknown API error")
       };
       return res.json(fallbackItem);
     }
@@ -371,10 +381,23 @@ app.post("/api/scan-label", async (req, res) => {
     const parsedData = JSON.parse(responseText || "{}");
     return res.json(parsedData);
   } catch (error: any) {
-    console.error("Gemini Scan Error:", error);
+    console.error("==================================================");
+    console.error("SERVER-SIDE NUTRISCAN EXCEPTION DETECTED!");
+    console.error("- Error Message:", error.message || String(error));
+    if (error.stack) {
+      console.error("- Stack Trace:\n", error.stack);
+    }
+    console.error("- Request Body Keys:", Object.keys(req.body || {}));
+    if (req.body && req.body.imageBase64) {
+      console.error("- Base64 Length:", req.body.imageBase64.length);
+      console.error("- MIME Type:", req.body.mimeType);
+    }
+    console.error("==================================================");
+
     return res.status(500).json({
       error: "Failed to scan and analyze food label.",
       details: error.message || String(error),
+      stack: error.stack,
     });
   }
 });
