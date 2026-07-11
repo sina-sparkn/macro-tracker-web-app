@@ -1,0 +1,10 @@
+{
+  "name": "Calorie Scanner & Food Tracker",
+  "description": "An Android-inspired app that determines calories and nutritional values by scanning food labels using your device camera or uploading photos.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
