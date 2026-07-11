@@ -1,6 +1,5 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
 
@@ -13,16 +12,26 @@ const PORT = 3000;
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ limit: "15mb", extended: true }));
 
-// Initialize Google GenAI
-const apiKey = process.env.GEMINI_API_KEY;
-const ai = new GoogleGenAI({
-  apiKey: apiKey,
-  httpOptions: {
-    headers: {
-      "User-Agent": "aistudio-build",
-    },
-  },
-});
+// Lazy-initialized Google GenAI client
+let aiClient: GoogleGenAI | null = null;
+
+function getAIClient(): GoogleGenAI {
+  if (!aiClient) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      throw new Error("GEMINI_API_KEY environment variable is not configured on the server.");
+    }
+    aiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
+  }
+  return aiClient;
+}
 
 // Helper sleep function for retry backoff
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -170,7 +179,7 @@ app.post("/api/scan-label", async (req, res) => {
     while (attempts < maxAttempts) {
       try {
         attempts++;
-        const response = await ai.models.generateContent({
+        const response = await getAIClient().models.generateContent({
           model: "gemini-3.5-flash",
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
@@ -350,6 +359,7 @@ export default app;
 // Configure Vite or Static Asset Serving
 async function setupVite() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",

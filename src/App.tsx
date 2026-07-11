@@ -219,8 +219,23 @@ export default function App() {
       });
 
       if (!response.ok) {
-        const errRes = await response.json();
-        throw new Error(errRes.error || "Failed to scan label");
+        let errMsg = "Failed to scan label";
+        try {
+          const errRes = await response.json();
+          errMsg = errRes.error || errMsg;
+        } catch (e) {
+          try {
+            const rawText = await response.text();
+            if (rawText && rawText.length < 150) {
+              errMsg = rawText;
+            } else {
+              errMsg = `Server Error (${response.status}): ${response.statusText || "Internal Server Error"}`;
+            }
+          } catch (inner) {
+            errMsg = `Server Error (${response.status})`;
+          }
+        }
+        throw new Error(errMsg);
       }
 
       const data: ScannedLabel = await response.json();
