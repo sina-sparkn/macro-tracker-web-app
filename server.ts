@@ -344,6 +344,9 @@ app.post("/api/scan-label", async (req, res) => {
   }
 });
 
+// Export app for serverless deployment (e.g. Vercel)
+export default app;
+
 // Configure Vite or Static Asset Serving
 async function setupVite() {
   if (process.env.NODE_ENV !== "production") {
@@ -365,6 +368,8 @@ async function setupVite() {
   });
 }
 
-setupVite().catch((err) => {
-  console.error("Failed to start Vite dev server:", err);
-});
+if (!process.env.VERCEL) {
+  setupVite().catch((err) => {
+    console.error("Failed to start Vite dev server:", err);
+  });
+}
