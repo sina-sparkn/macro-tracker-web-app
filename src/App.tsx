@@ -33,6 +33,42 @@ import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
 import { WORLD_FOODS, WorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
 
+// Helper function to compress and downscale images client-side
+const compressImage = (base64Str: string, mimeType: string, maxDim = 1200, quality = 0.8): Promise<string> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = base64Str;
+    img.onload = () => {
+      let width = img.width;
+      let height = img.height;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      } else {
+        resolve(base64Str);
+      }
+    };
+    img.onerror = () => {
+      resolve(base64Str);
+    };
+  });
+};
+
 export default function App() {
   // Navigation: 'scan' | 'diary' | 'profile'
   const [activeTab, setActiveTab] = useState<"scan" | "diary" | "profile">("scan");
@@ -281,13 +317,25 @@ export default function App() {
     try {
       const video = videoRef.current;
       const canvas = document.createElement("canvas");
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
+      let width = video.videoWidth || 640;
+      let height = video.videoHeight || 480;
+      const maxDim = 1200;
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+      canvas.width = width;
+      canvas.height = height;
       
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL("image/jpeg", 0.85);
+        const base64 = canvas.toDataURL("image/jpeg", 0.8);
         stopCamera();
         triggerScan(base64, "image/jpeg");
       }
@@ -302,9 +350,16 @@ export default function App() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const base64 = reader.result as string;
-      triggerScan(base64, file.type);
+      setIsScanning(true);
+      setScanError(null);
+      try {
+        const compressed = await compressImage(base64, file.type);
+        triggerScan(compressed, "image/jpeg");
+      } catch (err) {
+        triggerScan(base64, file.type);
+      }
     };
     reader.onerror = () => {
       setScanError("Error reading uploaded file.");
