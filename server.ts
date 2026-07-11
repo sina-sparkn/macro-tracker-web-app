@@ -9,19 +9,27 @@ const app = express();
 const PORT = 3000;
 
 // Safe body parsing middleware for both local and Vercel serverless environments
-app.use((req, res, next) => {
-  if (req.body && typeof req.body === "object" && Object.keys(req.body).length > 0) {
-    return next();
-  }
-  express.json({ limit: "15mb" })(req, res, next);
-});
-
-app.use((req, res, next) => {
-  if (req.body && typeof req.body === "object" && Object.keys(req.body).length > 0) {
-    return next();
-  }
-  express.urlencoded({ limit: "15mb", extended: true })(req, res, next);
-});
+if (!process.env.VERCEL) {
+  app.use(express.json({ limit: "15mb" }));
+  app.use(express.urlencoded({ limit: "15mb", extended: true }));
+} else {
+  // On Vercel, req.body is pre-parsed by the platform.
+  // If it's undefined, we parse it safely only for write methods (POST, PUT, PATCH).
+  app.use((req, res, next) => {
+    if (req.body !== undefined) {
+      return next();
+    }
+    if (["POST", "PUT", "PATCH"].includes(req.method)) {
+      express.json({ limit: "15mb" })(req, res, (err) => {
+        if (err) return next(err);
+        if (req.body !== undefined) return next();
+        express.urlencoded({ limit: "15mb", extended: true })(req, res, next);
+      });
+    } else {
+      next();
+    }
+  });
+}
 
 // Lazy-initialized Google GenAI client
 let aiClient: GoogleGenAI | null = null;
