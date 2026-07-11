@@ -1601,7 +1601,7 @@ export default function App() {
                       </span>
                       <span className="font-extrabold text-[#2D3033] font-mono">
                         {Math.round(
-                          (scannedResult.cholesterol || 0) * portionServings,
+                          (scannedResult.cholesterol || 0) * portionServingss,
                         )}{" "}
                         mg
                       </span>
