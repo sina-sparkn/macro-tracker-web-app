@@ -30,12 +30,154 @@ import {
   Coins,
   DollarSign,
   Utensils,
-  Receipt
+  Receipt,
+  Terminal,
+  Cpu,
+  Zap,
+  Activity,
+  ShieldCheck
 } from "lucide-react";
 import AndroidFrame from "./components/AndroidFrame";
+import ConsoleHeader from "./components/ConsoleHeader";
+import { IconBar, NavPane, VitalsPane } from "./components/ConsoleSidebars";
+import ScannerConsoleView from "./components/ScannerConsoleView";
+import DiaryConsoleView from "./components/DiaryConsoleView";
+import GoalsConsoleView from "./components/GoalsConsoleView";
+import NutritionModal from "./components/NutritionModal";
 import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
+
+export interface CyberPresetDish {
+  refId: string;
+  nameFa: string;
+  nameEn: string;
+  calories: number;
+  priceToman: number;
+  priceUSD: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  sodium: number;
+  origin: string;
+  servingSize: string;
+  ingredients: string[];
+  summaryFa: string;
+  summaryEn: string;
+}
+
+export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
+  {
+    refId: "REF_ID: 1011",
+    nameFa: "قورمه سبزی با برنج زعفرانی",
+    nameEn: "Ghormeh Sabzi with Saffron Rice",
+    calories: 420,
+    priceToman: 185000,
+    priceUSD: 3.20,
+    protein: 28,
+    carbs: 38,
+    fat: 16,
+    sodium: 480,
+    origin: "Iran / ایران",
+    servingSize: "1 plate (350g)",
+    ingredients: [
+      "سبزی قورمه تازه (تره، جعفری، شنبلیله)",
+      "گوشت گوسفندی بدون چربی",
+      "لوبیا قرمز مرغوب",
+      "لیمو عمانی اعلا",
+      "برنج دم‌کشیده زعفرانی"
+    ],
+    summaryFa: "خورش اصیل ایرانی سرشار از سبزیجات معطر، گوشت پروتئینی و آنتی‌اکسیدان‌های لیمو عمانی همراه برنج زعفرانی.",
+    summaryEn: "Authentic Persian herb stew with lean lamb, red kidney beans, dried limes, and aromatic saffron rice."
+  },
+  {
+    refId: "REF_ID: 1012",
+    nameFa: "آش رشته سنتی",
+    nameEn: "Traditional Ash Reshteh",
+    calories: 340,
+    priceToman: 95000,
+    priceUSD: 1.80,
+    protein: 14,
+    carbs: 52,
+    fat: 9,
+    sodium: 520,
+    origin: "Iran / ایران",
+    servingSize: "1 bowl (400g)",
+    ingredients: [
+      "رشته آشی سنتی",
+      "نخود و لوبیا چیتی پخته",
+      "عدس قهوه‌ای",
+      "سبزی آش (اسفناج، گشنیز، تره)",
+      "پیازداغ و نعناداغ معطر",
+      "کشک غلیظ پروبیوتیک"
+    ],
+    summaryFa: "سوپ سنتی غنی و پر انرژی ایرانی سرشار از حبوبات فیبردار و پروبیوتیک کشک طبیعی.",
+    summaryEn: "Wholesome traditional Persian legume soup with thin wheat noodles, fresh greens, and fermented whey (kashk)."
+  },
+  {
+    refId: "REF_ID: 1013",
+    nameFa: "کیمچی و توفو سنتی کره",
+    nameEn: "Korean Kimchi & Tofu Plate",
+    calories: 145,
+    priceToman: 80000,
+    priceUSD: 1.40,
+    protein: 15,
+    carbs: 12,
+    fat: 4,
+    sodium: 380,
+    origin: "South Korea / کره جنوبی",
+    servingSize: "1 bowl (250g)",
+    ingredients: [
+      "کیمچی تخمیر شده سنتی کلم ناپا",
+      "توفوی طبیعی سفت",
+      "روغن کنجد خالص",
+      "پیازچه خرد شده",
+      "کنجد بو داده"
+    ],
+    summaryFa: "بشقاب تخمیر شده کره‌ای با بالاترین ارزش پروبیوتیک روده و پروتئین گیاهی متراکم توفو.",
+    summaryEn: "Nutrient-dense probiotic kimchi with steamed organic tofu, rich in digestive enzymes and clean plant protein."
+  },
+  {
+    refId: "REF_ID: 1014",
+    nameFa: "تاکو ذرت با آووکادو",
+    nameEn: "Corn Taco with Fresh Avocado",
+    calories: 360,
+    priceToman: 130000,
+    priceUSD: 2.30,
+    protein: 12,
+    carbs: 42,
+    fat: 15,
+    sodium: 290,
+    origin: "Mexico / مکزیک",
+    servingSize: "2 tacos (220g)",
+    ingredients: [
+      "ترتیلای ذرت سنتی بدون گلوتن",
+      "آووکادوی تازه هاس و گواکاموله",
+      "لوبیا سیاه مکزیکی",
+      "سالسای پیکو د گالو",
+      "گشنیز و لیمو ترش تازه"
+    ],
+    summaryFa: "تاکوی ذرت تازه مکزیکی غنی از اسیدهای چرب غیراشباع مفید آووکادو و فیبر لوبیا سیاه.",
+    summaryEn: "Crisp gluten-free corn tortillas filled with heart-healthy avocado guacamole, black beans, and fresh pico de gallo."
+  }
+];
+
+export const CYBER_RECOMMENDED_DISH = {
+  refId: "REF_ID: 1020",
+  nameFa: "چلو کباب کوبیده سنتی",
+  nameEn: "Chelo Kabab Koobideh",
+  descFa: "کباب کوبیده سنتی زغالی با گوشت تازه گوسفندی و گوساله، همراه با چلو زعفرانی.",
+  descEn: "Traditional charcoal-grilled minced lamb & beef skewer served with fragrant saffron basmati rice.",
+  calories: 680,
+  protein: 38,
+  carbs: 62,
+  fat: 28,
+  sodium: 610,
+  priceToman: 220000,
+  priceUSD: 3.80,
+  funFactFa: "پاشیدن سماق روی کباب نه تنها طعم لذیذی به آن می‌دهد بلکه به هضم چربی‌ها کمک می‌کند.",
+  funFactEn: "Sprinkling sumac over grilled meats adds zesty aroma and active polyphenols that assist lipid digestion."
+};
 
 // Helper function to compress and downscale images client-side
 const compressImage = (base64Str: string, mimeType: string, maxDim = 1200, quality = 0.8): Promise<string> => {
@@ -583,1441 +725,233 @@ export default function App() {
     saveProfile(newProfile);
   };
 
+  // Handle clicking one of the 4 Cyber Data Console preset grid items
+  const handleSelectCyberDish = (dish: CyberPresetDish) => {
+    const isFa = currentLang === "fa";
+    const mapped: ScannedLabel = {
+      productName: isFa ? dish.nameFa : dish.nameEn,
+      brand: `${dish.refId} • ${dish.origin}`,
+      servingSize: dish.servingSize,
+      servingsPerContainer: 1,
+      calories: dish.calories,
+      totalFat: dish.fat,
+      saturatedFat: Math.round(dish.fat * 0.35 * 10) / 10,
+      transFat: 0,
+      cholesterol: dish.protein > 20 ? 45 : 0,
+      sodium: dish.sodium,
+      totalCarbohydrate: dish.carbs,
+      dietaryFiber: Math.round(dish.carbs * 0.15 * 10) / 10,
+      totalSugars: Math.round(dish.carbs * 0.08 * 10) / 10,
+      addedSugars: 0,
+      protein: dish.protein,
+      healthScore: 92,
+      healthRatingLabel: isFa ? "A - عالی" : "A - Excellent",
+      ingredientsList: dish.ingredients,
+      nutritionalHighlights: [
+        isFa ? `پروتئین خالص: ${dish.protein} گرم` : `Pure Protein: ${dish.protein}g`,
+        isFa ? `کربوهیدرات: ${dish.carbs} گرم` : `Carbs: ${dish.carbs}g`,
+        isFa ? `برآورد هزینه: ${formatPrice(dish.priceToman, dish.priceUSD)}` : `Est. Cost: ${formatPrice(dish.priceToman, dish.priceUSD)}`
+      ],
+      nutritionalWarnings: dish.sodium > 500 ? [isFa ? "میزان سدیم متوسط به بالا" : "Moderate to high sodium"] : [],
+      summary: isFa ? dish.summaryFa : dish.summaryEn,
+      foodType: "dish",
+      cuisine: dish.origin,
+      estimatedPrice: {
+        amountToman: dish.priceToman,
+        amountUSD: dish.priceUSD,
+        confidence: "high"
+      },
+      scannedAt: "Cyber Data Console"
+    };
+    setScannedResult(mapped);
+    setPortionServings(1);
+    setShowResultDetail(true);
+  };
+
+  // Direct 1-click logger for the RECOMMENDED dish in the vitals pane
+  const handleLogRecommendedDish = () => {
+    const isFa = currentLang === "fa";
+    const newItem: FoodLogItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      productName: isFa ? CYBER_RECOMMENDED_DISH.nameFa : CYBER_RECOMMENDED_DISH.nameEn,
+      brand: `${CYBER_RECOMMENDED_DISH.refId} • Persian / سنتی`,
+      foodType: "dish",
+      cuisine: "Persian / ایرانی",
+      loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      servingsCount: 1,
+      servingSizeText: "1 plate (400g)",
+      caloriesTotal: CYBER_RECOMMENDED_DISH.calories,
+      proteinTotal: CYBER_RECOMMENDED_DISH.protein,
+      carbsTotal: CYBER_RECOMMENDED_DISH.carbs,
+      fatTotal: CYBER_RECOMMENDED_DISH.fat,
+      sodiumTotal: CYBER_RECOMMENDED_DISH.sodium,
+      priceToman: CYBER_RECOMMENDED_DISH.priceToman,
+      priceUSD: CYBER_RECOMMENDED_DISH.priceUSD
+    };
+    saveDiary([newItem, ...diaryItems]);
+  };
+
   return (
     <AndroidFrame dir={currentLang === "fa" ? "rtl" : "ltr"}>
-      <div className="min-h-screen w-full flex flex-col bg-[#F8F5F2]" dir={currentLang === "fa" ? "rtl" : "ltr"}>
-        {/* RESPONSIVE TOP HEADER */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-[#E5DCC5] shadow-xs shrink-0 select-none">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 bg-[#7D8F69] rounded-xl flex items-center justify-center shadow-xs">
-                <Apple className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-extrabold text-[#4A5D4E] tracking-tight leading-none">NutriScan</h1>
-                <span className="text-[10px] text-[#8C8279] font-bold uppercase tracking-[0.08em] leading-none block mt-1">{t.appSubtitle}</span>
-              </div>
-            </div>
+      <div className="min-h-screen w-full flex flex-col bg-[#08090a] text-[#e0e0e0] console-grid-bg relative select-none" dir={currentLang === "fa" ? "rtl" : "ltr"}>
+        {/* TOP CONSOLE TELEMETRY STRIP */}
+        <ConsoleHeader
+          userProfile={userProfile}
+          dailyTotals={dailyTotals}
+          onToggleLanguage={() => saveProfile({ ...userProfile, language: currentLang === "en" ? "fa" : "en" })}
+          onOpenDiary={() => setActiveTab("diary")}
+        />
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-1.5 bg-[#F8F5F2] p-1 rounded-xl border border-[#E5DCC5]">
-              <button
-                onClick={() => setActiveTab("scan")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === "scan"
-                    ? "bg-white text-[#4A5D4E] shadow-xs border border-[#E5DCC5]"
-                    : "text-[#8C8279] hover:text-[#2D3033]"
-                }`}
-              >
-                <Camera className="w-4 h-4" />
-                <span>{t.scanner}</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("diary")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === "diary"
-                    ? "bg-white text-[#4A5D4E] shadow-xs border border-[#E5DCC5]"
-                    : "text-[#8C8279] hover:text-[#2D3033]"
-                }`}
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>{t.diary}</span>
-                {diaryItems.length > 0 && (
-                  <span className="mx-1 px-1.5 py-0.2 bg-[#7D8F69]/15 text-[#4A5D4E] text-[10px] rounded-full font-mono">
-                    {diaryItems.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                  activeTab === "profile"
-                    ? "bg-white text-[#4A5D4E] shadow-xs border border-[#E5DCC5]"
-                    : "text-[#8C8279] hover:text-[#2D3033]"
-                }`}
-              >
-                <Sliders className="w-4 h-4" />
-                <span>{t.goals}</span>
-              </button>
-            </nav>
-
-            {/* Header Utilities: Language toggle & Calorie counter */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Quick language toggle */}
-              <button
-                onClick={() => saveProfile({ ...userProfile, language: currentLang === "en" ? "fa" : "en" })}
-                className="px-2.5 py-1.5 bg-[#F8F5F2] hover:bg-[#E5DCC5]/40 text-[#4A5D4E] border border-[#E5DCC5] rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
-                title={t.switchLanguage}
-              >
-                <Globe className="w-3.5 h-3.5 text-[#7D8F69]" />
-                <span className="font-mono text-[11px]">{currentLang === "en" ? "فارسی" : "EN"}</span>
-              </button>
-
-              {/* Small Calorie Counter Bubble */}
-              <div 
-                onClick={() => setActiveTab("diary")}
-                className="flex items-center gap-2 bg-[#F8F5F2] hover:bg-[#E5DCC5]/50 active:scale-95 transition-all border border-[#E5DCC5] px-3 py-1.5 rounded-full cursor-pointer shadow-2xs"
-                title={t.dailyCalorieIntake}
-              >
-                <Flame className="w-3.5 h-3.5 text-[#C97D60] fill-[#C97D60]/20" />
-                <span className="text-xs font-bold text-[#2D3033] font-mono">
-                  {dailyTotals.calories} <span className="text-[10px] font-normal text-[#8C8279] font-sans">/ {userProfile.calorieGoal} {t.kcalUnit}</span>
-                </span>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* VIEW CONTAINER */}
-        <div className="flex-1 bg-[#F8F5F2] relative flex flex-col pb-20 md:pb-8">
-        
-        {/* TAB 1: CALORIE SCANNER & WORLD FOOD LANDING */}
-        {activeTab === "scan" && (() => {
-          const todayIndex = new Date().getDay() % WORLD_FOODS.length;
-          const rawFoodOfTheDay = WORLD_FOODS[todayIndex];
-          const foodOfTheDay = getLocalizedWorldFood(rawFoodOfTheDay, currentLang);
-
-          return (
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col animate-[fadeIn_0.25s_ease-out] relative">
-              
-              {/* BEAUTIFUL PROCESSING LOADING STATE */}
-              {isScanning && (
-                <div className="fixed inset-0 bg-[#F8F5F2]/95 backdrop-blur-md z-40 flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.2s_ease-out]">
-                  {/* Outer Pulsing Aura */}
-                  <div className="relative w-32 h-32 flex items-center justify-center mb-6">
-                    <div className="absolute inset-0 rounded-full bg-[#7D8F69]/10 animate-[ping_2s_infinite] opacity-60" />
-                    <div className="absolute -inset-2 rounded-full border-2 border-dashed border-[#7D8F69]/25 animate-[spin_12s_linear_infinite]" />
-                    <div className="absolute inset-2 rounded-full border border-[#7D8F69]/40 animate-[spin_8s_linear_infinite_reverse]" />
-                    
-                    <div className="w-20 h-20 bg-white border border-[#E5DCC5] rounded-full flex items-center justify-center shadow-lg relative">
-                      <Sparkles className="w-9 h-9 text-[#7D8F69] animate-pulse" />
-                    </div>
-                  </div>
-
-                  <h3 className="text-base font-extrabold text-[#2D3033]">
-                    {t.processingLabel}
-                  </h3>
-                  
-                  {/* Dynamic subtitle changer */}
-                  <p className="text-xs text-[#8C8279] mt-2.5 max-w-[240px] h-8 leading-relaxed font-medium">
-                    {getLoaderMessage()}
-                  </p>
-
-                  {/* Elegant loading progress line */}
-                  <div className="w-48 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-6 shadow-inner relative">
-                    <div className="h-full bg-[#7D8F69] rounded-full w-24 absolute left-0 top-0 animate-loading-progress" />
-                  </div>
-
-                  {/* Animated micro facts label list */}
-                  <div className="mt-8 flex flex-wrap gap-2 justify-center max-w-[280px]">
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-white border border-[#E5DCC5] px-2.5 py-1 rounded-full text-[#7D8F69] flex items-center gap-1.5 shadow-2xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#7D8F69] animate-ping" />
-                      {t.ocrVision}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-white border border-[#E5DCC5] px-2.5 py-1 rounded-full text-[#7D8F69] flex items-center gap-1.5 shadow-2xs">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#7D8F69]" />
-                      {t.geminiApi}
-                    </span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider bg-white border border-[#E5DCC5] px-2.5 py-1 rounded-full text-[#8C8279] shadow-2xs">
-                      {t.extractMacros}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* RESPONSIVE 2-COLUMN GRID ON DESKTOP */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
-                {/* LEFT COLUMN: SCANNER / LAUNCHER / FOOD OF THE DAY */}
-                <div className="lg:col-span-5 space-y-4">
-                  {/* LENS SCANNER CONTAINER (ACTIVE CAMERA VIEW) */}
-                  {useRealCamera ? (
-                    <div className="relative bg-slate-950 aspect-[4/3] w-full rounded-2xl flex-col overflow-hidden flex items-center justify-center border border-[#E5DCC5] shadow-sm">
-                      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 z-10 pointer-events-none" />
-                      <video
-                        ref={videoRef}
-                        autoPlay
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
-                      {isScanning && (
-                        <div className="absolute inset-x-0 h-1 bg-[#7D8F69] shadow-[0_0_15px_#7D8F69] z-20 animate-[bounce_2s_infinite] opacity-80" />
-                      )}
-                      <div className="absolute w-[240px] h-[190px] pointer-events-none z-20">
-                        <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-[#7D8F69] rounded-tl-md" />
-                        <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-[#7D8F69] rounded-tr-md" />
-                        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-[#7D8F69] rounded-bl-md" />
-                        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-[#7D8F69] rounded-br-md" />
-                      </div>
-                      <div className="absolute bottom-3 left-0 right-0 text-center z-20 flex flex-col items-center gap-2">
-                        <span className="bg-black/60 text-white/90 text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-md border border-white/10 tracking-wider uppercase">
-                          {isScanning ? t.processingLabel : t.alignLabelBracket}
-                        </span>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={captureSnapshot}
-                            disabled={isScanning}
-                            className="px-4 py-2 bg-[#7D8F69] text-white text-xs font-bold rounded-lg shadow-sm hover:bg-[#6c7c5b] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Camera className="w-3.5 h-3.5" />
-                            {t.captureSnapshot}
-                          </button>
-                          <button
-                            onClick={stopCamera}
-                            className="px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg shadow-sm hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
-                          >
-                            {t.cancel}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    /* INACTIVE CAMERA: COMPACT BEAUTIFUL LAUNCHER CARD */
-                    <div className="bg-white rounded-2xl border border-[#E5DCC5] p-5 shadow-sm flex flex-col gap-3 relative overflow-hidden">
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-[#7D8F69]/5 rounded-full blur-2xl -mr-8 -mt-8 pointer-events-none" />
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 bg-[#7D8F69]/10 rounded-xl flex items-center justify-center text-[#7D8F69] shrink-0">
-                          <Camera className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <h3 className="text-sm font-extrabold text-[#2D3033]">{t.scanNutritionLabel}</h3>
-                          <p className="text-xs text-[#8C8279] mt-0.5 leading-relaxed">
-                            {t.snapPhotoDesc}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 mt-1">
-                        <button
-                          onClick={startCamera}
-                          className="py-2.5 bg-[#7D8F69] text-white hover:bg-[#6c7c5b] text-xs font-bold rounded-xl transition-all shadow-sm active:scale-[0.97] flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Camera className="w-3.5 h-3.5" />
-                          <span>{t.startCamera}</span>
-                        </button>
-
-                        <label className="py-2.5 bg-[#F8F5F2] hover:bg-[#E5DCC5]/40 text-[#2D3033] border border-[#E5DCC5] text-xs font-bold rounded-xl transition-all active:scale-[0.97] cursor-pointer flex items-center justify-center gap-1.5">
-                          <Upload className="w-3.5 h-3.5 text-[#8C8279]" />
-                          <span>{t.uploadPhoto}</span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileUpload}
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ERROR DISPLAY */}
-                  {scanError && (
-                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-xs text-red-800">
-                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
-                      <div>
-                        <p className="font-bold">{t.scanIssueDetected}</p>
-                        <p className="opacity-90 mt-0.5">{scanError}</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* FOOD OF THE DAY (HERO CARD) */}
-                  <div className="bg-white rounded-2xl border border-[#E5DCC5] shadow-sm overflow-hidden flex flex-col">
-                <div className="bg-[#7D8F69]/10 px-4 py-2.5 border-b border-[#E5DCC5]/40 flex justify-between items-center">
-                  <div className="flex items-center gap-1.5 text-[#4A5D4E] font-extrabold text-[10px] uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5 text-[#7D8F69]" />
-                    <span>{t.foodOfTheDay}</span>
-                  </div>
-                  <span className="text-[9px] font-bold text-white bg-[#7D8F69] px-2 py-0.5 rounded-full uppercase tracking-widest font-mono">
-                    {t.globalSpec}
-                  </span>
-                </div>
-
-                <div className="p-4 flex flex-col gap-3">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
-                      <span className="text-3xl select-none" role="img" aria-label={foodOfTheDay.name}>
-                        {foodOfTheDay.emoji}
-                      </span>
-                      <div>
-                        <h4 className="text-base font-extrabold text-[#2D3033]">
-                          {foodOfTheDay.name}
-                        </h4>
-                        {foodOfTheDay.nativeName && foodOfTheDay.nativeName !== foodOfTheDay.name && (
-                          <p className="text-[11px] font-bold text-[#7D8F69] font-sans">
-                            {foodOfTheDay.nativeName}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10px] text-[#8C8279] font-bold uppercase tracking-wider">
-                            🌍 {foodOfTheDay.origin} • {foodOfTheDay.regionFa && currentLang === "fa" ? foodOfTheDay.regionFa : foodOfTheDay.region}
-                          </span>
-                          <span className="text-[9px] bg-amber-50 text-amber-800 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
-                            🍽️ {t.dish}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-right flex flex-col items-end gap-1">
-                      <div className="inline-block bg-[#F8F5F2] border border-[#E5DCC5] px-2 py-1 rounded-lg">
-                        <p className="text-[8px] font-bold text-[#8C8279] uppercase leading-none">{t.calorieEstimate}</p>
-                        <p className="text-sm font-black font-mono text-[#C97D60] leading-none mt-1">
-                          {foodOfTheDay.calories} <span className="text-[9px] font-normal text-[#2D3033] font-sans">{t.kcalUnit}</span>
-                        </p>
-                      </div>
-                      {formatPrice(foodOfTheDay.priceToman, foodOfTheDay.priceUSD) && (
-                        <div className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-lg text-[10px] font-extrabold text-emerald-800 font-mono">
-                          <Coins className="w-3 h-3 text-emerald-600" />
-                          <span>{formatPrice(foodOfTheDay.priceToman, foodOfTheDay.priceUSD)}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-[#2D3033] leading-relaxed italic">
-                    "{foodOfTheDay.description}"
-                  </p>
-
-                  <div className="p-3 bg-[#F8F5F2] rounded-xl border border-[#E5DCC5]/60 flex items-start gap-2.5">
-                    <Info className="w-4 h-4 text-[#7D8F69] shrink-0 mt-0.5" />
-                    <p className="text-[11px] text-[#4A5D4E] leading-relaxed">
-                      {foodOfTheDay.funFact}
-                    </p>
-                  </div>
-
-                  {/* Micro Nutrients Line */}
-                  <div className="grid grid-cols-4 gap-2 border-t border-b border-[#F8F5F2] py-2.5 text-center">
-                    <div>
-                      <p className="text-[8px] font-bold text-[#8C8279] uppercase">{t.protein}</p>
-                      <p className="text-xs font-bold font-mono text-[#7D8F69] mt-0.5">{foodOfTheDay.protein}{t.gramUnit}</p>
-                    </div>
-                    <div>
-                      <p className="text-[8px] font-bold text-[#8C8279] uppercase">{t.carbs}</p>
-                      <p className="text-xs font-bold font-mono text-[#8C8279] mt-0.5">{foodOfTheDay.carbs}{t.gramUnit}</p>
-                    </div>
-                    <div>
-                      <p className="text-[8px] font-bold text-[#8C8279] uppercase">{t.fat}</p>
-                      <p className="text-xs font-bold font-mono text-amber-700 mt-0.5">{foodOfTheDay.fat}{t.gramUnit}</p>
-                    </div>
-                    <div>
-                      <p className="text-[8px] font-bold text-[#8C8279] uppercase">{t.healthScore}</p>
-                      <p className="text-xs font-bold font-mono text-emerald-700 mt-0.5">{foodOfTheDay.healthScore}/100</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 mt-1">
-                    <button
-                      onClick={() => handleSelectWorldFood(rawFoodOfTheDay)}
-                      className="py-2 bg-slate-100 hover:bg-slate-200 text-[#2D3033] text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
-                    >
-                      <span>{t.fullNutritionFacts}</span>
-                      <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        const newItem: FoodLogItem = {
-                          id: Math.random().toString(36).substr(2, 9),
-                          productName: foodOfTheDay.name,
-                          brand: `${foodOfTheDay.nativeName && foodOfTheDay.nativeName !== foodOfTheDay.name ? foodOfTheDay.nativeName + " • " : ""}${t.origin}: ${foodOfTheDay.origin}`,
-                          foodType: "dish",
-                          cuisine: `${foodOfTheDay.regionFa && currentLang === "fa" ? foodOfTheDay.regionFa : foodOfTheDay.region} (${foodOfTheDay.origin})`,
-                          loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                          servingsCount: 1,
-                          servingSizeText: foodOfTheDay.servingSize,
-                          caloriesTotal: foodOfTheDay.calories,
-                          proteinTotal: foodOfTheDay.protein,
-                          carbsTotal: foodOfTheDay.carbs,
-                          fatTotal: foodOfTheDay.fat,
-                          sodiumTotal: foodOfTheDay.sodium,
-                          priceToman: foodOfTheDay.priceToman,
-                          priceUSD: foodOfTheDay.priceUSD
-                        };
-                        saveDiary([newItem, ...diaryItems]);
-                        setActiveTab("diary");
-                      }}
-                      className="py-2 bg-[#2D3033] hover:bg-slate-800 text-white text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98] cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>{t.logToDiary}</span>
-                    </button>
-                  </div>
-                </div>
+        {/* PROCESSING LOADING OVERLAY */}
+        {isScanning && (
+          <div className="fixed inset-0 bg-[#08090a]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.2s_ease-out]">
+            <div className="relative w-28 h-28 flex items-center justify-center mb-6">
+              <div className="absolute inset-0 rounded-full border border-[#ff3e00]/20 animate-ping" />
+              <div className="absolute -inset-2 rounded-full border border-dashed border-[#ff3e00]/40 animate-[spin_10s_linear_infinite]" />
+              <div className="w-16 h-16 bg-[#111214] border border-[#ff3e00] flex items-center justify-center shadow-lg">
+                <Sparkles className="w-8 h-8 text-[#ff3e00] animate-pulse" />
               </div>
             </div>
 
-            {/* RIGHT COLUMN: FOODS AROUND THE WORLD GRID */}
-                <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E5DCC5] p-4 sm:p-5 shadow-sm flex flex-col">
-                  <div className="flex items-center justify-between gap-2 mb-3.5 pb-2.5 border-b border-[#F8F5F2]">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 bg-[#7D8F69]/10 rounded-lg flex items-center justify-center text-[#7D8F69]">
-                        <Globe className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-bold text-[#2D3033] leading-none">{t.foodsAroundWorld}</h3>
-                        <span className="text-[10px] text-[#8C8279] font-medium mt-0.5 block">{t.globalRecipesSubtitle}</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-mono font-bold text-[#7D8F69] bg-[#7D8F69]/10 px-2 py-0.5 rounded-full">
-                      {WORLD_FOODS.length} {t.dishesCount}
-                    </span>
-                  </div>
+            <h3 className="text-base font-extrabold text-[#e0e0e0] font-mono tracking-wider uppercase">
+              {t.processingLabel}
+            </h3>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {WORLD_FOODS.map((rawFood) => {
-                      const food = getLocalizedWorldFood(rawFood, currentLang);
-                      return (
-                        <button
-                          key={food.id}
-                          onClick={() => handleSelectWorldFood(rawFood)}
-                          className="bg-[#F8F5F2]/50 hover:bg-white hover:border-[#7D8F69]/60 border border-[#E5DCC5]/70 p-3.5 rounded-xl transition-all text-start flex items-center justify-between shadow-2xs group cursor-pointer hover:shadow-sm"
-                        >
-                          <div className="flex items-center gap-3 min-w-0 pr-2">
-                            <span className="text-2xl select-none shrink-0" role="img" aria-label={food.name}>
-                              {food.emoji}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-xs font-bold text-[#2D3033] group-hover:text-[#7D8F69] transition-colors leading-snug truncate">
-                                {food.name}
-                              </p>
-                              {food.nativeName && food.nativeName !== food.name && (
-                                <p className="text-[10px] font-medium text-[#7D8F69] truncate">
-                                  {food.nativeName}
-                                </p>
-                              )}
-                              <p className="text-[10px] text-[#8C8279] mt-0.5 truncate">
-                                {food.origin} • {food.servingSize}
-                              </p>
-                            </div>
-                          </div>
+            <p className="text-xs text-[#707070] font-mono mt-2.5 max-w-[280px] h-8 leading-relaxed">
+              {getLoaderMessage()}
+            </p>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            <div className="text-right flex flex-col items-end gap-0.5">
-                              <p className="text-xs font-bold font-mono text-[#C97D60]">{food.calories} {t.kcalUnit}</p>
-                              {formatPrice(food.priceToman, food.priceUSD) && (
-                                <span className="text-[9px] font-extrabold font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-100">
-                                  {formatPrice(food.priceToman, food.priceUSD)}
-                                </span>
-                              )}
-                              <span className="text-[8px] font-bold text-[#7D8F69] bg-[#7D8F69]/10 px-1.5 py-0.2 rounded">
-                                {t.score} {food.healthScore}
-                              </span>
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-[#8C8279]/50 group-hover:text-[#7D8F69] transition-colors rtl:rotate-180" />
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* FLOATING ACTION PREVIEW BANNER IF SCANNED LABELS EXIST */}
-              {scannedResult && !showResultDetail && (
-                <div className="fixed bottom-20 md:bottom-6 right-4 left-4 sm:left-auto sm:right-6 sm:w-96 p-3.5 bg-white border border-[#E5DCC5] rounded-2xl flex items-center justify-between shadow-xl z-30 animate-[slideUp_0.2s_ease-out] gap-3">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-[#7D8F69]/10 flex items-center justify-center text-[#7D8F69] shrink-0">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-[#2D3033] truncate">{scannedResult.productName}</p>
-                      <p className="text-[10px] text-[#8C8279]">{scannedResult.calories} {t.kcalPerServing}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button
-                      onClick={() => setShowResultDetail(true)}
-                      className="px-3 py-1.5 bg-[#2D3033] text-white text-[11px] font-bold rounded-lg hover:bg-slate-800 transition-all active:scale-95 cursor-pointer"
-                    >
-                      {t.viewDetails}
-                    </button>
-                    <button
-                      onClick={() => setScannedResult(null)}
-                      className="w-7 h-7 bg-[#F8F5F2] hover:bg-slate-200 border border-[#E5DCC5]/60 text-[#8C8279] hover:text-[#2D3033] rounded-lg flex items-center justify-center transition-all cursor-pointer active:scale-90"
-                      title={currentLang === "fa" ? "بستن" : "Close"}
-                      aria-label={currentLang === "fa" ? "بستن" : "Close"}
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              )}
+            <div className="w-48 bg-[#1a1b1e] h-1.5 overflow-hidden mt-5 relative border border-[#2a2c31]">
+              <div className="h-full bg-[#ff3e00] w-24 absolute left-0 top-0 animate-loading-progress" />
             </div>
-          );
-        })()}
 
-        {/* TAB 2: DAILY FOOD DIARY */}
-        {activeTab === "diary" && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col animate-[fadeIn_0.25s_ease-out]">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            
-            {/* LEFT COLUMN: DAILY NUTRITION DASHBOARD & BUDGET */}
-            <div className="lg:col-span-5 bg-white rounded-2xl border border-[#E5DCC5] p-5 shadow-sm space-y-4">
-              <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">
-                {t.todaysIntake}
+            <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-[280px] font-mono text-[9px]">
+              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00] flex items-center gap-1">
+                <span className="w-1.5 h-1.5 bg-[#ff3e00] animate-ping" />
+                OCR_SENSOR
               </span>
- 
-              {/* Progress Summary Section */}
-              <div className="grid grid-cols-12 gap-4 items-center mb-4 pb-4 border-b border-[#F8F5F2]">
-                {/* Calories Ring */}
-                <div className="col-span-5 flex flex-col items-center justify-center relative">
-                  <div className="relative w-24 h-24 flex items-center justify-center">
-                    {/* SVG Progress Circle */}
-                    <svg className="w-full h-full transform -rotate-90">
-                      <circle
-                        cx="48"
-                        cy="48"
-                        r="40"
-                        className="stroke-[#F8F5F2]"
-                        strokeWidth="8"
-                        fill="transparent"
-                      />
-                      <circle
-                        cx="48"
-                        cy="48"
-                        r="40"
-                        className="stroke-[#7D8F69] transition-all duration-500"
-                        strokeWidth="8"
-                        fill="transparent"
-                        strokeDasharray={`${2 * Math.PI * 40}`}
-                        strokeDashoffset={`${2 * Math.PI * 40 * (1 - calPercent / 100)}`}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    {/* Center Info */}
-                    <div className="absolute flex flex-col items-center justify-center text-center">
-                      <span className="text-xl font-extrabold text-[#2D3033] leading-none">
-                        {dailyTotals.calories}
-                      </span>
-                      <span className="text-[9px] text-[#8C8279] uppercase font-bold tracking-wider mt-0.5">
-                        / {userProfile.calorieGoal} {t.kcalUnit}
-                      </span>
-                    </div>
-                  </div>
-                </div>
- 
-                {/* Macro percentages */}
-                <div className="col-span-7 space-y-2.5">
-                  <div>
-                    <div className="flex justify-between text-[11px] font-bold text-[#2D3033] mb-0.5">
-                      <span>{t.protein} ({Math.round(dailyTotals.protein)}{t.gramUnit})</span>
-                      <span>{proteinPercent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-[#F8F5F2] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#7D8F69] rounded-full" style={{ width: `${proteinPercent}%` }} />
-                    </div>
-                  </div>
- 
-                  <div>
-                    <div className="flex justify-between text-[11px] font-bold text-[#2D3033] mb-0.5">
-                      <span>{t.carbs} ({Math.round(dailyTotals.carbs)}{t.gramUnit})</span>
-                      <span>{carbsPercent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-[#F8F5F2] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#E5DCC5] rounded-full" style={{ width: `${carbsPercent}%` }} />
-                    </div>
-                  </div>
- 
-                  <div>
-                    <div className="flex justify-between text-[11px] font-bold text-[#2D3033] mb-0.5">
-                      <span>{t.fat} ({Math.round(dailyTotals.fat)}{t.gramUnit})</span>
-                      <span>{fatPercent}%</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-[#F8F5F2] rounded-full overflow-hidden">
-                      <div className="h-full bg-[#C97D60] rounded-full" style={{ width: `${fatPercent}%` }} />
-                    </div>
-                  </div>
-                </div>
-              </div>
- 
-              {/* Extra Health Limit Warners (e.g. Sodium) */}
-              <div className="bg-[#F8F5F2] px-3.5 py-2.5 rounded-xl border border-[#E5DCC5] flex items-center justify-between text-[11px]">
-                <div className="flex items-center gap-1.5 text-[#2D3033] font-bold">
-                  <Info className="w-3.5 h-3.5 text-[#8C8279]" />
-                  <span>{t.sodium}:</span>
-                  <span className="font-mono text-xs">{dailyTotals.sodium} {t.mgUnit}</span>
-                  <span className="text-[#8C8279] font-normal">/ {userProfile.sodiumGoal} {t.mgUnit}</span>
-                </div>
-                <span className={`px-2 py-0.5 rounded font-black text-[9px] uppercase ${
-                  sodiumPercent > 90 
-                    ? "bg-red-100 text-red-700" 
-                    : sodiumPercent > 60 
-                      ? "bg-amber-100 text-amber-700" 
-                      : "bg-emerald-100 text-emerald-700"
-                }`}>
-                  {sodiumPercent > 100 
-                    ? t.limitExceeded 
-                    : `${sodiumPercent}% ${t.maxLimit}`}
-                </span>
-              </div>
-
-              {/* DAILY FOOD EXPENSE & MEAL BUDGET TRACKER */}
-              <div className="mt-3 pt-3 border-t border-[#F8F5F2]">
-                <div className="flex justify-between items-center text-xs mb-1.5">
-                  <div className="flex items-center gap-1.5 font-bold text-[#2D3033]">
-                    <Coins className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{t.estimatedFoodSpend}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-black font-mono text-emerald-700 text-xs">
-                      {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal) || (currentLang === "fa" ? "۰ تومان" : "$0.00")}
-                    </span>
-                    <span className="text-[10px] text-[#8C8279] font-medium ml-1">
-                      / {formatPrice(userProfile.dailyBudgetToman, userProfile.dailyBudgetUSD)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Budget Utilization Bar */}
-                {(() => {
-                  const targetBudget = userProfile.currency === "USD" 
-                    ? (userProfile.dailyBudgetUSD || 7.5) 
-                    : (userProfile.dailyBudgetToman || 400000);
-                  const currentSpent = userProfile.currency === "USD" 
-                    ? dailyTotals.costUSDTotal 
-                    : dailyTotals.costTomanTotal;
-                  const spendPercent = Math.min(Math.round((currentSpent / targetBudget) * 100), 100);
-                  const isOverBudget = currentSpent > targetBudget;
-
-                  return (
-                    <div>
-                      <div className="w-full h-1.5 bg-[#F8F5F2] rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            isOverBudget ? "bg-red-500" : spendPercent > 80 ? "bg-amber-500" : "bg-emerald-600"
-                          }`} 
-                          style={{ width: `${spendPercent}%` }} 
-                        />
-                      </div>
-                      <div className="flex justify-between items-center mt-1 text-[9px] text-[#8C8279]">
-                        <span>{spendPercent}% {t.dailyBudgetUtilized}</span>
-                        {isOverBudget && (
-                          <span className="text-red-600 font-bold">{t.budgetExceeded}</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
- 
-            {/* RIGHT COLUMN: LOGGED FOOD DIARY LIST */}
-            <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E5DCC5] p-5 flex flex-col shadow-sm">
-              <div className="flex justify-between items-center mb-3.5 pb-2.5 border-b border-[#F8F5F2]">
-                <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider">
-                  {t.todaysMeals} ({diaryItems.length})
-                </span>
-                {diaryItems.length > 0 && (
-                  <button
-                    onClick={handleClearLogs}
-                    className="text-[10px] text-[#C97D60] hover:underline font-extrabold uppercase tracking-wider cursor-pointer"
-                  >
-                    {t.clearAll}
-                  </button>
-                )}
-              </div>
- 
-              {diaryItems.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-slate-400">
-                  <BookOpen className="w-10 h-10 text-[#E5DCC5] mb-2" />
-                  <p className="text-sm font-bold text-[#2D3033]">{t.diaryEmpty}</p>
-                  <p className="text-xs text-[#8C8279] max-w-[200px] mt-1">
-                    {currentLang === "fa" 
-                      ? "برای اسکن برچسب مواد غذایی و ثبت کالری، به برگه اسکنر بروید." 
-                      : "Head over to the scanner tab to scan a food label and register calories."}
-                  </p>
-                  <button
-                    onClick={() => setActiveTab("scan")}
-                    className="mt-4 px-4 py-2 bg-[#7D8F69] text-white text-xs font-bold rounded-xl shadow-sm hover:bg-[#6c7c5b] cursor-pointer"
-                  >
-                    {t.emptyDiaryBtn}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex-1 overflow-y-auto space-y-2.5 max-h-[420px] pr-0.5">
-                  {diaryItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="group bg-[#F8F5F2] border border-[#E5DCC5]/60 hover:border-[#7D8F69]/50 p-3 rounded-xl flex items-center justify-between gap-3 transition-all"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-baseline gap-1.5 flex-wrap">
-                          <h4 className="text-xs font-extrabold text-[#2D3033] truncate">
-                            {item.productName}
-                          </h4>
-                          {item.foodType && (
-                            <span className="text-[8px] font-bold px-1.5 py-0.2 rounded bg-white border border-[#E5DCC5] text-slate-700">
-                              {item.foodType === "dish" ? "🍽️ " + t.dish : item.foodType === "beverage" ? "🥤 " + t.beverage : "📦 " + t.packagedFood}
-                            </span>
-                          )}
-                          <span className="text-[9px] text-[#8C8279] shrink-0 font-medium italic">
-                            {item.brand && item.brand !== "Unknown" ? item.brand : ""}
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-[#8C8279] mt-0.5 flex items-center gap-1.5">
-                          <span>{t.quantity}: {item.servingsCount} × ({item.servingSizeText})</span>
-                          <span>•</span>
-                          <span>{item.loggedAt}</span>
-                          {formatPrice(item.priceToman, item.priceUSD) && (
-                            <>
-                              <span>•</span>
-                              <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
-                                {formatPrice(item.priceToman, item.priceUSD)}
-                              </span>
-                            </>
-                          )}
-                        </p>
-                        {/* Compact micro-macro tags */}
-                        <div className="flex gap-1.5 mt-1.5 text-[9px] font-mono font-medium text-slate-600">
-                          <span className="bg-white border border-[#E5DCC5]/30 px-1 py-0.2 rounded text-emerald-800">{t.proteinAbbr} {item.proteinTotal}{t.gramUnit}</span>
-                          <span className="bg-white border border-[#E5DCC5]/30 px-1 py-0.2 rounded text-amber-800">{t.carbsAbbr} {item.carbsTotal}{t.gramUnit}</span>
-                          <span className="bg-white border border-[#E5DCC5]/30 px-1 py-0.2 rounded text-rose-800">{t.fatAbbr} {item.fatTotal}{t.gramUnit}</span>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2.5">
-                        <div className="text-right">
-                          <span className="text-sm font-extrabold text-[#C97D60] block leading-none font-mono">
-                            {item.caloriesTotal}
-                          </span>
-                          <span className="text-[9px] text-[#8C8279] uppercase font-bold tracking-wider">
-                            {t.kcalUnit}
-                          </span>
-                        </div>
-
-                        <button
-                          onClick={() => handleDeleteLogItem(item.id)}
-                          className="w-7 h-7 bg-white hover:bg-red-50 border border-[#E5DCC5]/40 rounded-lg flex items-center justify-center text-red-500 hover:text-red-700 transition-all active:scale-95"
-                          title={t.deleteEntry}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00]">
+                GEMINI_AI
+              </span>
+              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#707070]">
+                MACRO_INDEX
+              </span>
             </div>
           </div>
         )}
 
-        {/* TAB 3: USER PROFILE & NUTRITION GOALS */}
-        {activeTab === "profile" && (
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 flex flex-col animate-[fadeIn_0.25s_ease-out]">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              
-              {/* LEFT COLUMN: User Identity, Preferences & Language */}
-              <div className="lg:col-span-6 space-y-6">
-                {/* User Details Form Card */}
-                <div className="bg-white p-5 rounded-2xl border border-[#E5DCC5] shadow-sm">
-                  <div className="flex items-center gap-3.5 mb-4 pb-4 border-b border-[#F8F5F2]">
-                    <div className="w-11 h-11 bg-[#E5DCC5] rounded-full border-2 border-white shadow-sm overflow-hidden flex items-center justify-center">
-                      <User className="w-5 h-5 text-[#8C8279]" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-extrabold text-[#2D3033]">
-                        {userProfile.name}'s {t.healthProfileTitle}
-                      </h3>
-                      <p className="text-xs text-[#8C8279]">
-                        {t.healthProfileDesc}
-                      </p>
-                    </div>
-                  </div>
-     
-                  {/* Input for name */}
-                  <div className="space-y-3.5">
-                    <div>
-                      <label className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block mb-1">
-                        {t.yourName}
-                      </label>
-                      <input
-                        type="text"
-                        value={userProfile.name}
-                        onChange={(e) => saveProfile({ ...userProfile, name: e.target.value })}
-                        className="w-full text-xs font-bold text-[#2D3033] bg-[#F8F5F2] border border-[#E5DCC5] rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#7D8F69]"
-                      />
-                    </div>
-     
-                    {/* Macro Preset Selectors */}
-                    <div>
-                      <label className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block mb-2">
-                        {t.quickPresets}
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          onClick={() => applyPreset("balanced")}
-                          className="px-3 py-2 bg-[#F8F5F2] border border-[#E5DCC5] hover:border-[#7D8F69] rounded-xl text-[10px] font-bold text-[#2D3033] transition-all text-center cursor-pointer"
-                        >
-                          {t.presetBalanced}
-                        </button>
-                        <button
-                          onClick={() => applyPreset("weight-loss")}
-                          className="px-3 py-2 bg-[#F8F5F2] border border-[#E5DCC5] hover:border-[#7D8F69] rounded-xl text-[10px] font-bold text-[#2D3033] transition-all text-center cursor-pointer"
-                        >
-                          {t.presetLoss}
-                        </button>
-                        <button
-                          onClick={() => applyPreset("muscle")}
-                          className="px-3 py-2 bg-[#F8F5F2] border border-[#E5DCC5] hover:border-[#7D8F69] rounded-xl text-[10px] font-bold text-[#2D3033] transition-all text-center cursor-pointer"
-                        >
-                          {t.presetMuscle}
-                        </button>
-                        <button
-                          onClick={() => applyPreset("keto")}
-                          className="px-3 py-2 bg-[#F8F5F2] border border-[#E5DCC5] hover:border-[#7D8F69] rounded-xl text-[10px] font-bold text-[#2D3033] transition-all text-center cursor-pointer"
-                        >
-                          {t.presetKeto}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+        {/* MAIN MULTI-COLUMN CONSOLE GRID (VARIATION 6 ARCHITECTURE) */}
+        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
+          {/* COLUMN 1: ICON BAR */}
+          <IconBar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            diaryCount={diaryItems.length}
+          />
 
-                {/* Currency & Food Budget Preferences Card */}
-                <div className="bg-white p-5 rounded-2xl border border-[#E5DCC5] shadow-sm space-y-4 animate-[fadeIn_0.2s_ease-out]">
-                  <div className="flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-[#7D8F69]" />
-                    <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">
-                      {t.currencyAndBudget}
-                    </span>
-                  </div>
+          {/* COLUMN 2: NAV PANE */}
+          <NavPane
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            diaryCount={diaryItems.length}
+            currentLang={currentLang}
+          />
 
-                  {/* Currency Selector */}
-                  <div>
-                    <label className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block mb-1.5">
-                      {t.currencyPreference}
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => saveProfile({ ...userProfile, currency: "IRT" })}
-                        className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          userProfile.currency !== "USD"
-                            ? "bg-[#7D8F69] text-white border-[#7D8F69] shadow-xs scale-[1.02]"
-                            : "bg-[#F8F5F2] text-[#2D3033] border-[#E5DCC5] hover:bg-[#E5DCC5]/40"
-                        }`}
-                      >
-                        <span>تومان (IRT)</span>
-                      </button>
-                      <button
-                        onClick={() => saveProfile({ ...userProfile, currency: "USD" })}
-                        className={`px-3 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
-                          userProfile.currency === "USD"
-                            ? "bg-[#7D8F69] text-white border-[#7D8F69] shadow-xs scale-[1.02]"
-                            : "bg-[#F8F5F2] text-[#2D3033] border-[#E5DCC5] hover:bg-[#E5DCC5]/40"
-                        }`}
-                      >
-                        <span>Dollar ($ USD)</span>
-                      </button>
-                    </div>
-                  </div>
+          {/* COLUMN 3: MAIN DISPLAY AREA */}
+          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-20 lg:pb-8">
+            {activeTab === "scan" && (
+              <ScannerConsoleView
+                userProfile={userProfile}
+                useRealCamera={useRealCamera}
+                isScanning={isScanning}
+                scanError={scanError}
+                videoRef={videoRef}
+                onStartCamera={startCamera}
+                onStopCamera={stopCamera}
+                onCaptureSnapshot={captureSnapshot}
+                onFileUpload={handleFileUpload}
+                onSelectCyberDish={handleSelectCyberDish}
+                onSelectWorldFood={handleSelectWorldFood}
+              />
+            )}
 
-                  {/* Daily Meal Budget Slider */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.dailyBudget}</span>
-                      <span className="font-mono text-emerald-700">
-                        {userProfile.currency === "USD"
-                          ? `$${(userProfile.dailyBudgetUSD || 7.5).toFixed(2)}`
-                          : `${(userProfile.dailyBudgetToman || 400000).toLocaleString("fa-IR")} تومان`}
-                      </span>
-                    </div>
-                    {userProfile.currency === "USD" ? (
-                      <input
-                        type="range"
-                        min="2"
-                        max="30"
-                        step="0.5"
-                        value={userProfile.dailyBudgetUSD || 7.5}
-                        onChange={(e) => saveProfile({ ...userProfile, dailyBudgetUSD: Number(e.target.value) })}
-                        className="w-full accent-[#7D8F69]"
-                      />
-                    ) : (
-                      <input
-                        type="range"
-                        min="100000"
-                        max="1500000"
-                        step="25000"
-                        value={userProfile.dailyBudgetToman || 400000}
-                        onChange={(e) => saveProfile({ ...userProfile, dailyBudgetToman: Number(e.target.value) })}
-                        className="w-full accent-[#7D8F69]"
-                      />
-                    )}
-                    <p className="text-[10px] text-[#8C8279] mt-1">
-                      {currentLang === "fa" 
-                        ? "سقف بودجه روزانه برای مصرف غذا و ردیابی هزینه‌های وعده‌ها" 
-                        : "Target daily food expenditure ceiling used for spending progress tracking"}
-                    </p>
-                  </div>
-                </div>
+            {activeTab === "diary" && (
+              <DiaryConsoleView
+                diaryItems={diaryItems}
+                dailyTotals={dailyTotals}
+                userProfile={userProfile}
+                onDeleteLogItem={handleDeleteLogItem}
+                onClearLogs={handleClearLogs}
+                onGoToScanner={() => setActiveTab("scan")}
+              />
+            )}
 
-                {/* Language Settings Card */}
-                <div className="bg-white p-5 rounded-2xl border border-[#E5DCC5] shadow-sm space-y-3 animate-[fadeIn_0.2s_ease-out]">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-[#7D8F69]" />
-                    <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">
-                      {t.languageSettings}
-                    </span>
-                  </div>
-                  <p className="text-xs text-[#8C8279] leading-relaxed">
-                    {t.selectLanguage}
-                  </p>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { code: "en", name: "English" },
-                      { code: "fa", name: "فارسی" },
-                    ].map((lang) => (
-                      <button
-                        key={lang.code}
-                        onClick={() => saveProfile({ ...userProfile, language: lang.code })}
-                        className={`px-2 py-2.5 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
-                          currentLang === lang.code
-                            ? "bg-[#7D8F69] text-white border-[#7D8F69] shadow-xs scale-[1.02]"
-                            : "bg-[#F8F5F2] text-[#2D3033] border-[#E5DCC5] hover:bg-[#E5DCC5]/40"
-                        }`}
-                      >
-                        {lang.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            {activeTab === "profile" && (
+              <GoalsConsoleView
+                userProfile={userProfile}
+                onSaveProfile={saveProfile}
+                onApplyPreset={applyPreset}
+              />
+            )}
+          </main>
 
-              {/* RIGHT COLUMN: Daily Nutrient Target sliders */}
-              <div className="lg:col-span-6 space-y-6">
-                <div className="bg-white p-5 rounded-2xl border border-[#E5DCC5] shadow-sm space-y-4">
-                  <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">
-                    {t.adjustCaps}
-                  </span>
-     
-                  {/* Calories limit */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.calorieCap}</span>
-                      <span className="font-mono text-[#C97D60]">{userProfile.calorieGoal} {t.kcalUnit}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1000"
-                      max="4000"
-                      step="50"
-                      value={userProfile.calorieGoal}
-                      onChange={(e) => saveProfile({ ...userProfile, calorieGoal: Number(e.target.value) })}
-                      className="w-full accent-[#7D8F69]"
-                    />
-                  </div>
-     
-                  {/* Protein limit */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.proteinTarget}</span>
-                      <span className="font-mono text-emerald-700">{userProfile.proteinGoal} {t.gramUnit}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="30"
-                      max="200"
-                      step="5"
-                      value={userProfile.proteinGoal}
-                      onChange={(e) => saveProfile({ ...userProfile, proteinGoal: Number(e.target.value) })}
-                      className="w-full accent-[#7D8F69]"
-                    />
-                  </div>
-     
-                  {/* Carbs limit */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.carbsTarget}</span>
-                      <span className="font-mono text-[#8C8279]">{userProfile.carbsGoal} {t.gramUnit}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="20"
-                      max="400"
-                      step="10"
-                      value={userProfile.carbsGoal}
-                      onChange={(e) => saveProfile({ ...userProfile, carbsGoal: Number(e.target.value) })}
-                      className="w-full accent-[#7D8F69]"
-                    />
-                  </div>
-     
-                  {/* Fat limit */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.fatTarget}</span>
-                      <span className="font-mono text-amber-700">{userProfile.fatGoal} {t.gramUnit}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="20"
-                      max="150"
-                      step="5"
-                      value={userProfile.fatGoal}
-                      onChange={(e) => saveProfile({ ...userProfile, fatGoal: Number(e.target.value) })}
-                      className="w-full accent-[#7D8F69]"
-                    />
-                  </div>
-
-                  {/* Sodium limit */}
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-[#2D3033] mb-1">
-                      <span>{t.sodiumLimit}</span>
-                      <span className="font-mono text-red-700">{userProfile.sodiumGoal} {t.mgUnit}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="1000"
-                      max="5000"
-                      step="100"
-                      value={userProfile.sodiumGoal}
-                      onChange={(e) => saveProfile({ ...userProfile, sodiumGoal: Number(e.target.value) })}
-                      className="w-full accent-[#7D8F69]"
-                    />
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* EXPANDABLE NUTRITIONAL SCAN DETAILS (Bottom Sheet on Mobile / Centered Modal on Desktop) */}
-      {scannedResult && showResultDetail && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex flex-col justify-end md:justify-center md:items-center p-0 md:p-6 transition-all animate-[fadeIn_0.2s_ease-out]">
-          <div className="w-full md:max-w-2xl max-h-[88vh] bg-white rounded-t-[32px] md:rounded-3xl border border-[#E5DCC5] flex flex-col shadow-2xl overflow-hidden">
-            
-            {/* Sheet Handle and Title */}
-            <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b border-[#F8F5F2] bg-[#F8F5F2]/50 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 bg-[#7D8F69] rounded-full animate-ping-slow" />
-                <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-[0.2em]">
-                  {t.detectedFoodLabelResult}
-                </span>
-              </div>
-              <button
-                onClick={() => setShowResultDetail(false)}
-                className="w-7 h-7 bg-white hover:bg-slate-100 border border-[#E5DCC5] rounded-full flex items-center justify-center text-[#2D3033] transition-all"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Scrollable sheet body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6">
-              
-              {scannedResult.apiKeyMissingNotice ? (
-                <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-xs text-rose-900 leading-relaxed">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-extrabold text-rose-950 uppercase tracking-wider text-[10px] mb-0.5 font-sans">
-                      {currentLang === "fa" ? "کلید API یافت نشد (حالت شبیه‌ساز)" : "API Key Missing (Demo Mode)"}
-                    </p>
-                    <p className="opacity-90">
-                      {currentLang === "fa" 
-                        ? "متغیر محیطی GEMINI_API_KEY روی سرور تنظیم نشده است. برنامه با موفقیت به حالت شبیه‌ساز منتقل شد. برای فعال‌سازی اسکن واقعی، GEMINI_API_KEY را در تنظیمات ورسل (Vercel Project Settings > Environment Variables) تعریف کنید." 
-                        : "The GEMINI_API_KEY environment variable is not configured on your server (e.g., Vercel). The app has gracefully transitioned to Demo Mode with simulated data. To activate real live scanning, please add your GEMINI_API_KEY to your Vercel project's Environment Variables."}
-                    </p>
-                  </div>
-                </div>
-              ) : scannedResult.isDemoFallback ? (
-                <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-2.5 text-xs text-amber-900 leading-relaxed">
-                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-extrabold text-amber-950 uppercase tracking-wider text-[10px] mb-0.5 font-sans">
-                      {currentLang === "fa" ? "حالت آزمایشی شبیه‌ساز" : "Demo Analysis Mode"}
-                    </p>
-                    <p className="opacity-90">
-                      {currentLang === "fa" 
-                        ? "موتور پردازش زنده هوش مصنوعی در حال حاضر پر ترافیک است (۵۰۳). برای آزمایش راحت‌تر، اطلاعات پیش‌فرض تغذیه‌ای بارگذاری شد." 
-                        : "The live AI scanner is under heavy load (503). We have loaded a high-fidelity visual approximation for testing. Please try again shortly!"}
-                    </p>
-                  </div>
-                </div>
-              ) : null}
-
-              {/* Product Header */}
-              <div className="flex justify-between items-start gap-3">
-                <div>
-                  <div className="flex items-center gap-1.5 flex-wrap mb-1">
-                    {scannedResult.foodType && (
-                      <span className="text-[9px] font-extrabold px-2 py-0.5 rounded-md bg-[#7D8F69]/15 text-[#4A5D4E] border border-[#7D8F69]/30">
-                        {scannedResult.foodType === "dish"
-                          ? "🍽️ " + t.dish
-                          : scannedResult.foodType === "beverage"
-                            ? "🥤 " + t.beverage
-                            : "📦 " + t.packagedFood}
-                      </span>
-                    )}
-                    {scannedResult.cuisine && (
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200">
-                        🌍 {scannedResult.cuisine}
-                      </span>
-                    )}
-                  </div>
-                  <h2 className="text-2xl font-extrabold text-[#2D3033] leading-tight">
-                    {scannedResult.productName}
-                  </h2>
-                  <p className="text-xs text-[#8C8279] font-medium mt-1">
-                    {t.brand}: <span className="font-bold text-[#2D3033]">{scannedResult.brand || t.unknownBrand}</span>
-                  </p>
-                  <p className="text-[11px] text-[#8C8279] italic mt-0.5">
-                    {t.servingSize}: {scannedResult.servingSize || t.oneContainer}
-                  </p>
-                </div>
-
-                {/* Overall Health Nutri-Score indicator */}
-                <div className="text-right shrink-0">
-                  <div className="inline-flex flex-col items-center justify-center p-2 rounded-2xl border bg-[#F8F5F2] border-[#E5DCC5] min-w-16">
-                    <span className="text-[9px] font-extrabold text-[#8C8279] uppercase tracking-wide leading-none mb-1">{t.healthScore}</span>
-                    <span className="text-2xl font-extrabold font-mono text-[#7D8F69] leading-none">
-                      {scannedResult.healthScore}
-                    </span>
-                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-full mt-1.5 leading-none ${
-                      scannedResult.healthRatingLabel.startsWith("A") || scannedResult.healthRatingLabel.startsWith("B")
-                        ? "bg-[#7D8F69]/10 text-[#4A5D4E]"
-                        : scannedResult.healthRatingLabel.startsWith("C")
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-red-50 text-red-700"
-                    }`}>
-                      {scannedResult.healthRatingLabel.split(" - ")[0]}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Interactive Portion/Serving Adjuster */}
-              <div className="bg-[#F8F5F2] p-4 rounded-2xl border border-[#E5DCC5] flex items-center justify-between gap-4">
-                <div>
-                  <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block mb-0.5">{t.portionMultiplier}</span>
-                  <p className="text-xs text-[#2D3033] font-bold">
-                    {t.adjustPortionDesc}
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-1.5 bg-white border border-[#E5DCC5] rounded-xl px-2.5 py-1.5 shadow-sm shrink-0">
-                  <button
-                    onClick={() => setPortionServings(Math.max(0.25, portionServings - 0.25))}
-                    className="w-6 h-6 bg-[#F8F5F2] border border-[#E5DCC5] text-sm font-bold text-[#2D3033] rounded-md active:scale-95 transition-all flex items-center justify-center cursor-pointer"
-                  >
-                    -
-                  </button>
-                  <span className="text-xs font-mono font-bold text-[#2D3033] min-w-[36px] text-center">
-                    {portionServings}x
-                  </span>
-                  <button
-                    onClick={() => setPortionServings(portionServings + 0.25)}
-                    className="w-6 h-6 bg-[#F8F5F2] border border-[#E5DCC5] text-sm font-bold text-[#2D3033] rounded-md active:scale-95 transition-all flex items-center justify-center cursor-pointer"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* ESTIMATED PRICE & DISH PREPARATION COST CARD */}
-              {scannedResult.estimatedPrice && (
-                <div className="bg-gradient-to-br from-emerald-50/70 to-teal-50/40 p-4 rounded-2xl border border-emerald-200/80 shadow-xs space-y-2.5">
-                  <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                        <Coins className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider block">
-                          {t.estimatedPrice}
-                        </span>
-                        <p className="text-[11px] text-emerald-950 font-medium">
-                          {portionServings !== 1 ? `${portionServings}x ${t.servings}` : t.perServingPrice}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <p className="text-xl font-black font-mono text-emerald-800 leading-tight">
-                        {userProfile.currency === "USD"
-                          ? `$${((scannedResult.estimatedPrice.amountUSD || 0) * portionServings).toFixed(2)}`
-                          : `${Math.round((scannedResult.estimatedPrice.amountToman || 0) * portionServings).toLocaleString("fa-IR")} تومان`}
-                      </p>
-                      <p className="text-[10px] text-emerald-700 font-mono font-bold mt-0.5">
-                        {userProfile.currency === "USD"
-                          ? `${Math.round((scannedResult.estimatedPrice.amountToman || 0) * portionServings).toLocaleString("fa-IR")} تومان`
-                          : `$${((scannedResult.estimatedPrice.amountUSD || 0) * portionServings).toFixed(2)} USD`}
-                      </p>
-                    </div>
-                  </div>
-
-                  {scannedResult.estimatedPrice.disclaimer && (
-                    <div className="pt-2 border-t border-emerald-200/50 flex items-start gap-1.5 text-[10px] text-emerald-800 leading-relaxed opacity-90">
-                      <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" />
-                      <span>{scannedResult.estimatedPrice.disclaimer}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* INGREDIENTS & RAW MATERIAL COST BREAKDOWN TABLE */}
-              {scannedResult.ingredientCosts && scannedResult.ingredientCosts.length > 0 && (
-                <div className="bg-white border border-[#E5DCC5] rounded-2xl p-4 shadow-xs space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Receipt className="w-4 h-4 text-[#7D8F69]" />
-                      <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider">
-                        {t.ingredientCosts}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold text-[#7D8F69]">
-                      {scannedResult.ingredientCosts.length} {t.ingredients}
-                    </span>
-                  </div>
-
-                  <div className="divide-y divide-[#F8F5F2] border-t border-[#F8F5F2]">
-                    {scannedResult.ingredientCosts.map((ing, idx) => (
-                      <div key={idx} className="py-2 flex items-center justify-between text-xs">
-                        <div className="pr-2">
-                          <p className="font-bold text-[#2D3033] leading-snug">{ing.name}</p>
-                          {ing.amount && (
-                            <p className="text-[10px] text-[#8C8279] mt-0.5 font-medium">{ing.amount}</p>
-                          )}
-                        </div>
-                        <div className="text-right shrink-0">
-                          <p className="font-extrabold font-mono text-emerald-700 text-xs">
-                            {userProfile.currency === "USD"
-                              ? `$${((ing.costUSD || 0) * portionServings).toFixed(2)}`
-                              : `${Math.round((ing.costToman || 0) * portionServings).toLocaleString("fa-IR")} تومان`}
-                          </p>
-                          <p className="text-[9px] text-[#8C8279] font-mono">
-                            {userProfile.currency === "USD"
-                              ? `${Math.round((ing.costToman || 0) * portionServings).toLocaleString("fa-IR")} T`
-                              : `$${((ing.costUSD || 0) * portionServings).toFixed(2)}`}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* CULTURAL CONTEXT & HERITAGE CARD */}
-              {scannedResult.culturalNotes && (
-                <div className="p-4 bg-[#F8F5F2] border border-[#E5DCC5] rounded-2xl space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-amber-900 font-bold text-xs">
-                    <Globe className="w-4 h-4 text-[#C97D60]" />
-                    <span>{t.culturalNotes}</span>
-                  </div>
-                  <p className="text-xs text-[#4A5D4E] leading-relaxed italic">
-                    "{scannedResult.culturalNotes}"
-                  </p>
-                </div>
-              )}
-
-              {/* Main Nutrients Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#F8F5F2] p-3.5 rounded-2xl border border-[#E5DCC5] shadow-sm relative overflow-hidden">
-                  <div className="absolute right-2 top-2 text-[#C97D60] opacity-20"><Flame className="w-8 h-8" /></div>
-                  <p className="text-[9px] font-extrabold text-[#8C8279] uppercase mb-0.5">{t.totalCalories}</p>
-                  <p className="text-2xl font-black text-[#C97D60] font-mono leading-none">
-                    {Math.round(scannedResult.calories * portionServings)}
-                    <span className="text-xs font-normal text-[#2D3033] font-sans ml-1">{t.kcalUnit}</span>
-                  </p>
-                </div>
-
-                <div className="bg-[#F8F5F2] p-3.5 rounded-2xl border border-[#E5DCC5] shadow-sm relative overflow-hidden">
-                  <div className="absolute right-2 top-2 text-[#7D8F69] opacity-20"><Apple className="w-8 h-8" /></div>
-                  <p className="text-[9px] font-extrabold text-[#8C8279] uppercase mb-0.5">{t.protein}</p>
-                  <p className="text-2xl font-black text-[#7D8F69] font-mono leading-none">
-                    {(scannedResult.protein * portionServings).toFixed(1)}
-                    <span className="text-xs font-normal text-[#2D3033] font-sans ml-1">{t.gramUnit}</span>
-                  </p>
-                </div>
-
-                <div className="bg-[#F8F5F2] p-3.5 rounded-2xl border border-[#E5DCC5] shadow-sm">
-                  <p className="text-[9px] font-extrabold text-[#8C8279] uppercase mb-0.5">{t.totalFat}</p>
-                  <p className="text-xl font-extrabold text-[#2D3033] font-mono leading-none">
-                    {(scannedResult.totalFat * portionServings).toFixed(1)}
-                    <span className="text-xs font-normal text-[#8C8279] font-sans ml-1">{t.gramUnit}</span>
-                  </p>
-                  <div className="mt-1.5 flex gap-2 text-[8px] text-[#8C8279]">
-                    <span>{t.satAbbr} {((scannedResult.saturatedFat || 0) * portionServings).toFixed(1)}{t.gramUnit}</span>
-                    <span>{t.transAbbr} {((scannedResult.transFat || 0) * portionServings).toFixed(1)}{t.gramUnit}</span>
-                  </div>
-                </div>
-
-                <div className="bg-[#F8F5F2] p-3.5 rounded-2xl border border-[#E5DCC5] shadow-sm">
-                  <p className="text-[9px] font-extrabold text-[#8C8279] uppercase mb-0.5">{t.totalCarbs}</p>
-                  <p className="text-xl font-extrabold text-[#2D3033] font-mono leading-none">
-                    {(scannedResult.totalCarbohydrate * portionServings).toFixed(1)}
-                    <span className="text-xs font-normal text-[#8C8279] font-sans ml-1">{t.gramUnit}</span>
-                  </p>
-                  <div className="mt-1.5 flex gap-2 text-[8px] text-[#8C8279]">
-                    <span>{t.sugarsAbbr} {((scannedResult.totalSugars || 0) * portionServings).toFixed(1)}{t.gramUnit}</span>
-                    <span>{t.fiberAbbr} {((scannedResult.dietaryFiber || 0) * portionServings).toFixed(1)}{t.gramUnit}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Extra micro facts (Sodium / Cholesterol) */}
-              <div className="p-3.5 bg-white border border-[#E5DCC5] rounded-2xl space-y-2 text-xs">
-                <div className="flex justify-between items-center py-1 border-b border-[#F8F5F2]">
-                  <span className="text-[#8C8279] font-medium">{t.sodiumContent}</span>
-                  <span className="font-extrabold text-[#2D3033] font-mono">
-                    {Math.round(scannedResult.sodium * portionServings)} {t.mgUnit}
-                  </span>
-                </div>
-                {scannedResult.cholesterol !== undefined && (
-                  <div className="flex justify-between items-center py-1 border-b border-[#F8F5F2]">
-                    <span className="text-[#8C8279] font-medium">{t.cholesterol}</span>
-                    <span className="font-extrabold text-[#2D3033] font-mono">
-                      {Math.round((scannedResult.cholesterol || 0) * portionServings)} {t.mgUnit}
-                    </span>
-                  </div>
-                )}
-                {scannedResult.addedSugars !== undefined && (
-                  <div className="flex justify-between items-center py-1">
-                    <span className="text-[#8C8279] font-medium">{t.addedSugars}</span>
-                    <span className="font-extrabold text-[#C97D60] font-mono">
-                      {((scannedResult.addedSugars || 0) * portionServings).toFixed(1)} {t.gramUnit}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Vitamins & Minerals Array */}
-              {scannedResult.vitamins && scannedResult.vitamins.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">
-                    {t.vitaminsMicro}
-                  </span>
-                  <div className="grid grid-cols-2 gap-2">
-                    {scannedResult.vitamins.map((vit, idx) => (
-                      <div key={idx} className="bg-[#F8F5F2] border border-[#E5DCC5]/40 px-3 py-1.5 rounded-xl flex justify-between items-center text-xs">
-                        <span className="font-bold text-[#4A5D4E]">{vit.name}</span>
-                        <div className="text-right">
-                          <p className="font-extrabold text-[#2D3033] leading-none text-[11px]">{vit.value}</p>
-                          {vit.percentDV !== undefined && (
-                            <p className="text-[8px] text-[#8C8279] mt-0.5 font-bold leading-none">{vit.percentDV}% {t.dailyValueAbbr}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Smart Insight AI Summary */}
-              <div className="bg-[#7D8F69]/10 p-4 rounded-2xl border border-[#7D8F69]/20">
-                <div className="flex items-center gap-1.5 text-[#4A5D4E] font-bold text-xs mb-1">
-                  <Sparkles className="w-4 h-4 text-[#7D8F69]" />
-                  <span>{t.aiLabelAnalysis}</span>
-                </div>
-                <p className="text-xs text-[#4A5D4E] leading-relaxed">
-                  {scannedResult.summary}
-                </p>
-              </div>
-
-              {/* Pros & Warnings */}
-              <div className="space-y-2">
-                {scannedResult.nutritionalHighlights.length > 0 && (
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">{t.nutritionalHighlights}</span>
-                    <div className="space-y-1">
-                      {scannedResult.nutritionalHighlights.map((high, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs text-slate-700">
-                          <CheckCircle2 className="w-4 h-4 text-[#7D8F69] shrink-0" />
-                          <span>{high}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {scannedResult.nutritionalWarnings.length > 0 && (
-                  <div className="space-y-1 pt-2">
-                    <span className="text-[10px] font-extrabold text-[#8C8279] uppercase tracking-wider block">{t.watchOutFor}</span>
-                    <div className="space-y-1">
-                      {scannedResult.nutritionalWarnings.map((warn, idx) => (
-                        <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
-                          <AlertTriangle className="w-4 h-4 text-[#C97D60] shrink-0 mt-0.5" />
-                          <span>{warn}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Ingredients Breakdown */}
-              {scannedResult.ingredientsList && scannedResult.ingredientsList.length > 0 && (
-                <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-2xl">
-                  <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block mb-1.5">
-                    {t.extractedIngredients}
-                  </span>
-                  <p className="text-[11px] text-slate-600 leading-relaxed font-sans">
-                    {scannedResult.ingredientsList.join(", ")}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Bottom Action Footer for Modal */}
-            <div className="p-4 bg-white border-t border-[#F8F5F2] shrink-0">
-              <button
-                onClick={handleLogToDiary}
-                className="w-full py-4 bg-[#2D3033] hover:bg-slate-800 text-white rounded-2xl font-bold text-sm tracking-wide shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{t.logPortionBtn}</span>
-              </button>
-            </div>
-          </div>
+          {/* COLUMN 4: RIGHT VITALS PANE */}
+          <VitalsPane
+            userProfile={userProfile}
+            dailyTotals={dailyTotals}
+            onLogRecommendedDish={handleLogRecommendedDish}
+          />
         </div>
-      )}
 
-      {/* BOTTOM NAVIGATION BUTTONS (MOBILE ONLY) */}
-      <div className="md:hidden bg-white border-t border-[#E5DCC5] py-2 px-5 flex justify-around items-center shrink-0 shadow-[0_-2px_10px_rgba(0,0,0,0.02)] z-40 fixed bottom-0 inset-x-0 select-none">
-        {/* Scanner Tab */}
-        <button
-          onClick={() => setActiveTab("scan")}
-          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === "scan"
-              ? "text-[#7D8F69]"
-              : "text-[#8C8279] hover:text-[#2D3033]"
-          }`}
-        >
-          <Camera className={`w-5 h-5 ${activeTab === "scan" ? "stroke-[2.5]" : "stroke-[1.5]"}`} />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider">{t.scanner}</span>
-        </button>
+        {/* DETAILED NUTRITION MODAL */}
+        {showResultDetail && (
+          <NutritionModal
+            scannedResult={scannedResult}
+            portionServings={portionServings}
+            userProfile={userProfile}
+            setPortionServings={setPortionServings}
+            onClose={() => setShowResultDetail(false)}
+            onLogToDiary={handleLogToDiary}
+          />
+        )}
 
-        {/* Diary Tab */}
-        <button
-          onClick={() => setActiveTab("diary")}
-          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === "diary"
-              ? "text-[#7D8F69]"
-              : "text-[#8C8279] hover:text-[#2D3033]"
-          }`}
-        >
-          <BookOpen className={`w-5 h-5 ${activeTab === "diary" ? "stroke-[2.5]" : "stroke-[1.5]"}`} />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider">{t.diary}</span>
-        </button>
+        {/* MOBILE NAVIGATION DOCK (BOTTOM OF SCREEN) */}
+        <nav className="lg:hidden bg-[#08090a]/95 backdrop-blur-md border-t border-[#2a2c31] py-2.5 px-6 flex justify-around items-center shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.6)] z-40 fixed bottom-0 inset-x-0 font-mono">
+          <button
+            onClick={() => setActiveTab("scan")}
+            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer ${
+              activeTab === "scan" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            }`}
+          >
+            <Camera className="w-5 h-5" />
+            <span className="text-[9px] uppercase tracking-wider font-bold">01 // SCAN</span>
+          </button>
 
-        {/* Profile Tab */}
-        <button
-          onClick={() => setActiveTab("profile")}
-          className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all cursor-pointer ${
-            activeTab === "profile"
-              ? "text-[#7D8F69]"
-              : "text-[#8C8279] hover:text-[#2D3033]"
-          }`}
-        >
-          <Sliders className={`w-5 h-5 ${activeTab === "profile" ? "stroke-[2.5]" : "stroke-[1.5]"}`} />
-          <span className="text-[10px] font-extrabold uppercase tracking-wider">{t.goals}</span>
-        </button>
-      </div>
+          <button
+            onClick={() => setActiveTab("diary")}
+            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer relative ${
+              activeTab === "diary" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            }`}
+          >
+            <BookOpen className="w-5 h-5" />
+            <span className="text-[9px] uppercase tracking-wider font-bold">02 // DIARY</span>
+            {diaryItems.length > 0 && (
+              <span className="absolute top-0 right-2 w-4 h-4 bg-[#ff3e00] text-[#08090a] text-[9px] font-bold flex items-center justify-center">
+                {diaryItems.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab("profile")}
+            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer ${
+              activeTab === "profile" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            }`}
+          >
+            <Sliders className="w-5 h-5" />
+            <span className="text-[9px] uppercase tracking-wider font-bold">03 // GOALS</span>
+          </button>
+        </nav>
       </div>
     </AndroidFrame>
   );
