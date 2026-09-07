@@ -828,13 +828,13 @@ export default function App() {
             <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-[280px] font-mono text-[9px]">
               <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00] flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-[#ff3e00] animate-ping" />
-                OCR_SENSOR
+                {currentLang === "fa" ? "حسگر بینایی" : "OCR_SENSOR"}
               </span>
               <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00]">
-                GEMINI_AI
+                {currentLang === "fa" ? "هوش مصنوعی" : "GEMINI_AI"}
               </span>
               <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#707070]">
-                MACRO_INDEX
+                {currentLang === "fa" ? "شاخص درشت‌مغذی" : "MACRO_INDEX"}
               </span>
             </div>
           </div>
@@ -847,6 +847,7 @@ export default function App() {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             diaryCount={diaryItems.length}
+            currentLang={currentLang}
           />
 
           {/* COLUMN 2: NAV PANE */}
@@ -924,7 +925,9 @@ export default function App() {
             }`}
           >
             <Camera className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">01 // SCAN</span>
+            <span className="text-[9px] uppercase tracking-wider font-bold">
+              {currentLang === "fa" ? "۰۱ // اسکن" : "01 // SCAN"}
+            </span>
           </button>
 
           <button
@@ -934,10 +937,12 @@ export default function App() {
             }`}
           >
             <BookOpen className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">02 // DIARY</span>
+            <span className="text-[9px] uppercase tracking-wider font-bold">
+              {currentLang === "fa" ? "۰۲ // دفترچه" : "02 // DIARY"}
+            </span>
             {diaryItems.length > 0 && (
               <span className="absolute top-0 right-2 w-4 h-4 bg-[#ff3e00] text-[#08090a] text-[9px] font-bold flex items-center justify-center">
-                {diaryItems.length}
+                {currentLang === "fa" ? diaryItems.length.toLocaleString("fa-IR") : diaryItems.length}
               </span>
             )}
           </button>
@@ -949,7 +954,9 @@ export default function App() {
             }`}
           >
             <Sliders className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">03 // GOALS</span>
+            <span className="text-[9px] uppercase tracking-wider font-bold">
+              {currentLang === "fa" ? "۰۳ // اهداف" : "03 // GOALS"}
+            </span>
           </button>
         </nav>
       </div>

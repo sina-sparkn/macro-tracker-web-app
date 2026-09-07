@@ -30,7 +30,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       {/* HEADER */}
       <div className="border-b border-[#2a2c31] pb-4">
         <span className="font-mono text-[10px] text-[#ff3e00] tracking-widest uppercase block">
-          SYSTEM_CONFIGURATION // HEALTH_PARAMETERS
+          {isFa ? "پیکربندی سیستم // پارامترهای سلامت" : "SYSTEM_CONFIGURATION // HEALTH_PARAMETERS"}
         </span>
         <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#e0e0e0] mt-0.5">
           {isFa ? "تنظیم اهداف کالری، ماکروها و بودجه" : "NUTRITION TARGETS & BUDGET"}
@@ -40,7 +40,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       {/* QUICK PRESET SELECTORS */}
       <section className="bg-[#111214] border border-[#2a2c31] p-5">
         <span className="font-mono text-xs text-[#707070] uppercase tracking-wider block mb-3">
-          DIETARY_ARCHETYPE_PRESETS
+          {isFa ? "الگوهای رژیمی آماده" : "DIETARY_ARCHETYPE_PRESETS"}
         </span>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -52,7 +52,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               {isFa ? "متعادل" : "Balanced"}
             </span>
             <span className="font-mono text-[10px] text-[#707070] mt-1 block">
-              2000 kcal • 80g P
+              {isFa ? "۲۰۰۰ کالری • ۸۰ گرم پروتئین" : "2000 kcal • 80g P"}
             </span>
           </button>
 
@@ -64,7 +64,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               {isFa ? "کاهش وزن" : "Deficit"}
             </span>
             <span className="font-mono text-[10px] text-[#707070] mt-1 block">
-              1600 kcal • 90g P
+              {isFa ? "۱۶۰۰ کالری • ۹۰ گرم پروتئین" : "1600 kcal • 90g P"}
             </span>
           </button>
 
@@ -76,7 +76,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               {isFa ? "عضله‌سازی" : "Hypertrophy"}
             </span>
             <span className="font-mono text-[10px] text-[#707070] mt-1 block">
-              2500 kcal • 140g P
+              {isFa ? "۲۵۰۰ کالری • ۱۴۰ گرم پروتئین" : "2500 kcal • 140g P"}
             </span>
           </button>
 
@@ -88,7 +88,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               {isFa ? "کتوژنیک" : "Ketogenic"}
             </span>
             <span className="font-mono text-[10px] text-[#707070] mt-1 block">
-              1800 kcal • 30g C
+              {isFa ? "۱۸۰۰ کالری • ۳۰ گرم کربوهیدرات" : "1800 kcal • 30g C"}
             </span>
           </button>
         </div>
@@ -97,14 +97,14 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       {/* CURRENCY & FOOD BUDGET SETTINGS */}
       <section className="bg-[#111214] border border-[#2a2c31] p-5">
         <span className="font-mono text-xs text-[#707070] uppercase tracking-wider block mb-4">
-          CURRENCY_&_BUDGETARY_CONSTRAINTS
+          {isFa ? "واحد پولی و محدودیت‌های بودجه" : "CURRENCY_&_BUDGETARY_CONSTRAINTS"}
         </span>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* CURRENCY SELECTOR */}
           <div>
             <label className="text-xs font-mono text-[#e0e0e0] block mb-2">
-              CURRENCY_DENOMINATION
+              {isFa ? "واحد پول محاسباتی" : "CURRENCY_DENOMINATION"}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -128,7 +128,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                 }`}
               >
                 <DollarSign className="w-4 h-4" />
-                <span>Dollar (USD)</span>
+                <span>{isFa ? "دلار (USD)" : "Dollar (USD)"}</span>
               </button>
             </div>
           </div>
@@ -137,7 +137,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="text-xs font-mono text-[#e0e0e0]">
-                DAILY_FOOD_BUDGET
+                {isFa ? "سقف بودجه روزانه خوراک" : "DAILY_FOOD_BUDGET"}
               </label>
               <span className="font-mono text-xs text-[#ff3e00] font-bold">
                 {userProfile.currency === "IRT"
@@ -168,7 +168,9 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               />
             )}
             <p className="text-[10px] font-mono text-[#707070] mt-1.5">
-              Est. cap for daily meal costs and ingredient tracking.
+              {isFa
+                ? "سقف تخمینی هزینه روزانه برای وعده‌ها و تفکیک هزینه مواد اولیه."
+                : "Est. cap for daily meal costs and ingredient tracking."}
             </p>
           </div>
         </div>
@@ -177,15 +179,17 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       {/* MACRONUTRIENT & CALORIE TARGET ADJUSTERS */}
       <section className="bg-[#111214] border border-[#2a2c31] p-5">
         <span className="font-mono text-xs text-[#707070] uppercase tracking-wider block mb-4">
-          TARGET_INTAKE_LIMITS
+          {isFa ? "اهداف و حدود دریافت روزانه" : "TARGET_INTAKE_LIMITS"}
         </span>
 
         <div className="space-y-5">
           {/* Calorie Goal */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-[#e0e0e0]">DAILY_CALORIE_TARGET</span>
-              <span className="text-[#ff3e00] font-bold">{userProfile.calorieGoal} KCAL</span>
+              <span className="text-[#e0e0e0]">{isFa ? "هدف کالری روزانه" : "DAILY_CALORIE_TARGET"}</span>
+              <span className="text-[#ff3e00] font-bold">
+                {isFa ? `${userProfile.calorieGoal.toLocaleString("fa-IR")} کالری` : `${userProfile.calorieGoal} KCAL`}
+              </span>
             </div>
             <input
               type="range"
@@ -201,8 +205,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Protein Goal */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-[#e0e0e0]">PROTEIN_GOAL</span>
-              <span className="text-[#ff3e00] font-bold">{userProfile.proteinGoal}g</span>
+              <span className="text-[#e0e0e0]">{isFa ? "هدف پروتئین" : "PROTEIN_GOAL"}</span>
+              <span className="text-[#ff3e00] font-bold">
+                {isFa ? `${userProfile.proteinGoal.toLocaleString("fa-IR")} گرم` : `${userProfile.proteinGoal}g`}
+              </span>
             </div>
             <input
               type="range"
@@ -218,8 +224,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Carbs Goal */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-[#e0e0e0]">CARBOHYDRATE_GOAL</span>
-              <span className="text-[#ff3e00] font-bold">{userProfile.carbsGoal}g</span>
+              <span className="text-[#e0e0e0]">{isFa ? "هدف کربوهیدرات" : "CARBOHYDRATE_GOAL"}</span>
+              <span className="text-[#ff3e00] font-bold">
+                {isFa ? `${userProfile.carbsGoal.toLocaleString("fa-IR")} گرم` : `${userProfile.carbsGoal}g`}
+              </span>
             </div>
             <input
               type="range"
@@ -235,8 +243,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Fat Goal */}
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-[#e0e0e0]">FAT_GOAL</span>
-              <span className="text-[#ff3e00] font-bold">{userProfile.fatGoal}g</span>
+              <span className="text-[#e0e0e0]">{isFa ? "هدف چربی" : "FAT_GOAL"}</span>
+              <span className="text-[#ff3e00] font-bold">
+                {isFa ? `${userProfile.fatGoal.toLocaleString("fa-IR")} گرم` : `${userProfile.fatGoal}g`}
+              </span>
             </div>
             <input
               type="range"

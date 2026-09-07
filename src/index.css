@@ -41,16 +41,19 @@ textarea {
   font-family: inherit;
 }
 
-/* Direction-specific font cascade */
+/* Direction-specific font cascade - Vazirmatn for Persian */
 [dir="rtl"],
+[dir="rtl"] *,
 [lang="fa"],
-:lang(fa) {
-  font-family: "Poppins", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+[lang="fa"] *,
+.font-vazirmatn,
+.font-persian {
+  font-family: "Vazirmatn", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  letter-spacing: normal !important;
 }
 
 [dir="ltr"],
-[lang="en"],
-:lang(en) {
+[lang="en"] {
   font-family: "Poppins", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
 }
 

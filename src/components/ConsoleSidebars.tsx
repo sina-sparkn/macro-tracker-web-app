@@ -17,7 +17,9 @@ export const IconBar: React.FC<{
   activeTab: "scan" | "diary" | "profile";
   setActiveTab: (tab: "scan" | "diary" | "profile") => void;
   diaryCount: number;
-}> = ({ activeTab, setActiveTab, diaryCount }) => {
+  currentLang?: string;
+}> = ({ activeTab, setActiveTab, diaryCount, currentLang = "en" }) => {
+  const isFa = currentLang === "fa";
   return (
     <aside className="hidden lg:flex w-16 xl:w-20 border-r border-[#2a2c31] rtl:border-r-0 rtl:border-l flex-col items-center py-6 gap-6 bg-[#08090a]/90 shrink-0 select-none">
       <div className="w-10 h-10 border border-[#ff3e00] flex items-center justify-center text-[#ff3e00] bg-[#ff3e00]/5">
@@ -30,7 +32,7 @@ export const IconBar: React.FC<{
           className={`p-2.5 transition-all cursor-pointer relative group ${
             activeTab === "scan" ? "text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/40" : "hover:text-[#e0e0e0] border border-transparent"
           }`}
-          title="Scanner"
+          title={isFa ? "اسکنر غذا" : "Scanner"}
         >
           <Camera className="w-5 h-5" />
         </button>
@@ -40,7 +42,7 @@ export const IconBar: React.FC<{
           className={`p-2.5 transition-all cursor-pointer relative group ${
             activeTab === "diary" ? "text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/40" : "hover:text-[#e0e0e0] border border-transparent"
           }`}
-          title="Diary"
+          title={isFa ? "یادداشت روزانه" : "Diary"}
         >
           <BookOpen className="w-5 h-5" />
           {diaryCount > 0 && (
@@ -55,7 +57,7 @@ export const IconBar: React.FC<{
           className={`p-2.5 transition-all cursor-pointer relative group ${
             activeTab === "profile" ? "text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/40" : "hover:text-[#e0e0e0] border border-transparent"
           }`}
-          title="Goals & Budget"
+          title={isFa ? "اهداف و بودجه" : "Goals & Budget"}
         >
           <Sliders className="w-5 h-5" />
         </button>
@@ -63,7 +65,9 @@ export const IconBar: React.FC<{
 
       <div className="mt-auto flex flex-col items-center gap-3 text-[#707070] text-[9px] font-mono">
         <Cpu className="w-4 h-4 text-[#ff3e00]/70" />
-        <span className="tracking-widest uppercase text-[8px] text-[#707070]">SEC_NODE</span>
+        <span className="tracking-widest uppercase text-[8px] text-[#707070]">
+          {isFa ? "گره امن" : "SEC_NODE"}
+        </span>
       </div>
     </aside>
   );
@@ -75,16 +79,17 @@ export const NavPane: React.FC<{
   diaryCount: number;
   currentLang: string;
 }> = ({ activeTab, setActiveTab, diaryCount, currentLang }) => {
+  const isFa = currentLang === "fa";
   return (
     <aside className="hidden lg:flex w-64 xl:w-72 border-r border-[#2a2c31] rtl:border-r-0 rtl:border-l p-6 bg-[#111214] flex-col justify-between shrink-0 select-none">
       <div>
         {/* LOGO BOX - CYBER DATA CONSOLE */}
         <div className="border-2 border-[#ff3e00] p-4 text-center mb-8 bg-[#08090a]/40 shadow-[inset_0_0_20px_rgba(255,62,0,0.06)]">
-          <h1 className="font-syne text-3xl font-extrabold text-[#ff3e00] tracking-tight leading-none">
-            NUTR.
+          <h1 className="font-syne sm:font-vazirmatn text-3xl font-extrabold text-[#ff3e00] tracking-tight leading-none">
+            {isFa ? "نوتری‌اسکن" : "NUTR."}
           </h1>
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-[#707070] mt-2">
-            CYBER DATA CONSOLE
+            {isFa ? "کنسول هوشمند داده‌های تغذیه" : "CYBER DATA CONSOLE"}
           </p>
         </div>
 
@@ -98,7 +103,7 @@ export const NavPane: React.FC<{
                 : "text-[#707070] border-b-[#2a2c31] hover:text-[#e0e0e0] hover:border-b-[#707070]"
             }`}
           >
-            01 // {currentLang === "fa" ? "اسکنر هوشمند" : "SMART SCANNER"}
+            {isFa ? "۰۱ // اسکنر هوشمند" : "01 // SMART SCANNER"}
           </button>
 
           <button
@@ -109,10 +114,10 @@ export const NavPane: React.FC<{
                 : "text-[#707070] border-b-[#2a2c31] hover:text-[#e0e0e0] hover:border-b-[#707070]"
             }`}
           >
-            <span>02 // {currentLang === "fa" ? "یادداشت روزانه" : "FOOD DIARY"}</span>
+            <span>{isFa ? "۰۲ // یادداشت روزانه" : "02 // FOOD DIARY"}</span>
             {diaryCount > 0 && (
               <span className="text-[10px] font-mono px-1.5 py-0.5 bg-[#ff3e00]/20 text-[#ff3e00] border border-[#ff3e00]/40 font-bold">
-                {diaryCount}
+                {isFa ? diaryCount.toLocaleString("fa-IR") : diaryCount}
               </span>
             )}
           </button>
@@ -125,16 +130,26 @@ export const NavPane: React.FC<{
                 : "text-[#707070] border-b-[#2a2c31] hover:text-[#e0e0e0] hover:border-b-[#707070]"
             }`}
           >
-            03 // {currentLang === "fa" ? "اهداف و بودجه" : "GOALS & BUDGET"}
+            {isFa ? "۰۳ // اهداف و بودجه" : "03 // GOALS & BUDGET"}
           </button>
         </nav>
       </div>
 
       {/* SYSTEM STATUS FOOTER */}
       <div className="pt-6 border-t border-[#2a2c31] font-mono text-[10px] text-[#ff3e00] leading-relaxed">
-        SYSTEM STATUS: ACTIVE<br />
-        SECURE LINK: ESTABLISHED<br />
-        <span className="text-[#707070]">HOST: LOCAL_TERMINAL</span>
+        {isFa ? (
+          <>
+            وضعیت سامانه: فعال<br />
+            ارتباط امن: برقرار<br />
+            <span className="text-[#707070]">میزبان: پایانه کاربری محلی</span>
+          </>
+        ) : (
+          <>
+            SYSTEM STATUS: ACTIVE<br />
+            SECURE LINK: ESTABLISHED<br />
+            <span className="text-[#707070]">HOST: LOCAL_TERMINAL</span>
+          </>
+        )}
       </div>
     </aside>
   );
@@ -165,7 +180,7 @@ export const VitalsPane: React.FC<{
       <div className="bg-[#111214] border border-[#2a2c31] p-5 relative overflow-hidden shadow-[inset_0_0_15px_rgba(0,0,0,0.4)]">
         <div className="flex justify-between items-center">
           <span className="font-mono text-[10px] text-[#707070] uppercase tracking-wider">
-            DAILY_TOTAL
+            {isFa ? "مجموع دریافتی روزانه" : "DAILY_TOTAL"}
           </span>
           <span className="font-mono text-[10px] text-[#ff3e00] font-bold">
             {Math.round((dailyTotals.calories / userProfile.calorieGoal) * 100)}%
@@ -173,36 +188,46 @@ export const VitalsPane: React.FC<{
         </div>
 
         <div className="font-syne text-4xl xl:text-5xl font-extrabold text-[#ff3e00] tracking-tight my-2.5 leading-none">
-          {String(dailyTotals.calories).padStart(4, "0")}
+          {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : String(dailyTotals.calories).padStart(4, "0")}
         </div>
 
         <div className="flex items-center justify-between text-[11px] font-mono text-[#707070]">
-          <span>GOAL: {userProfile.calorieGoal} KCAL</span>
+          <span>
+            {isFa ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")} کالری` : `GOAL: ${userProfile.calorieGoal} KCAL`}
+          </span>
           <span className="text-[#e0e0e0]">
-            {Math.max(0, userProfile.calorieGoal - dailyTotals.calories)} REMAINING
+            {isFa
+              ? `${Math.max(0, userProfile.calorieGoal - dailyTotals.calories).toLocaleString("fa-IR")} کالری باقیمانده`
+              : `${Math.max(0, userProfile.calorieGoal - dailyTotals.calories)} REMAINING`}
           </span>
         </div>
 
         {/* MINI MACRO TELEMETRY TAGS */}
         <div className="mt-4 pt-3 border-t border-[#2a2c31] grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
           <div className="bg-[#08090a] border border-[#2a2c31] py-1.5 px-1">
-            <span className="text-[#707070] block">P</span>
-            <span className="text-[#e0e0e0] font-bold">{Math.round(dailyTotals.protein)}g</span>
+            <span className="text-[#707070] block">{isFa ? "پروتئین" : "P"}</span>
+            <span className="text-[#e0e0e0] font-bold">
+              {Math.round(dailyTotals.protein)} {isFa ? "گرم" : "g"}
+            </span>
           </div>
           <div className="bg-[#08090a] border border-[#2a2c31] py-1.5 px-1">
-            <span className="text-[#707070] block">C</span>
-            <span className="text-[#e0e0e0] font-bold">{Math.round(dailyTotals.carbs)}g</span>
+            <span className="text-[#707070] block">{isFa ? "کربوهیدرات" : "C"}</span>
+            <span className="text-[#e0e0e0] font-bold">
+              {Math.round(dailyTotals.carbs)} {isFa ? "گرم" : "g"}
+            </span>
           </div>
           <div className="bg-[#08090a] border border-[#2a2c31] py-1.5 px-1">
-            <span className="text-[#707070] block">F</span>
-            <span className="text-[#e0e0e0] font-bold">{Math.round(dailyTotals.fat)}g</span>
+            <span className="text-[#707070] block">{isFa ? "چربی" : "F"}</span>
+            <span className="text-[#e0e0e0] font-bold">
+              {Math.round(dailyTotals.fat)} {isFa ? "گرم" : "g"}
+            </span>
           </div>
         </div>
 
         {/* FOOD SPEND TELEMETRY */}
         <div className="mt-3 bg-[#08090a] border border-[#2a2c31] p-2.5 font-mono text-[10px]">
           <div className="flex justify-between items-center text-[#707070] mb-1">
-            <span>EST_SPEND:</span>
+            <span>{isFa ? "هزینه تقریبی:" : "EST_SPEND:"}</span>
             <span className="text-[#ff3e00] font-bold">
               {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
             </span>
@@ -214,7 +239,10 @@ export const VitalsPane: React.FC<{
             />
           </div>
           <div className="flex justify-between text-[9px] text-[#707070] mt-1">
-            <span>BUDGET: {userProfile.currency === "IRT" ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} T` : `$${userProfile.dailyBudgetUSD}`}</span>
+            <span>
+              {isFa ? "بودجه: " : "BUDGET: "}
+              {userProfile.currency === "IRT" ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} تومان` : `$${userProfile.dailyBudgetUSD}`}
+            </span>
             <span>{budgetPercent}%</span>
           </div>
         </div>
@@ -224,10 +252,10 @@ export const VitalsPane: React.FC<{
       <div className="border border-dashed border-[#ff3e00] p-5 bg-[#ff3e00]/[0.02] relative">
         <div className="flex justify-between items-center mb-1">
           <span className="font-mono text-[10px] text-[#ff3e00] font-bold tracking-wider uppercase">
-            RECOMMENDED
+            {isFa ? "پیشنهاد امروز" : "RECOMMENDED"}
           </span>
           <span className="font-mono text-[10px] text-[#707070]">
-            {CYBER_RECOMMENDED_DISH.calories} KCAL
+            {isFa ? `${CYBER_RECOMMENDED_DISH.calories.toLocaleString("fa-IR")} کالری` : `${CYBER_RECOMMENDED_DISH.calories} KCAL`}
           </span>
         </div>
 
@@ -242,13 +270,13 @@ export const VitalsPane: React.FC<{
         {/* MACRO TAGS */}
         <div className="flex flex-wrap gap-1.5 mb-4">
           <span className="px-2 py-1 bg-[#1a1b1e] border border-[#2a2c31] font-mono text-[10px] text-[#e0e0e0]">
-            P: {CYBER_RECOMMENDED_DISH.protein}G
+            {isFa ? `پ: ${CYBER_RECOMMENDED_DISH.protein} گرم` : `P: ${CYBER_RECOMMENDED_DISH.protein}G`}
           </span>
           <span className="px-2 py-1 bg-[#1a1b1e] border border-[#2a2c31] font-mono text-[10px] text-[#e0e0e0]">
-            C: {CYBER_RECOMMENDED_DISH.carbs}G
+            {isFa ? `ک: ${CYBER_RECOMMENDED_DISH.carbs} گرم` : `C: ${CYBER_RECOMMENDED_DISH.carbs}G`}
           </span>
           <span className="px-2 py-1 bg-[#1a1b1e] border border-[#2a2c31] font-mono text-[10px] text-[#e0e0e0]">
-            F: {CYBER_RECOMMENDED_DISH.fat}G
+            {isFa ? `چ: ${CYBER_RECOMMENDED_DISH.fat} گرم` : `F: ${CYBER_RECOMMENDED_DISH.fat}G`}
           </span>
           <span className="px-2 py-1 bg-[#1a1b1e] border border-[#2a2c31] font-mono text-[10px] text-[#ff3e00]">
             {formatPrice(CYBER_RECOMMENDED_DISH.priceToman, CYBER_RECOMMENDED_DISH.priceUSD)}
@@ -259,14 +287,14 @@ export const VitalsPane: React.FC<{
           onClick={onLogRecommendedDish}
           className="btn-cmd w-full py-2.5 cursor-pointer text-center flex items-center justify-center gap-2"
         >
-          <span>LOG_ENTRY</span>
+          <span>{isFa ? "ثبت این غذا در دفترچه" : "LOG_ENTRY"}</span>
         </button>
       </div>
 
       {/* STATUS FOOTER / INTELLIGENCE REPORT */}
       <div className="mt-auto font-mono text-xs text-[#707070] border-t border-[#2a2c31] pt-4 leading-relaxed">
         <span className="text-[#ff3e00] font-bold block mb-1">
-          [INTELLIGENCE_REPORT]
+          {isFa ? "[گزارش هوشمند تغذیه]" : "[INTELLIGENCE_REPORT]"}
         </span>
         <p className="text-[11px] leading-normal text-[#a0a0a0]">
           {isFa ? CYBER_RECOMMENDED_DISH.funFactFa : CYBER_RECOMMENDED_DISH.funFactEn}

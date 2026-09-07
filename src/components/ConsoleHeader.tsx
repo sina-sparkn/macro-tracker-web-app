@@ -17,6 +17,7 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
   onOpenDiary
 }) => {
   const currentLang = userProfile.language || "en";
+  const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   return (
@@ -28,12 +29,14 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3e00] opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3e00]" />
           </span>
-          <span className="font-bold tracking-wider">TERMINAL_ID: 043-X</span>
+          <span className="font-bold tracking-wider">
+            {isFa ? "شناسه پایانه: ۰۴۳-نوتری" : "TERMINAL_ID: 043-X"}
+          </span>
         </div>
 
         <span className="hidden md:inline text-[#2a2c31]">|</span>
         <span className="hidden md:inline text-[#707070] tracking-wide">
-          SYSTEM CORE: ANALYSIS ENGINE
+          {isFa ? "هسته سیستم: موتور هوشمند تحلیل تغذیه" : "SYSTEM CORE: ANALYSIS ENGINE"}
         </span>
       </div>
 
@@ -46,9 +49,11 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
         >
           <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
           <span className="text-[#ff3e00] font-bold">
-            {String(dailyTotals.calories).padStart(4, "0")}
+            {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : String(dailyTotals.calories).padStart(4, "0")}
           </span>
-          <span className="text-[#707070]">/ {userProfile.calorieGoal} KCAL</span>
+          <span className="text-[#707070]">
+            / {isFa ? `${userProfile.calorieGoal.toLocaleString("fa-IR")} کالری` : `${userProfile.calorieGoal} KCAL`}
+          </span>
         </button>
 
         <button

@@ -50,7 +50,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#2a2c31] pb-4">
         <div>
           <span className="font-mono text-[10px] text-[#ff3e00] tracking-widest uppercase block">
-            DIETARY_JOURNAL // DAILY_LOG
+            {isFa ? "دفترچه تغذیه // ثبت روزانه" : "DIETARY_JOURNAL // DAILY_LOG"}
           </span>
           <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#e0e0e0] mt-0.5">
             {isFa ? "یادداشت و گزارش روزانه تغذیه" : "DAILY NUTRITION LOG"}
@@ -63,7 +63,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             className="btn-cmd-dim text-xs py-2 px-3 self-start sm:self-auto cursor-pointer flex items-center gap-1.5"
           >
             <Trash2 className="w-3.5 h-3.5 text-red-500" />
-            <span>RESET_DAILY_LOG</span>
+            <span>{isFa ? "پاک کردن موارد ثبت‌شده" : "RESET_DAILY_LOG"}</span>
           </button>
         )}
       </div>
@@ -73,14 +73,14 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         {/* CALORIE PROGRESS CARD */}
         <div className="bg-[#111214] border border-[#2a2c31] p-5">
           <div className="flex justify-between items-center text-xs font-mono text-[#707070] mb-2">
-            <span>CALORIC_INTAKE</span>
+            <span>{isFa ? "کالری مصرفی" : "CALORIC_INTAKE"}</span>
             <span className="text-[#ff3e00] font-bold">{calPercent}%</span>
           </div>
           <div className="font-syne text-3xl font-extrabold text-[#ff3e00]">
-            {String(dailyTotals.calories).padStart(4, "0")}
+            {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : String(dailyTotals.calories).padStart(4, "0")}
           </div>
           <div className="text-[11px] font-mono text-[#707070] mt-1 mb-3">
-            TARGET: {userProfile.calorieGoal} KCAL
+            {isFa ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")} کالری` : `TARGET: ${userProfile.calorieGoal} KCAL`}
           </div>
           <div className="w-full bg-[#1a1b1e] h-2">
             <div
@@ -93,12 +93,16 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         {/* MACRONUTRIENT BARS */}
         <div className="bg-[#111214] border border-[#2a2c31] p-5 flex flex-col justify-between">
           <div className="font-mono text-xs text-[#707070] mb-2 uppercase">
-            MACRO_BALANCE
+            {isFa ? "تعادل درشت‌مغذی‌ها" : "MACRO_BALANCE"}
           </div>
           <div className="space-y-2 font-mono text-[11px]">
             <div>
               <div className="flex justify-between text-[#e0e0e0] mb-0.5">
-                <span>P: {Math.round(dailyTotals.protein)}g / {userProfile.proteinGoal}g</span>
+                <span>
+                  {isFa
+                    ? `پ: ${Math.round(dailyTotals.protein)} گرم / ${userProfile.proteinGoal} گرم`
+                    : `P: ${Math.round(dailyTotals.protein)}g / ${userProfile.proteinGoal}g`}
+                </span>
                 <span className="text-[#ff3e00]">{proteinPercent}%</span>
               </div>
               <div className="w-full bg-[#1a1b1e] h-1.5">
@@ -108,7 +112,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
             <div>
               <div className="flex justify-between text-[#e0e0e0] mb-0.5">
-                <span>C: {Math.round(dailyTotals.carbs)}g / {userProfile.carbsGoal}g</span>
+                <span>
+                  {isFa
+                    ? `ک: ${Math.round(dailyTotals.carbs)} گرم / ${userProfile.carbsGoal} گرم`
+                    : `C: ${Math.round(dailyTotals.carbs)}g / ${userProfile.carbsGoal}g`}
+                </span>
                 <span className="text-[#ff3e00]">{carbsPercent}%</span>
               </div>
               <div className="w-full bg-[#1a1b1e] h-1.5">
@@ -118,7 +126,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
             <div>
               <div className="flex justify-between text-[#e0e0e0] mb-0.5">
-                <span>F: {Math.round(dailyTotals.fat)}g / {userProfile.fatGoal}g</span>
+                <span>
+                  {isFa
+                    ? `چ: ${Math.round(dailyTotals.fat)} گرم / ${userProfile.fatGoal} گرم`
+                    : `F: ${Math.round(dailyTotals.fat)}g / ${userProfile.fatGoal}g`}
+                </span>
                 <span className="text-[#ff3e00]">{fatPercent}%</span>
               </div>
               <div className="w-full bg-[#1a1b1e] h-1.5">
@@ -131,14 +143,16 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         {/* DAILY MEAL SPEND */}
         <div className="bg-[#111214] border border-[#2a2c31] p-5">
           <div className="flex justify-between items-center text-xs font-mono text-[#707070] mb-2">
-            <span>EXPENDITURE</span>
+            <span>{isFa ? "هزینه کل غذاها" : "EXPENDITURE"}</span>
             <span className="text-[#ff3e00] font-bold">{budgetPercent}%</span>
           </div>
           <div className="font-syne text-2xl font-bold text-[#e0e0e0]">
             {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
           </div>
           <div className="text-[11px] font-mono text-[#707070] mt-1 mb-3">
-            BUDGET: {userProfile.currency === "IRT" ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} T` : `$${userProfile.dailyBudgetUSD}`}
+            {isFa
+              ? `بودجه: ${userProfile.currency === "IRT" ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} تومان` : `$${userProfile.dailyBudgetUSD}`}`
+              : `BUDGET: ${userProfile.currency === "IRT" ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} T` : `$${userProfile.dailyBudgetUSD}`}`}
           </div>
           <div className="w-full bg-[#1a1b1e] h-2">
             <div
@@ -151,16 +165,19 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         {/* SODIUM & WATER WATCH */}
         <div className="bg-[#111214] border border-[#2a2c31] p-5">
           <div className="flex justify-between items-center text-xs font-mono text-[#707070] mb-2">
-            <span>SODIUM_LIMIT</span>
+            <span>{isFa ? "سقف مصرف سدیم" : "SODIUM_LIMIT"}</span>
             <span className={sodiumPercent > 90 ? "text-amber-400 font-bold" : "text-[#707070]"}>
               {sodiumPercent}%
             </span>
           </div>
           <div className="font-syne text-2xl font-bold text-[#e0e0e0]">
-            {dailyTotals.sodium} <span className="text-xs font-mono text-[#707070]">MG</span>
+            {isFa ? dailyTotals.sodium.toLocaleString("fa-IR") : dailyTotals.sodium}{" "}
+            <span className="text-xs font-mono text-[#707070]">{isFa ? "میلی‌گرم" : "MG"}</span>
           </div>
           <div className="text-[11px] font-mono text-[#707070] mt-1 mb-3">
-            MAX RECOMMENDED: {userProfile.sodiumGoal} MG
+            {isFa
+              ? `حداکثر توصیه شده: ${userProfile.sodiumGoal.toLocaleString("fa-IR")} میلی‌گرم`
+              : `MAX RECOMMENDED: ${userProfile.sodiumGoal} MG`}
           </div>
           <div className="w-full bg-[#1a1b1e] h-2">
             <div
@@ -174,13 +191,15 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       {/* LOGGED MEALS LIST */}
       <section className="mt-4">
         <div className="flex items-center justify-between mb-3 font-mono text-xs text-[#707070]">
-          <span>RECORDED_ENTRIES ({diaryItems.length})</span>
+          <span>
+            {isFa ? `وعده‌های ثبت‌شده (${diaryItems.length.toLocaleString("fa-IR")})` : `RECORDED_ENTRIES (${diaryItems.length})`}
+          </span>
           <button
             onClick={onGoToScanner}
             className="text-[#ff3e00] hover:underline cursor-pointer flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>ADD_NEW_SCAN</span>
+            <span>{isFa ? "اسکن و ثبت وعده جدید" : "ADD_NEW_SCAN"}</span>
           </button>
         </div>
 
@@ -199,7 +218,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               onClick={onGoToScanner}
               className="btn-cmd px-6 py-2.5 cursor-pointer font-mono text-xs"
             >
-              INITIALIZE_SCANNER
+              {isFa ? "شروع اسکن غذا" : "INITIALIZE_SCANNER"}
             </button>
           </div>
         ) : (
@@ -211,7 +230,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               >
                 <div className="flex items-start sm:items-center gap-3">
                   <span className="font-mono text-[10px] text-[#ff3e00] bg-[#08090a] px-2 py-1 border border-[#2a2c31] shrink-0">
-                    #{String(idx + 1).padStart(2, "0")}
+                    #{isFa ? (idx + 1).toLocaleString("fa-IR") : String(idx + 1).padStart(2, "0")}
                   </span>
                   <div>
                     <h4 className="font-syne sm:font-vazirmatn text-base font-bold text-[#e0e0e0]">
@@ -234,10 +253,12 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 <div className="flex items-center justify-between sm:justify-end gap-5 pt-3 sm:pt-0 border-t sm:border-t-0 border-[#2a2c31]">
                   <div className="flex items-center gap-3 font-mono text-xs">
                     <span className="text-[#ff3e00] font-bold">
-                      {item.caloriesTotal} KCAL
+                      {isFa ? `${item.caloriesTotal.toLocaleString("fa-IR")} کالری` : `${item.caloriesTotal} KCAL`}
                     </span>
                     <span className="text-[#707070]">
-                      P: {item.proteinTotal}g | C: {item.carbsTotal}g | F: {item.fatTotal}g
+                      {isFa
+                        ? `پ: ${item.proteinTotal} گرم | ک: ${item.carbsTotal} گرم | چ: ${item.fatTotal} گرم`
+                        : `P: ${item.proteinTotal}g | C: ${item.carbsTotal}g | F: ${item.fatTotal}g`}
                     </span>
                     {(item.priceToman || item.priceUSD) && (
                       <span className="px-2 py-0.5 bg-[#08090a] border border-[#2a2c31] text-[#e0e0e0]">
@@ -249,7 +270,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   <button
                     onClick={() => onDeleteLogItem(item.id)}
                     className="p-1.5 text-[#707070] hover:text-red-400 hover:bg-red-950/30 transition-colors cursor-pointer"
-                    title="Delete Entry"
+                    title={isFa ? "حذف این مورد" : "Delete Entry"}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

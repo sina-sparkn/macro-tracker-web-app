@@ -57,7 +57,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           <div>
             <div className="flex items-center gap-2 text-[#ff3e00] font-mono text-[11px] mb-2 uppercase tracking-widest">
               <span className="w-1.5 h-1.5 bg-[#ff3e00]" />
-              <span>SENSOR_ARRAY // NUTRITIONAL_VISION</span>
+              <span>{isFa ? "آرایه حسگرها // بینایی هوشمند تغذیه" : "SENSOR_ARRAY // NUTRITIONAL_VISION"}</span>
             </div>
             <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#e0e0e0] uppercase tracking-tight">
               {isFa ? "اسکن برچسب یا بشـقاب غذا" : "SCAN PLATE OR DISH"}
@@ -65,9 +65,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </div>
 
           <div className="hidden sm:flex items-center gap-2 font-mono text-[10px] text-[#707070]">
-            <span>OCR_CONFIDENCE: 99.4%</span>
+            <span>{isFa ? "دقت پردازش تصویر: ۹۹.۴٪" : "OCR_CONFIDENCE: 99.4%"}</span>
             <span>|</span>
-            <span className="text-[#ff3e00]">GEMINI_VISION_READY</span>
+            <span className="text-[#ff3e00]">{isFa ? "بینایی هوش مصنوعی فعال" : "GEMINI_VISION_READY"}</span>
           </div>
         </div>
 
@@ -84,12 +84,12 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
             className="btn-cmd cursor-pointer flex items-center gap-2"
           >
             <Camera className="w-4 h-4" />
-            <span>START_CAMERA</span>
+            <span>{isFa ? "روشن کردن دوربین" : "START_CAMERA"}</span>
           </button>
 
           <label className="btn-cmd-dim cursor-pointer flex items-center gap-2">
             <Upload className="w-4 h-4" />
-            <span>UPLOAD_FILE</span>
+            <span>{isFa ? "بارگذاری عکس" : "UPLOAD_FILE"}</span>
             <input
               type="file"
               accept="image/*"
@@ -127,14 +127,14 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                 className="btn-cmd cursor-pointer px-5 py-2.5 flex items-center gap-2 font-mono text-xs"
               >
                 <Camera className="w-4 h-4" />
-                <span>CAPTURE_SAMPLE</span>
+                <span>{isFa ? "ثبت تصویر" : "CAPTURE_SAMPLE"}</span>
               </button>
               <button
                 onClick={onStopCamera}
                 className="btn-cmd-dim cursor-pointer px-4 py-2.5 flex items-center gap-1.5 font-mono text-xs"
               >
                 <X className="w-4 h-4" />
-                <span>ABORT</span>
+                <span>{isFa ? "بستن دوربین" : "ABORT"}</span>
               </button>
             </div>
           </div>
@@ -153,9 +153,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
       <section>
         <div className="flex items-center justify-between mb-3">
           <span className="font-mono text-xs text-[#707070] uppercase tracking-wider">
-            PRESET_DATA_INDEX // FAST_LOG_SAMPLES
+            {isFa ? "نمونه‌های آماده ثبت سریع // پایگاه داده" : "PRESET_DATA_INDEX // FAST_LOG_SAMPLES"}
           </span>
-          <span className="font-mono text-[10px] text-[#ff3e00]">4 SAMPLES ACTIVE</span>
+          <span className="font-mono text-[10px] text-[#ff3e00]">
+            {isFa ? "۴ نمونه فعال" : "4 SAMPLES ACTIVE"}
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -170,7 +172,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                   {dish.refId}
                 </span>
                 <span className="font-mono text-[10px] text-[#707070] group-hover:text-[#ff3e00] transition-colors flex items-center gap-1">
-                  VIEW_DETAILS <ChevronRight className="w-3 h-3" />
+                  {isFa ? "مشاهده جزئیات" : "VIEW_DETAILS"} <ChevronRight className="w-3 h-3" />
                 </span>
               </div>
 
@@ -180,7 +182,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
               <div className="flex items-center justify-between text-xs font-mono pt-2 border-t border-[#2a2c31]">
                 <span className="text-[#ff3e00] font-bold">
-                  {dish.calories} KCAL
+                  {isFa ? `${dish.calories.toLocaleString("fa-IR")} کالری` : `${dish.calories} KCAL`}
                 </span>
                 <span className="text-[#707070]">
                   {formatPrice(dish.priceToman, dish.priceUSD)}
@@ -196,7 +198,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
             <span className="font-mono text-[10px] text-[#ff3e00] tracking-widest uppercase block">
-              GLOBAL_CULINARY_ARCHIVE
+              {isFa ? "آرشیو بین‌المللی غذاها و فرهنگ تغذیه" : "GLOBAL_CULINARY_ARCHIVE"}
             </span>
             <h3 className="font-syne text-xl font-bold text-[#e0e0e0] mt-0.5">
               {isFa ? "بانک داده غذاهای برگزیده ملل" : "GLOBAL NUTRITION DIRECTORY"}
@@ -205,17 +207,24 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
           {/* CATEGORY SELECTOR CHIPS */}
           <div className="flex flex-wrap gap-1.5 font-mono text-[10px]">
-            {["all", "Persian", "Middle East", "Asia", "Europe", "Americas"].map((cat) => (
+            {[
+              { id: "all", labelEn: "ALL", labelFa: "همه" },
+              { id: "Persian", labelEn: "PERSIAN", labelFa: "ایرانی" },
+              { id: "Middle East", labelEn: "MIDDLE EAST", labelFa: "خاورمیانه" },
+              { id: "Asia", labelEn: "ASIA", labelFa: "آسیا" },
+              { id: "Europe", labelEn: "EUROPE", labelFa: "اروپا" },
+              { id: "Americas", labelEn: "AMERICAS", labelFa: "آمریکا" }
+            ].map((cat) => (
               <button
-                key={cat}
-                onClick={() => setWorldCategory(cat)}
+                key={cat.id}
+                onClick={() => setWorldCategory(cat.id)}
                 className={`px-2.5 py-1 uppercase transition-colors cursor-pointer border ${
-                  worldCategory === cat
+                  worldCategory === cat.id
                     ? "bg-[#ff3e00] text-[#08090a] border-[#ff3e00] font-bold"
                     : "bg-[#111214] text-[#707070] border-[#2a2c31] hover:text-[#e0e0e0]"
                 }`}
               >
-                {cat}
+                {isFa ? cat.labelFa : cat.labelEn}
               </button>
             ))}
           </div>
@@ -246,7 +255,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                 </div>
 
                 <div className="pt-2.5 border-t border-[#2a2c31] flex justify-between items-center font-mono text-[11px]">
-                  <span className="text-[#ff3e00] font-bold">{food.calories} KCAL</span>
+                  <span className="text-[#ff3e00] font-bold">
+                    {isFa ? `${food.calories.toLocaleString("fa-IR")} کالری` : `${food.calories} KCAL`}
+                  </span>
                   <span className="text-[#707070]">{formatPrice(food.priceToman, food.priceUSD)}</span>
                 </div>
               </div>

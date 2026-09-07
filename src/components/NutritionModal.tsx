@@ -50,7 +50,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           <div>
             <div className="flex items-center gap-2 text-[10px] font-mono text-[#ff3e00] uppercase tracking-wider mb-1">
               <span className="w-2 h-2 bg-[#ff3e00]" />
-              <span>SPECTRAL_ANALYSIS // COMPLETE</span>
+              <span>{isFa ? "تحلیل طیفی و هوشمند // تکمیل شد" : "SPECTRAL_ANALYSIS // COMPLETE"}</span>
             </div>
             <h3 className="font-syne sm:font-vazirmatn text-xl sm:text-2xl font-extrabold text-[#e0e0e0] leading-tight">
               {scannedResult.productName}
@@ -63,7 +63,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           <button
             onClick={onClose}
             className="p-2 text-[#707070] hover:text-[#ff3e00] hover:bg-[#1a1b1e] border border-[#2a2c31] transition-colors cursor-pointer"
-            title="Close"
+            title={isFa ? "بستن" : "Close"}
           >
             <X className="w-5 h-5" />
           </button>
@@ -75,10 +75,10 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           <div className="bg-[#08090a] border border-[#2a2c31] p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 font-mono">
             <div>
               <span className="text-xs text-[#e0e0e0] block font-bold">
-                PORTION_MULTIPLIER
+                {isFa ? "ضریب سهم مصرفی" : "PORTION_MULTIPLIER"}
               </span>
               <span className="text-[10px] text-[#707070]">
-                Scaling all calorie and cost values
+                {isFa ? "محاسبه مجدد کالری و ارزش ریالی بر اساس سهم انتخابی" : "Scaling all calorie and cost values"}
               </span>
             </div>
 
@@ -104,35 +104,35 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           {/* MACRONUTRIENT HIGHLIGHTS GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono">
             <div className="bg-[#08090a] border border-[#2a2c31] p-3 text-center">
-              <span className="text-[10px] text-[#707070] uppercase block">ENERGY</span>
+              <span className="text-[10px] text-[#707070] uppercase block">{isFa ? "انرژی" : "ENERGY"}</span>
               <span className="font-syne text-2xl font-extrabold text-[#ff3e00] block my-0.5">
-                {calories}
+                {isFa ? calories.toLocaleString("fa-IR") : calories}
               </span>
-              <span className="text-[9px] text-[#707070]">KCAL</span>
+              <span className="text-[9px] text-[#707070]">{isFa ? "کالری" : "KCAL"}</span>
             </div>
 
             <div className="bg-[#08090a] border border-[#2a2c31] p-3 text-center">
-              <span className="text-[10px] text-[#707070] uppercase block">PROTEIN</span>
+              <span className="text-[10px] text-[#707070] uppercase block">{isFa ? "پروتئین" : "PROTEIN"}</span>
               <span className="font-syne text-2xl font-extrabold text-[#e0e0e0] block my-0.5">
-                {protein}g
+                {isFa ? `${protein.toLocaleString("fa-IR")} گرم` : `${protein}g`}
               </span>
-              <span className="text-[9px] text-[#707070]">BUILDER</span>
+              <span className="text-[9px] text-[#707070]">{isFa ? "عضله‌ساز" : "BUILDER"}</span>
             </div>
 
             <div className="bg-[#08090a] border border-[#2a2c31] p-3 text-center">
-              <span className="text-[10px] text-[#707070] uppercase block">CARBS</span>
+              <span className="text-[10px] text-[#707070] uppercase block">{isFa ? "کربوهیدرات" : "CARBS"}</span>
               <span className="font-syne text-2xl font-extrabold text-[#e0e0e0] block my-0.5">
-                {carbs}g
+                {isFa ? `${carbs.toLocaleString("fa-IR")} گرم` : `${carbs}g`}
               </span>
-              <span className="text-[9px] text-[#707070]">FUEL</span>
+              <span className="text-[9px] text-[#707070]">{isFa ? "سوخت بدن" : "FUEL"}</span>
             </div>
 
             <div className="bg-[#08090a] border border-[#2a2c31] p-3 text-center">
-              <span className="text-[10px] text-[#707070] uppercase block">FAT</span>
+              <span className="text-[10px] text-[#707070] uppercase block">{isFa ? "چربی" : "FAT"}</span>
               <span className="font-syne text-2xl font-extrabold text-[#e0e0e0] block my-0.5">
-                {fat}g
+                {isFa ? `${fat.toLocaleString("fa-IR")} گرم` : `${fat}g`}
               </span>
-              <span className="text-[9px] text-[#707070]">LIPIDS</span>
+              <span className="text-[9px] text-[#707070]">{isFa ? "چربی مفید" : "LIPIDS"}</span>
             </div>
           </div>
 
@@ -140,21 +140,29 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
             <div className="bg-[#08090a] border border-[#2a2c31] p-3.5 space-y-2">
               <div className="flex justify-between">
-                <span className="text-[#707070]">SODIUM:</span>
-                <span className="text-[#e0e0e0] font-bold">{sodium} mg</span>
+                <span className="text-[#707070]">{isFa ? "سدیم:" : "SODIUM:"}</span>
+                <span className="text-[#e0e0e0] font-bold">
+                  {isFa ? `${sodium.toLocaleString("fa-IR")} میلی‌گرم` : `${sodium} mg`}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#707070]">CHOLESTEROL:</span>
-                <span className="text-[#e0e0e0] font-bold">{scannedResult.cholesterol || 0} mg</span>
+                <span className="text-[#707070]">{isFa ? "کلسترول:" : "CHOLESTEROL:"}</span>
+                <span className="text-[#e0e0e0] font-bold">
+                  {isFa ? `${(scannedResult.cholesterol || 0).toLocaleString("fa-IR")} میلی‌گرم` : `${scannedResult.cholesterol || 0} mg`}
+                </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#707070]">FIBER:</span>
-                <span className="text-[#e0e0e0] font-bold">{scannedResult.dietaryFiber || 0} g</span>
+                <span className="text-[#707070]">{isFa ? "فیبر خوراکی:" : "FIBER:"}</span>
+                <span className="text-[#e0e0e0] font-bold">
+                  {isFa ? `${(scannedResult.dietaryFiber || 0).toLocaleString("fa-IR")} گرم` : `${scannedResult.dietaryFiber || 0} g`}
+                </span>
               </div>
             </div>
 
             <div className="bg-[#08090a] border border-[#2a2c31] p-3.5 flex flex-col justify-between">
-              <span className="text-[#707070] text-[10px] uppercase">ESTIMATED_PORTION_COST</span>
+              <span className="text-[#707070] text-[10px] uppercase">
+                {isFa ? "هزینه تخمینی این سهم" : "ESTIMATED_PORTION_COST"}
+              </span>
               <div className="font-syne text-xl font-bold text-[#ff3e00] my-1">
                 {formatPrice(
                   scannedResult.estimatedPrice?.amountToman,
@@ -162,7 +170,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
                 )}
               </div>
               <span className="text-[9px] text-[#707070]">
-                Market average ingredient wholesale value
+                {isFa ? "میانگین قیمت تهیه مواد اولیه در بازار" : "Market average ingredient wholesale value"}
               </span>
             </div>
           </div>
@@ -171,7 +179,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           {scannedResult.summary && (
             <div className="bg-[#08090a] border border-[#2a2c31] p-4 text-xs font-mono text-[#a0a0a0] leading-relaxed">
               <span className="text-[#ff3e00] font-bold block mb-1">
-                INTELLIGENCE_SUMMARY:
+                {isFa ? "گزارش هوشمند تحلیل تغذیه‌ای:" : "INTELLIGENCE_SUMMARY:"}
               </span>
               <p>{scannedResult.summary}</p>
             </div>
@@ -181,7 +189,9 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
           {scannedResult.ingredientsList && scannedResult.ingredientsList.length > 0 && (
             <div className="bg-[#08090a] border border-[#2a2c31] p-4">
               <span className="text-[10px] font-mono text-[#707070] uppercase tracking-wider block mb-2">
-                VERIFIED_INGREDIENTS ({scannedResult.ingredientsList.length})
+                {isFa
+                  ? `مواد اولیه شناسایی‌شده (${scannedResult.ingredientsList.length.toLocaleString("fa-IR")})`
+                  : `VERIFIED_INGREDIENTS (${scannedResult.ingredientsList.length})`}
               </span>
               <div className="flex flex-wrap gap-1.5 font-mono text-xs">
                 {scannedResult.ingredientsList.map((ing, i) => (
@@ -203,7 +213,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
             onClick={onClose}
             className="btn-cmd-dim px-5 py-2.5 cursor-pointer font-mono text-xs"
           >
-            DISMISS
+            {isFa ? "انصراف" : "DISMISS"}
           </button>
 
           <button
@@ -211,7 +221,9 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
             className="btn-cmd flex-1 py-2.5 cursor-pointer font-mono text-xs flex items-center justify-center gap-2"
           >
             <Plus className="w-4 h-4" />
-            <span>LOG_ENTRY ({calories} KCAL)</span>
+            <span>
+              {isFa ? `ثبت در دفترچه (${calories.toLocaleString("fa-IR")} کالری)` : `LOG_ENTRY (${calories} KCAL)`}
+            </span>
           </button>
         </div>
       </div>
