@@ -92,4 +92,5 @@ export interface UserProfile {
   dailyBudgetToman?: number;
   dailyBudgetUSD?: number;
   exchangeRateTomanPerUSD?: number; // Custom USD to Toman rate (e.g. 230000)
+  activePreset?: "weight-loss" | "muscle" | "keto" | "balanced" | "custom";
 }

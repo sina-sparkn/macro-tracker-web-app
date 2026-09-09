@@ -1,5 +1,5 @@
 import React from "react";
-import { Sliders, Activity, Coins, DollarSign, Target, ShieldCheck, ArrowRightLeft, RefreshCw, TrendingUp } from "lucide-react";
+import { Sliders, Activity, Coins, DollarSign, Target, ShieldCheck, ArrowRightLeft, RefreshCw, TrendingUp, Check } from "lucide-react";
 import { UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
 
@@ -19,11 +19,82 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   const handleUpdate = <K extends keyof UserProfile>(field: K, value: UserProfile[K]) => {
+    const isGoalField = field === "calorieGoal" || field === "proteinGoal" || field === "carbsGoal" || field === "fatGoal";
     onSaveProfile({
       ...userProfile,
-      [field]: value
+      [field]: value,
+      ...(isGoalField ? { activePreset: undefined } : {})
     });
   };
+
+  const PRESET_CONFIGS = [
+    {
+      id: "balanced" as const,
+      nameFa: "رژیم متعادل",
+      nameEn: "Balanced",
+      calories: 2000,
+      protein: 80,
+      carbs: 250,
+      fat: 65,
+      subtitleFa: "۲۰۰۰ کالری • ۸۰ گرم پروتئین",
+      subtitleEn: "2000 kcal • 80g P",
+      macroDetailFa: "کربو ۲۵۰g • چربی ۶۵g",
+      macroDetailEn: "250g C • 65g F"
+    },
+    {
+      id: "weight-loss" as const,
+      nameFa: "کاهش وزن",
+      nameEn: "Weight Loss",
+      calories: 1600,
+      protein: 90,
+      carbs: 180,
+      fat: 50,
+      subtitleFa: "۱۶۰۰ کالری • ۹۰ گرم پروتئین",
+      subtitleEn: "1600 kcal • 90g P",
+      macroDetailFa: "کربو ۱۸۰g • چربی ۵۰g",
+      macroDetailEn: "180g C • 50g F"
+    },
+    {
+      id: "muscle" as const,
+      nameFa: "عضله‌سازی",
+      nameEn: "Muscle Gain",
+      calories: 2500,
+      protein: 140,
+      carbs: 300,
+      fat: 75,
+      subtitleFa: "۲۵۰۰ کالری • ۱۴۰ گرم پروتئین",
+      subtitleEn: "2500 kcal • 140g P",
+      macroDetailFa: "کربو ۳۰۰g • چربی ۷۵g",
+      macroDetailEn: "300g C • 75g F"
+    },
+    {
+      id: "keto" as const,
+      nameFa: "کتوژنیک",
+      nameEn: "Keto",
+      calories: 1800,
+      protein: 100,
+      carbs: 30,
+      fat: 130,
+      subtitleFa: "۱۸۰۰ کالری • ۳۰ گرم کربوهیدرات",
+      subtitleEn: "1800 kcal • 30g C",
+      macroDetailFa: "پروتئین ۱۰۰g • چربی ۱۳۰g",
+      macroDetailEn: "100g P • 130g F"
+    }
+  ];
+
+  const isPresetActive = (preset: typeof PRESET_CONFIGS[number]) => {
+    if (userProfile.activePreset === preset.id) {
+      return true;
+    }
+    return (
+      userProfile.calorieGoal === preset.calories &&
+      userProfile.proteinGoal === preset.protein &&
+      userProfile.carbsGoal === preset.carbs &&
+      userProfile.fatGoal === preset.fat
+    );
+  };
+
+  const activePresetConfig = PRESET_CONFIGS.find((p) => isPresetActive(p));
 
   return (
     <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-4xl mx-auto w-full pb-24 sm:pb-28 lg:pb-8">
@@ -39,62 +110,76 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
 
       {/* QUICK PRESET SELECTORS */}
       <section className="bg-[#111214] border border-[#27272a] rounded-lg p-5">
-        <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block mb-3.5">
-          {isFa ? "الگوهای رژیمی آماده" : "Quick Dietary Presets"}
-        </h3>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+          <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block">
+            {isFa ? "الگوهای رژیمی آماده" : "Quick Dietary Presets"}
+          </h3>
+          {activePresetConfig && (
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/30 px-2 py-0.5 rounded">
+              <Check className="w-3 h-3 stroke-[3]" />
+              <span>
+                {isFa
+                  ? `الگوی فعال: ${activePresetConfig.nameFa}`
+                  : `Active: ${activePresetConfig.nameEn}`}
+              </span>
+            </span>
+          )}
+        </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <button
-            onClick={() => onApplyPreset("balanced")}
-            type="button"
-            className="min-h-[64px] p-3.5 bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00] rounded-lg text-left rtl:text-right transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
-          >
-            <span className="font-bold text-sm text-[#f4f4f5] group-hover:text-[#ff3e00] block">
-              {isFa ? "رژیم متعادل" : "Balanced"}
-            </span>
-            <span className="text-xs text-[#9ca3af] mt-1 block">
-              {isFa ? "۲۰۰۰ کالری • ۸۰ گرم پروتئین" : "2000 kcal • 80g P"}
-            </span>
-          </button>
+          {PRESET_CONFIGS.map((preset) => {
+            const isActive = isPresetActive(preset);
+            return (
+              <button
+                key={preset.id}
+                onClick={() => onApplyPreset(preset.id)}
+                type="button"
+                aria-pressed={isActive}
+                className={`min-h-[76px] p-3.5 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden ${
+                  isActive
+                    ? "bg-gradient-to-b from-[#ff3e00]/15 to-[#18191d] border-2 border-[#ff3e00] shadow-[0_0_16px_rgba(255,62,0,0.18)]"
+                    : "bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00]/60 hover:bg-[#1a1c22]"
+                }`}
+              >
+                {/* Active Indicator Top Line */}
+                {isActive && (
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-[#ff3e00]" />
+                )}
 
-          <button
-            onClick={() => onApplyPreset("weight-loss")}
-            type="button"
-            className="min-h-[64px] p-3.5 bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00] rounded-lg text-left rtl:text-right transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
-          >
-            <span className="font-bold text-sm text-[#f4f4f5] group-hover:text-[#ff3e00] block">
-              {isFa ? "کاهش وزن" : "Weight Loss"}
-            </span>
-            <span className="text-xs text-[#9ca3af] mt-1 block">
-              {isFa ? "۱۶۰۰ کالری • ۹۰ گرم پروتئین" : "1600 kcal • 90g P"}
-            </span>
-          </button>
+                <div className="flex items-center justify-between gap-1 mb-1">
+                  <span
+                    className={`font-bold text-sm block ${
+                      isActive ? "text-[#ff3e00]" : "text-[#f4f4f5] group-hover:text-[#ff3e00]"
+                    }`}
+                  >
+                    {isFa ? preset.nameFa : preset.nameEn}
+                  </span>
+                  {isActive ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold text-[#08090a] bg-[#ff3e00] px-1.5 py-0.5 rounded shadow-sm shrink-0">
+                      <Check className="w-3 h-3 stroke-[3]" />
+                      <span>{isFa ? "فعال" : "ACTIVE"}</span>
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-[#71717a] group-hover:text-[#ff3e00] transition-colors shrink-0">
+                      {isFa ? "انتخاب" : "Apply"}
+                    </span>
+                  )}
+                </div>
 
-          <button
-            onClick={() => onApplyPreset("muscle")}
-            type="button"
-            className="min-h-[64px] p-3.5 bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00] rounded-lg text-left rtl:text-right transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
-          >
-            <span className="font-bold text-sm text-[#f4f4f5] group-hover:text-[#ff3e00] block">
-              {isFa ? "عضله‌سازی" : "Muscle Gain"}
-            </span>
-            <span className="text-xs text-[#9ca3af] mt-1 block">
-              {isFa ? "۲۵۰۰ کالری • ۱۴۰ گرم پروتئین" : "2500 kcal • 140g P"}
-            </span>
-          </button>
+                <span
+                  className={`text-xs block ${
+                    isActive ? "text-[#f4f4f5] font-semibold" : "text-[#9ca3af]"
+                  }`}
+                >
+                  {isFa ? preset.subtitleFa : preset.subtitleEn}
+                </span>
 
-          <button
-            onClick={() => onApplyPreset("keto")}
-            type="button"
-            className="min-h-[64px] p-3.5 bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00] rounded-lg text-left rtl:text-right transition-colors cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
-          >
-            <span className="font-bold text-sm text-[#f4f4f5] group-hover:text-[#ff3e00] block">
-              {isFa ? "کتوژنیک" : "Keto"}
-            </span>
-            <span className="text-xs text-[#9ca3af] mt-1 block">
-              {isFa ? "۱۸۰۰ کالری • ۳۰ گرم کربوهیدرات" : "1800 kcal • 30g C"}
-            </span>
-          </button>
+                <span className="text-[11px] text-[#71717a] mt-1 block font-mono">
+                  {isFa ? preset.macroDetailFa : preset.macroDetailEn}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

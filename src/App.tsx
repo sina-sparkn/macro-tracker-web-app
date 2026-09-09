@@ -272,7 +272,8 @@ export default function App() {
     currency: "IRT",
     dailyBudgetToman: 1800000,
     dailyBudgetUSD: 7.8,
-    exchangeRateTomanPerUSD: 230000
+    exchangeRateTomanPerUSD: 230000,
+    activePreset: "balanced"
   };
 
   const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
@@ -349,7 +350,8 @@ export default function App() {
             dailyBudgetUSD: typeof parsed.dailyBudgetUSD === "number" ? parsed.dailyBudgetUSD : DEFAULT_USER_PROFILE.dailyBudgetUSD,
             exchangeRateTomanPerUSD: typeof parsed.exchangeRateTomanPerUSD === "number" ? parsed.exchangeRateTomanPerUSD : DEFAULT_USER_PROFILE.exchangeRateTomanPerUSD,
             currency: parsed.currency || DEFAULT_USER_PROFILE.currency,
-            language: parsed.language || DEFAULT_USER_PROFILE.language
+            language: parsed.language || DEFAULT_USER_PROFILE.language,
+            activePreset: parsed.activePreset || undefined
           }));
         }
       } catch (e) {
@@ -794,7 +796,7 @@ export default function App() {
 
   // Apply profile presets
   const applyPreset = (type: "weight-loss" | "muscle" | "keto" | "balanced") => {
-    let newProfile = { ...userProfile };
+    let newProfile = { ...userProfile, activePreset: type };
     switch (type) {
       case "weight-loss":
         newProfile.calorieGoal = 1600;
