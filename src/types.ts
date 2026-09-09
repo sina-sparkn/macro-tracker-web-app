@@ -91,4 +91,5 @@ export interface UserProfile {
   currency?: "IRT" | "USD"; // Toman or USD
   dailyBudgetToman?: number;
   dailyBudgetUSD?: number;
+  exchangeRateTomanPerUSD?: number; // Custom USD to Toman rate (e.g. 230000)
 }

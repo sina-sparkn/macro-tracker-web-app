@@ -87,16 +87,16 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["Ensure controlled oil during herb sautéing"],
     ingredientsList: ["Lamb Chuck", "Parsley", "Leek (Tareh)", "Coriander", "Fenugreek", "Red Kidney Beans", "Dried Lime", "Basmati Rice", "Saffron"],
     estimatedPrice: {
-      amountToman: 185000,
-      amountUSD: 3.2,
+      amountToman: 950000,
+      amountUSD: 4.13,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Lamb Chuck (120g)", amount: "120g", costToman: 110000, costUSD: 1.9 },
-      { name: "Herb Medley (100g)", amount: "100g", costToman: 25000, costUSD: 0.45 },
-      { name: "Basmati Rice & Saffron", amount: "80g", costToman: 26000, costUSD: 0.45 },
-      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 12000, costUSD: 0.22 },
-      { name: "Dried Lime & Spices", amount: "portion", costToman: 12000, costUSD: 0.18 }
+      { name: "Lamb Chuck (120g)", amount: "120g", costToman: 600000, costUSD: 2.61 },
+      { name: "Herb Medley (100g)", amount: "100g", costToman: 130000, costUSD: 0.57 },
+      { name: "Basmati Rice & Saffron", amount: "80g", costToman: 110000, costUSD: 0.48 },
+      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 60000, costUSD: 0.26 },
+      { name: "Dried Lime & Spices", amount: "portion", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "The undisputed national dish of Iran, balancing hot and cold energies through cooling dried black limes and warm herbs.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -131,16 +131,16 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["High in Saturated Fat", "Calorie dense meal"],
     ingredientsList: ["Minced Lamb/Beef", "Basmati Rice", "Saffron", "Onion", "Sumac", "Tomato", "Butter", "Black Pepper"],
     estimatedPrice: {
-      amountToman: 240000,
-      amountUSD: 4.1,
+      amountToman: 1150000,
+      amountUSD: 5.0,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Minced Meat (200g)", amount: "200g", costToman: 160000, costUSD: 2.8 },
-      { name: "Basmati Rice & Saffron", amount: "120g", costToman: 40000, costUSD: 0.7 },
-      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 18000, costUSD: 0.3 },
-      { name: "Onions & Seasonings", amount: "portion", costToman: 10000, costUSD: 0.18 },
-      { name: "Butter & Garnish", amount: "portion", costToman: 12000, costUSD: 0.12 }
+      { name: "Minced Meat (200g)", amount: "200g", costToman: 820000, costUSD: 3.57 },
+      { name: "Basmati Rice & Saffron", amount: "120g", costToman: 200000, costUSD: 0.87 },
+      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 60000, costUSD: 0.26 },
+      { name: "Onions & Seasonings", amount: "portion", costToman: 40000, costUSD: 0.17 },
+      { name: "Butter & Garnish", amount: "portion", costToman: 30000, costUSD: 0.13 }
     ],
     culturalNotes: "A royal culinary masterpiece dating from the Qajar dynasty, served on festive celebrations throughout Iran.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -174,13 +174,13 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: [],
     ingredientsList: ["Cultured Nonfat Milk", "L. Acidophilus", "Bifidus", "L. Casei"],
     estimatedPrice: {
-      amountToman: 45000,
-      amountUSD: 0.8,
+      amountToman: 400000,
+      amountUSD: 1.74,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Cultured Milk Base (150g)", amount: "150g", costToman: 40000, costUSD: 0.7 },
-      { name: "Live Active Cultures", amount: "portion", costToman: 5000, costUSD: 0.1 }
+      { name: "Cultured Milk Base (150g)", amount: "150g", costToman: 350000, costUSD: 1.52 },
+      { name: "Live Active Cultures", amount: "portion", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "Traditionally strained sheep or cow milk yogurt common across Greece, Turkey, and the Levant.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
@@ -215,13 +215,13 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["Low Protein content"],
     ingredientsList: ["Almond Base (Water, Almonds)", "Calcium Carbonate", "Gellan Gum", "Sea Salt", "Natural Flavor", "Vitamin A Palmitate", "Vitamin D2"],
     estimatedPrice: {
-      amountToman: 55000,
-      amountUSD: 0.95,
+      amountToman: 280000,
+      amountUSD: 1.22,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Blanched Almonds", amount: "30g", costToman: 35000, costUSD: 0.6 },
-      { name: "Filtered Water & Fortification", amount: "200ml", costToman: 20000, costUSD: 0.35 }
+      { name: "Blanched Almonds", amount: "30g", costToman: 180000, costUSD: 0.78 },
+      { name: "Filtered Water & Fortification", amount: "200ml", costToman: 100000, costUSD: 0.44 }
     ],
     culturalNotes: "Popularized as a dairy alternative with roots in medieval European and Middle Eastern cooking.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
@@ -259,16 +259,16 @@ const FALLBACK_FOODS_FA = [
     nutritionalWarnings: ["میزان روغن سرخ‌کردن سبزی را در حد ملایم نگه دارید"],
     ingredientsList: ["گوشت گوساله یا گوسفند", "جعفری", "تره", "گشنیز", "شنبلیله", "لوبیا قرمز", "لیمو عمانی", "برنج زعفرانی"],
     estimatedPrice: {
-      amountToman: 185000,
-      amountUSD: 3.2,
+      amountToman: 950000,
+      amountUSD: 4.13,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "گوشت گوسفندی / گوساله (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 110000, costUSD: 1.9 },
-      { name: "سبزی قورمه سرخ‌شده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 25000, costUSD: 0.45 },
-      { name: "برنج زعفرانی دم‌کشیده (۸۰ گرم)", amount: "۸۰ گرم", costToman: 26000, costUSD: 0.45 },
-      { name: "لوبیا قرمز درجه یک (۴۰ گرم)", amount: "۴۰ گرم", costToman: 12000, costUSD: 0.22 },
-      { name: "لیمو عمانی و ادویه خورش", amount: "سهم مصرفی", costToman: 12000, costUSD: 0.18 }
+      { name: "گوشت گوسفندی / گوساله (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 600000, costUSD: 2.61 },
+      { name: "سبزی قورمه سرخ‌شده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 130000, costUSD: 0.57 },
+      { name: "برنج زعفرانی دم‌کشیده (۸۰ گرم)", amount: "۸۰ گرم", costToman: 110000, costUSD: 0.48 },
+      { name: "لوبیا قرمز درجه یک (۴۰ گرم)", amount: "۴۰ گرم", costToman: 60000, costUSD: 0.26 },
+      { name: "لیمو عمانی و ادویه خورش", amount: "سهم مصرفی", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "خورش ملی و تاریخی ایران که بازتاب تعادل طبع‌های گرم و سرد در مکتب سنتی آشپزی ایرانی است.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -303,16 +303,16 @@ const FALLBACK_FOODS_FA = [
     nutritionalWarnings: ["چربی اشباع نسبتاً بالا", "وعده با تراکم کالری بالا"],
     ingredientsList: ["گوشت چرخ‌کرده قلوه‌گاه و راسته", "برنج ایرانی", "زعفران", "پیاز", "سماق", "گوجه‌فرنگی", "کره"],
     estimatedPrice: {
-      amountToman: 240000,
-      amountUSD: 4.1,
+      amountToman: 1150000,
+      amountUSD: 5.0,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "گوشت چرخ‌کرده مخلوط (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 160000, costUSD: 2.8 },
-      { name: "برنج طارم ممتاز با زعفران (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 40000, costUSD: 0.7 },
-      { name: "گوجه کبابی و سماق تبریز", amount: "۲ عدد", costToman: 18000, costUSD: 0.3 },
-      { name: "پیاز رنده شده و ادویه", amount: "۵۰ گرم", costToman: 10000, costUSD: 0.18 },
-      { name: "کره حیوانی و لیمو ترش", amount: "سهم مصرفی", costToman: 12000, costUSD: 0.12 }
+      { name: "گوشت چرخ‌کرده مخلوط (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 820000, costUSD: 3.57 },
+      { name: "برنج طارم ممتاز با زعفران (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 200000, costUSD: 0.87 },
+      { name: "گوجه کبابی و سماق تبریز", amount: "۲ عدد", costToman: 60000, costUSD: 0.26 },
+      { name: "پیاز رنده شده و ادویه", amount: "۵۰ گرم", costToman: 40000, costUSD: 0.17 },
+      { name: "کره حیوانی و لیمو ترش", amount: "سهم مصرفی", costToman: 30000, costUSD: 0.13 }
     ],
     culturalNotes: "شاهکار مطبخ قاجار در تبریز و تهران که امروز محبوب‌ترین غذای میهمانی‌ها و نماد افتخار غذایی ایران است.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -346,13 +346,13 @@ const FALLBACK_FOODS_FA = [
     nutritionalWarnings: [],
     ingredientsList: ["شیر بدون چربی پاستوریزه", "باکتری‌های زنده پروبیوتیک فعال"],
     estimatedPrice: {
-      amountToman: 45000,
-      amountUSD: 0.8,
+      amountToman: 400000,
+      amountUSD: 1.74,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "شیر باکیفیت تغلیظ شده (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 40000, costUSD: 0.7 },
-      { name: "کشت پروبیوتیک فعال", amount: "سهم", costToman: 5000, costUSD: 0.1 }
+      { name: "شیر باکیفیت تغلیظ شده (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 350000, costUSD: 1.52 },
+      { name: "کشت پروبیوتیک فعال", amount: "سهم", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "ماست چکیده سنتی که قرن‌ها در یونان، ترکیه و کشورهای حوزه مدیترانه تهیه می‌شود.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
@@ -387,13 +387,13 @@ const FALLBACK_FOODS_FA = [
     nutritionalWarnings: ["پروتئین پایین"],
     ingredientsList: ["پایه بادام ارگانیک", "کربنات کلسیم", "صمغ ژلان", "نمک دریا", "ویتامین D2"],
     estimatedPrice: {
-      amountToman: 55000,
-      amountUSD: 0.95,
+      amountToman: 280000,
+      amountUSD: 1.22,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "بادام خام پوست‌کنده (۳۰ گرم)", amount: "۳۰ گرم", costToman: 35000, costUSD: 0.6 },
-      { name: "آب تصفیه شده و املاح معدنی", amount: "۲۰۰ میلی‌لیتر", costToman: 20000, costUSD: 0.35 }
+      { name: "بادام خام پوست‌کنده (۳۰ گرم)", amount: "۳۰ گرم", costToman: 180000, costUSD: 0.78 },
+      { name: "آب تصفیه شده و املاح معدنی", amount: "۲۰۰ میلی‌لیتر", costToman: 100000, costUSD: 0.44 }
     ],
     culturalNotes: "نوشیدنی گیاهی که در قرون وسطی نیز در آشپزی خاورمیانه و اروپا کاربرد داشته است.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
@@ -437,8 +437,14 @@ app.post("/api/scan-label", async (req, res) => {
 Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / ایرانی", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
 Extract or accurately calculate nutritional values (calories, protein, total fat, carbohydrates, dietary fiber, sugars, sodium, vitamins).
 CRITICAL FOR THIS APPLICATION:
-- Estimate the realistic cost/price per dish or serving in BOTH Iranian Tomans (e.g., 185000 for 185,000 Tomans) and US Dollars (USD).
-- Break down the constituent raw ingredients with their estimated portion amounts and individual estimated costs in Tomans and USD.
+- Estimate the realistic cost/price per dish or serving in BOTH Iranian Tomans (e.g. 950000 for 950,000 Tomans) and US Dollars (USD).
+- IRAN MARKET BENCHMARK & EXCHANGE RATE: Use the current real-market exchange rate of 1 USD = 230,000 Tomans.
+  Current price reality in Iran:
+  * A simple cup of Greek yogurt (150g) is ~400,000 Tomans (~$1.74 USD).
+  * Standard cooked dishes or stews (e.g. Ghormeh Sabzi) are ~950,000 Tomans (~$4.13 USD).
+  * Grilled meat / Chelo Kabab dishes are ~1,150,000 Tomans (~$5.00 USD).
+  * Vegetarian/pasta/legume dishes (Ash, Pasta, Hummus) are ~390,000 to ~520,000 Tomans (~$1.70 to ~$2.26 USD).
+- Break down the constituent raw ingredients with their estimated portion amounts and individual estimated costs in Tomans and USD matching this economic benchmark.
 - Calculate an objective Health Score (1-100) and Nutri-Score rating.
 - Provide key nutritional highlights, warnings, summary, and cultural/historical notes.
 - Format the output strictly according to the provided JSON schema. Ensure numeric values are numbers, not strings.`;
@@ -580,8 +586,8 @@ For example:
                   type: Type.OBJECT,
                   description: "Estimated cost of this dish or serving based on raw ingredient market prices.",
                   properties: {
-                    amountToman: { type: Type.NUMBER, description: "Estimated cost in Iranian Tomans, e.g. 185000" },
-                    amountUSD: { type: Type.NUMBER, description: "Estimated cost in US Dollars, e.g. 3.2" },
+                    amountToman: { type: Type.NUMBER, description: "Estimated cost in Iranian Tomans, e.g. 950000" },
+                    amountUSD: { type: Type.NUMBER, description: "Estimated cost in US Dollars, e.g. 4.13" },
                     confidence: { type: Type.STRING, description: "'high', 'medium', or 'low'" }
                   },
                   required: ["amountToman", "amountUSD"]

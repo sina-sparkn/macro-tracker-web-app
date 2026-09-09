@@ -9,11 +9,11 @@
 
 :root {
   --bg: #08090a;
-  --ink: #e0e0e0;
+  --ink: #f4f4f5;
   --accent: #ff3e00;
   --surface: #111214;
-  --border: #2a2c31;
-  --ink-dim: #707070;
+  --border: #27272a;
+  --ink-dim: #9ca3af;
 }
 
 ::selection {
@@ -94,49 +94,61 @@ textarea {
   background-size: 40px 40px;
 }
 
-/* Command Button (btn-cmd) */
+/* Accessible Buttons */
 .btn-cmd {
-  background: transparent;
+  background: #ff3e00;
   border: 1px solid #ff3e00;
-  color: #ff3e00;
-  padding: 0.75rem 1.5rem;
-  font-family: "Space Mono", monospace;
+  color: #08090a;
+  min-height: 44px;
+  padding: 0.65rem 1.5rem;
+  font-family: inherit;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  border-radius: 4px;
 }
 
 .btn-cmd:hover {
-  background: #ff3e00;
-  color: #08090a;
+  background: #ff5722;
+  border-color: #ff5722;
+  color: #000000;
+}
+
+.btn-cmd:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
 }
 
 .btn-cmd-dim {
-  background: transparent;
-  border: 1px solid #707070;
-  color: #707070;
-  padding: 0.75rem 1.5rem;
-  font-family: "Space Mono", monospace;
-  font-weight: 700;
+  background: #18191d;
+  border: 1px solid #3f3f46;
+  color: #f4f4f5;
+  min-height: 44px;
+  padding: 0.65rem 1.25rem;
+  font-family: inherit;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  border-radius: 4px;
 }
 
 .btn-cmd-dim:hover {
-  border-color: #e0e0e0;
-  color: #e0e0e0;
+  border-color: #ff3e00;
+  background: #23252a;
+  color: #ffffff;
+}
+
+.btn-cmd-dim:focus-visible {
+  outline: 2px solid #ff3e00;
+  outline-offset: 2px;
 }
 
 /* Technical mono label */

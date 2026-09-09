@@ -69,21 +69,21 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "عطر ترش و منحصر‌به‌فرد این خورش ناشی از لیمو عمانی آفتاب‌خشک است که پیش از پخت سوراخ می‌شود تا عصاره آن خارج گردد.",
     summary: "Rich in antioxidants and iron from slow-simmered herbs (parsley, leek, coriander, fenugreek) and complex fiber from kidney beans.",
     summaryFa: "سرشار از آنتی‌اکسیدان‌ها، فیبر گیاهی و آهن طبیعی حاصل از سبزیجات تازه (تره، جعفری، گشنیز، شنبلیله) و لوبیا قرمز.",
-    priceToman: 185000,
-    priceUSD: 3.2,
+    priceToman: 950000,
+    priceUSD: 4.13,
     ingredientCosts: [
-      { name: "Lamb / Beef Chuck (120g)", amount: "120g", costToman: 110000, costUSD: 1.9 },
-      { name: "Persian Stew Herbs (Sabzi Ghormeh 100g)", amount: "100g", costToman: 25000, costUSD: 0.45 },
-      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 12000, costUSD: 0.22 },
-      { name: "Basmati Rice & Saffron (80g)", amount: "80g", costToman: 26000, costUSD: 0.45 },
-      { name: "Dried Lime (Limoo) & Oil/Spices", amount: "portion", costToman: 12000, costUSD: 0.18 }
+      { name: "Lamb / Beef Chuck (120g)", amount: "120g", costToman: 600000, costUSD: 2.61 },
+      { name: "Persian Stew Herbs (Sabzi Ghormeh 100g)", amount: "100g", costToman: 130000, costUSD: 0.57 },
+      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 60000, costUSD: 0.26 },
+      { name: "Basmati Rice & Saffron (80g)", amount: "80g", costToman: 110000, costUSD: 0.48 },
+      { name: "Dried Lime (Limoo) & Oil/Spices", amount: "portion", costToman: 50000, costUSD: 0.22 }
     ],
     ingredientCostsFa: [
-      { name: "گوشت گوسفندی / گوساله (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 110000, costUSD: 1.9 },
-      { name: "سبزی قورمه سرخ‌شده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 25000, costUSD: 0.45 },
-      { name: "لوبیا قرمز مرغوب (۴۰ گرم)", amount: "۴۰ گرم", costToman: 12000, costUSD: 0.22 },
-      { name: "برنج دم‌سیاه با زعفران (۸۰ گرم)", amount: "۸۰ گرم", costToman: 26000, costUSD: 0.45 },
-      { name: "لیمو عمانی، روغن و ادویه خورش", amount: "سهم مصرفی", costToman: 12000, costUSD: 0.18 }
+      { name: "گوشت گوسفندی / گوساله (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 600000, costUSD: 2.61 },
+      { name: "سبزی قورمه سرخ‌شده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 130000, costUSD: 0.57 },
+      { name: "لوبیا قرمز مرغوب (۴۰ گرم)", amount: "۴۰ گرم", costToman: 60000, costUSD: 0.26 },
+      { name: "برنج دم‌سیاه با زعفران (۸۰ گرم)", amount: "۸۰ گرم", costToman: 110000, costUSD: 0.48 },
+      { name: "لیمو عمانی، روغن و ادویه خورش", amount: "سهم مصرفی", costToman: 50000, costUSD: 0.22 }
     ],
     nutritionalHighlights: [
       "Extremely high in dietary fiber from fresh greens & beans",
@@ -131,21 +131,21 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "پاشیدن سماق روی کباب نه تنها طعم لذیذی به آن می‌دهد بلکه به هضم چربی‌ها و کاهش جذب چربی‌های اشباع کمک می‌کند.",
     summary: "Outstanding source of lean animal protein, B-vitamins, and zinc, though higher in saturated fats and carbohydrates from buttery rice.",
     summaryFa: "منبع فوق‌العاده پروتئین حیوانی باکیفیت، ویتامین‌های گروه B و روی؛ همراه با چربی متوسط و کربوهیدرات برنج.",
-    priceToman: 240000,
-    priceUSD: 4.1,
+    priceToman: 1150000,
+    priceUSD: 5.0,
     ingredientCosts: [
-      { name: "Minced Lamb & Beef (200g)", amount: "200g", costToman: 160000, costUSD: 2.8 },
-      { name: "Basmati Rice with Saffron (120g)", amount: "120g", costToman: 40000, costUSD: 0.7 },
-      { name: "Grated Onions & Seasonings", amount: "50g", costToman: 10000, costUSD: 0.18 },
-      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 18000, costUSD: 0.3 },
-      { name: "Butter & Lemon", amount: "portion", costToman: 12000, costUSD: 0.12 }
+      { name: "Minced Lamb & Beef (200g)", amount: "200g", costToman: 820000, costUSD: 3.57 },
+      { name: "Basmati Rice with Saffron (120g)", amount: "120g", costToman: 200000, costUSD: 0.87 },
+      { name: "Grated Onions & Seasonings", amount: "50g", costToman: 40000, costUSD: 0.17 },
+      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 60000, costUSD: 0.26 },
+      { name: "Butter & Lemon", amount: "portion", costToman: 30000, costUSD: 0.13 }
     ],
     ingredientCostsFa: [
-      { name: "گوشت چرخ‌کرده قلوه‌گاه و راسته (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 160000, costUSD: 2.8 },
-      { name: "برنج طارم درجه یک با زعفران (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 40000, costUSD: 0.7 },
-      { name: "پیاز رنده‌شده و ادویه مخصوص", amount: "۵۰ گرم", costToman: 10000, costUSD: 0.18 },
-      { name: "گوجه کبابی و سماق اعلا تبریز", amount: "۲ عدد", costToman: 18000, costUSD: 0.3 },
-      { name: "کره حیوانی و لیمو ترش", amount: "سهم مصرفی", costToman: 12000, costUSD: 0.12 }
+      { name: "گوشت چرخ‌کرده قلوه‌گاه و راسته (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 820000, costUSD: 3.57 },
+      { name: "برنج طارم درجه یک با زعفران (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 200000, costUSD: 0.87 },
+      { name: "پیاز رنده‌شده و ادویه مخصوص", amount: "۵۰ گرم", costToman: 40000, costUSD: 0.17 },
+      { name: "گوجه کبابی و سماق اعلا تبریز", amount: "۲ عدد", costToman: 60000, costUSD: 0.26 },
+      { name: "کره حیوانی و لیمو ترش", amount: "سهم مصرفی", costToman: 30000, costUSD: 0.13 }
     ],
     nutritionalHighlights: [
       "Superior protein payload (38g) ideal for muscle building",
@@ -193,21 +193,21 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "کشک سنتی یکی از متراکم‌ترین منابع کلسیم و پروتئین تخمیری طبیعی جهان است.",
     summary: "Vegetarian powerhouse packed with plant proteins, legumes, gut-healthy greens, and slow-burning complex carbs.",
     summaryFa: "یک غذای گیاهی کامل و مقوی سرشار از پروتئین گیاهی، فیبر مفید برای گوارش و کربوهیدرات‌های پیچیده.",
-    priceToman: 95000,
-    priceUSD: 1.65,
+    priceToman: 420000,
+    priceUSD: 1.83,
     ingredientCosts: [
-      { name: "Mixed Legumes (Chickpeas, Lentils, Beans 80g)", amount: "80g", costToman: 28000, costUSD: 0.48 },
-      { name: "Fresh Herb Mix (Spinach, Coriander, Dill 100g)", amount: "100g", costToman: 24000, costUSD: 0.42 },
-      { name: "Persian Reshteh Noodles (50g)", amount: "50g", costToman: 15000, costUSD: 0.26 },
-      { name: "Kashk Whey & Fried Mint Garnish", amount: "40g", costToman: 18000, costUSD: 0.31 },
-      { name: "Caramelized Fried Onions (Piaz Dagh)", amount: "30g", costToman: 10000, costUSD: 0.18 }
+      { name: "Mixed Legumes (Chickpeas, Lentils, Beans 80g)", amount: "80g", costToman: 150000, costUSD: 0.65 },
+      { name: "Fresh Herb Mix (Spinach, Coriander, Dill 100g)", amount: "100g", costToman: 90000, costUSD: 0.39 },
+      { name: "Persian Reshteh Noodles (50g)", amount: "50g", costToman: 60000, costUSD: 0.26 },
+      { name: "Kashk Whey & Fried Mint Garnish", amount: "40g", costToman: 80000, costUSD: 0.35 },
+      { name: "Caramelized Fried Onions (Piaz Dagh)", amount: "30g", costToman: 40000, costUSD: 0.18 }
     ],
     ingredientCostsFa: [
-      { name: "حبوبات مخلوط (نخود، لوبیا، عدس ۸۰ گرم)", amount: "۸۰ گرم", costToman: 28000, costUSD: 0.48 },
-      { name: "سبزی آش تازه (اسفناج، تره، گشنیز، جعفری)", amount: "۱۰۰ گرم", costToman: 24000, costUSD: 0.42 },
-      { name: "رشته آشی سنتی (۵۰ گرم)", amount: "۵۰ گرم", costToman: 15000, costUSD: 0.26 },
-      { name: "کشک محلی غلیظ و نعناداغ", amount: "۴۰ گرم", costToman: 18000, costUSD: 0.31 },
-      { name: "پیازداغ و سیرداغ کاراملی", amount: "۳۰ گرم", costToman: 10000, costUSD: 0.18 }
+      { name: "حبوبات مخلوط (نخود، لوبیا، عدس ۸۰ گرم)", amount: "۸۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "سبزی آش تازه (اسفناج، تره، گشنیز، جعفری)", amount: "۱۰۰ گرم", costToman: 90000, costUSD: 0.39 },
+      { name: "رشته آشی سنتی (۵۰ گرم)", amount: "۵۰ گرم", costToman: 60000, costUSD: 0.26 },
+      { name: "کشک محلی غلیظ و نعناداغ", amount: "۴۰ گرم", costToman: 80000, costUSD: 0.35 },
+      { name: "پیازداغ و سیرداغ کاراملی", amount: "۳۰ گرم", costToman: 40000, costUSD: 0.18 }
     ],
     nutritionalHighlights: [
       "Outstanding plant-based diversity (over 7 plants in one bowl)",
@@ -255,21 +255,21 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "عطر دودی فوق‌العاده این غذا ناشی از سوزاندن مستقیم پوست بادمجان روی زغال چوب است.",
     summary: "Extremely nutrient-dense and low in calories, providing powerful antioxidants (nasunin in eggplants, allicin in garlic) and egg protein.",
     summaryFa: "بسیار متراکم از نظر مواد مغذی و کم‌کالری؛ سرشار از آنتی‌اکسیدان ناسونین بادمجان، آلیسین ضدعفونی‌کننده سیر و پروتئین تخم‌مرغ.",
-    priceToman: 75000,
-    priceUSD: 1.3,
+    priceToman: 400000,
+    priceUSD: 1.74,
     ingredientCosts: [
-      { name: "Charred Eggplants (200g)", amount: "200g", costToman: 22000, costUSD: 0.38 },
-      { name: "Farm Eggs (2 pcs)", amount: "2 pcs", costToman: 20000, costUSD: 0.35 },
-      { name: "Plum Tomatoes (150g)", amount: "150g", costToman: 15000, costUSD: 0.26 },
-      { name: "Fresh Garlic & Turmeric", amount: "4 cloves", costToman: 8000, costUSD: 0.14 },
-      { name: "Olive Oil & Seasonings", amount: "portion", costToman: 10000, costUSD: 0.17 }
+      { name: "Charred Eggplants (200g)", amount: "200g", costToman: 150000, costUSD: 0.65 },
+      { name: "Farm Eggs (2 pcs)", amount: "2 pcs", costToman: 110000, costUSD: 0.48 },
+      { name: "Plum Tomatoes (150g)", amount: "150g", costToman: 65000, costUSD: 0.28 },
+      { name: "Fresh Garlic & Turmeric", amount: "4 cloves", costToman: 35000, costUSD: 0.15 },
+      { name: "Olive Oil & Seasonings", amount: "portion", costToman: 40000, costUSD: 0.18 }
     ],
     ingredientCostsFa: [
-      { name: "بادمجان کبابی زغالی (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 22000, costUSD: 0.38 },
-      { name: "تخم‌مرغ محلی تازه (۲ عدد)", amount: "۲ عدد", costToman: 20000, costUSD: 0.35 },
-      { name: "گوجه‌فرنگی رنده‌شده پخته (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 15000, costUSD: 0.26 },
-      { name: "سیر تازه شمال و زردچوبه", amount: "۴ حبه", costToman: 8000, costUSD: 0.14 },
-      { name: "روغن زیتون گیلان و چاشنی‌ها", amount: "سهم مصرفی", costToman: 10000, costUSD: 0.17 }
+      { name: "بادمجان کبابی زغالی (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "تخم‌مرغ محلی تازه (۲ عدد)", amount: "۲ عدد", costToman: 110000, costUSD: 0.48 },
+      { name: "گوجه‌فرنگی رنده‌شده پخته (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 65000, costUSD: 0.28 },
+      { name: "سیر تازه شمال و زردچوبه", amount: "۴ حبه", costToman: 35000, costUSD: 0.15 },
+      { name: "روغن زیتون گیلان و چاشنی‌ها", amount: "سهم مصرفی", costToman: 40000, costUSD: 0.18 }
     ],
     nutritionalHighlights: [
       "Low calorie density with high volume and satiety",
@@ -317,17 +317,17 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "فرایند تخمیر کیمچی میلیون‌ها باکتری پروبیوتیک زنده تولید می‌کند که تراکم آن با بهترین ماست‌های دنیا برابری می‌کند.",
     summary: "Outstanding gut-healing superfood pairing live active cultures with clean plant protein and anti-inflammatory capsaicin.",
     summaryFa: "سوپرفود تقویت‌کننده میکروبیوم روده با پروبیوتیک‌های فعال، پروتئین گیاهی پاک توفو و کپسایسین ضدالتهاب.",
-    priceToman: 80000,
-    priceUSD: 1.4,
+    priceToman: 430000,
+    priceUSD: 1.87,
     ingredientCosts: [
-      { name: "Fermented Kimchi (120g)", amount: "120g", costToman: 40000, costUSD: 0.7 },
-      { name: "Organic Silken Tofu (100g)", amount: "100g", costToman: 28000, costUSD: 0.48 },
-      { name: "Toasted Sesame & Scallions", amount: "garnish", costToman: 12000, costUSD: 0.22 }
+      { name: "Fermented Kimchi (120g)", amount: "120g", costToman: 220000, costUSD: 0.96 },
+      { name: "Organic Silken Tofu (100g)", amount: "100g", costToman: 150000, costUSD: 0.65 },
+      { name: "Toasted Sesame & Scallions", amount: "garnish", costToman: 60000, costUSD: 0.26 }
     ],
     ingredientCostsFa: [
-      { name: "کیمچی کلم تخمیری دست‌ساز (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 40000, costUSD: 0.7 },
-      { name: "توفو تازه گیاهی ارگانیک (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 28000, costUSD: 0.48 },
-      { name: "کنجد برشته و پیازچه تازه", amount: "چاشنی", costToman: 12000, costUSD: 0.22 }
+      { name: "کیمچی کلم تخمیری دست‌ساز (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 220000, costUSD: 0.96 },
+      { name: "توفو تازه گیاهی ارگانیک (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "کنجد برشته و پیازچه تازه", amount: "چاشنی", costToman: 60000, costUSD: 0.26 }
     ],
     nutritionalHighlights: [
       "Millions of gut-friendly active probiotics",
@@ -375,19 +375,19 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "ترکیب ارده کنجد با نخود، پروفایل اسیدهای آمینه ضروری را تکمیل کرده و کیفیتی معادل پروتئین گوشت پدید می‌آورد.",
     summary: "Heart-healthy unsaturated fats, plant proteins, and soluble fibers help stabilize cholesterol and regulate post-meal blood glucose.",
     summaryFa: "چربی‌های غیراشباع مفید قلب، فیبر محلول کاهنده کلسترول و شاخص گلیسمی بسیار پایین برای تثبیت قند خون.",
-    priceToman: 70000,
-    priceUSD: 1.2,
+    priceToman: 390000,
+    priceUSD: 1.70,
     ingredientCosts: [
-      { name: "Cooked Chickpeas (100g)", amount: "100g", costToman: 20000, costUSD: 0.35 },
-      { name: "Sesame Tahini (30g)", amount: "30g", costToman: 26000, costUSD: 0.45 },
-      { name: "Cold-Pressed Extra Virgin Olive Oil (15ml)", amount: "15ml", costToman: 16000, costUSD: 0.28 },
-      { name: "Fresh Lemon Juice & Garlic", amount: "fresh", costToman: 8000, costUSD: 0.12 }
+      { name: "Cooked Chickpeas (100g)", amount: "100g", costToman: 110000, costUSD: 0.48 },
+      { name: "Sesame Tahini (30g)", amount: "30g", costToman: 140000, costUSD: 0.61 },
+      { name: "Cold-Pressed Extra Virgin Olive Oil (15ml)", amount: "15ml", costToman: 90000, costUSD: 0.39 },
+      { name: "Fresh Lemon Juice & Garlic", amount: "fresh", costToman: 50000, costUSD: 0.22 }
     ],
     ingredientCostsFa: [
-      { name: "نخود مرغوب پخته و پوست‌کنده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 20000, costUSD: 0.35 },
-      { name: "ارده کنجد خالص کنجدی (۳۰ گرم)", amount: "۳۰ گرم", costToman: 26000, costUSD: 0.45 },
-      { name: "روغن زیتون فرابکر پرس سرد (۱۵ میلی‌لیتر)", amount: "۱۵ میلی‌لیتر", costToman: 16000, costUSD: 0.28 },
-      { name: "آب لیموترش تازه شیراز و سیر", amount: "تازه", costToman: 8000, costUSD: 0.12 }
+      { name: "نخود مرغوب پخته و پوست‌کنده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 110000, costUSD: 0.48 },
+      { name: "ارده کنجد خالص کنجدی (۳۰ گرم)", amount: "۳۰ گرم", costToman: 140000, costUSD: 0.61 },
+      { name: "روغن زیتون فرابکر پرس سرد (۱۵ میلی‌لیتر)", amount: "۱۵ میلی‌لیتر", costToman: 90000, costUSD: 0.39 },
+      { name: "آب لیموترش تازه شیراز و سیر", amount: "تازه", costToman: 50000, costUSD: 0.22 }
     ],
     nutritionalHighlights: [
       "Complete plant-based amino acid profile",
@@ -435,19 +435,19 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "پختن گوجه‌فرنگی در روغن زیتون جذب آنتی‌اکسیدان لیکوپن را به شکل چشمگیری در بدن چند برابر می‌کند.",
     summary: "Clean source of complex energy with powerful lycopene antioxidants and heart-protective extra virgin olive oil.",
     summaryFa: "منبع تمیز انرژی با کربوهیدرات پیچیده، لیکوپن ضدسرطان و اسیدهای چرب محافظ قلب.",
-    priceToman: 110000,
-    priceUSD: 1.9,
+    priceToman: 520000,
+    priceUSD: 2.26,
     ingredientCosts: [
-      { name: "Durum Wheat Spaghetti (100g)", amount: "100g", costToman: 25000, costUSD: 0.43 },
-      { name: "Crushed Plum Tomatoes (150g)", amount: "150g", costToman: 30000, costUSD: 0.52 },
-      { name: "Parmigiano-Reggiano Cheese (20g)", amount: "20g", costToman: 35000, costUSD: 0.6 },
-      { name: "Extra Virgin Olive Oil & Fresh Basil", amount: "fresh", costToman: 20000, costUSD: 0.35 }
+      { name: "Durum Wheat Spaghetti (100g)", amount: "100g", costToman: 130000, costUSD: 0.57 },
+      { name: "Crushed Plum Tomatoes (150g)", amount: "150g", costToman: 150000, costUSD: 0.65 },
+      { name: "Parmigiano-Reggiano Cheese (20g)", amount: "20g", costToman: 150000, costUSD: 0.65 },
+      { name: "Extra Virgin Olive Oil & Fresh Basil", amount: "fresh", costToman: 90000, costUSD: 0.39 }
     ],
     ingredientCostsFa: [
-      { name: "اسپاگتی گندم دوروم سمولینا (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 25000, costUSD: 0.43 },
-      { name: "سس گوجه‌فرنگی دست‌چین (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 30000, costUSD: 0.52 },
-      { name: "پنیر پارمیجانو رنده شده (۲۰ گرم)", amount: "۲۰ گرم", costToman: 35000, costUSD: 0.6 },
-      { name: "روغن زیتون فرابکر و ریحان تازه ایتالیایی", amount: "تازه", costToman: 20000, costUSD: 0.35 }
+      { name: "اسپاگتی گندم دوروم سمولینا (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 130000, costUSD: 0.57 },
+      { name: "سس گوجه‌فرنگی دست‌چین (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "پنیر پارمیجانو رنده شده (۲۰ گرم)", amount: "۲۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "روغن زیتون فرابکر و ریحان تازه ایتالیایی", amount: "تازه", costToman: 90000, costUSD: 0.39 }
     ],
     nutritionalHighlights: [
       "Supercharged lycopene antioxidant payload",
@@ -495,19 +495,19 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "نان ترتیلا با فرآیند باستانی نیکستامالیزاسیون تهیه می‌شود که کلسیم و نیاسین ذرت را برای بدن قابل جذب می‌کند.",
     summary: "Balanced balance of corn carbohydrates, lean protein, and healthy monounsaturated fats from avocado.",
     summaryFa: "ترکیب متعادل فیبر ذرت بدون گلوتن، پروتئین خالص و اسیدهای چرب سالم آووکادو.",
-    priceToman: 130000,
-    priceUSD: 2.25,
+    priceToman: 710000,
+    priceUSD: 3.08,
     ingredientCosts: [
-      { name: "Spiced Marinated Meat (120g)", amount: "120g", costToman: 75000, costUSD: 1.3 },
-      { name: "Nixtamalized Corn Tortillas (2 pcs)", amount: "2 pcs", costToman: 20000, costUSD: 0.35 },
-      { name: "Avocado & Tomatillo Salsa", amount: "50g", costToman: 25000, costUSD: 0.43 },
-      { name: "White Onions & Fresh Cilantro", amount: "fresh", costToman: 10000, costUSD: 0.17 }
+      { name: "Spiced Marinated Meat (120g)", amount: "120g", costToman: 410000, costUSD: 1.78 },
+      { name: "Nixtamalized Corn Tortillas (2 pcs)", amount: "2 pcs", costToman: 100000, costUSD: 0.43 },
+      { name: "Avocado & Tomatillo Salsa", amount: "50g", costToman: 150000, costUSD: 0.65 },
+      { name: "White Onions & Fresh Cilantro", amount: "fresh", costToman: 50000, costUSD: 0.22 }
     ],
     ingredientCostsFa: [
-      { name: "گوشت طعم‌دار ادویه‌کاری‌شده (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 75000, costUSD: 1.3 },
-      { name: "نان ترتیلا ذرت دست‌ساز (۲ عدد)", amount: "۲ عدد", costToman: 20000, costUSD: 0.35 },
-      { name: "آووکادو تازه و سس سالسا (۵۰ گرم)", amount: "۵۰ گرم", costToman: 25000, costUSD: 0.43 },
-      { name: "پیاز سفید نگینی، گشنیز و لیمو", amount: "تازه", costToman: 10000, costUSD: 0.17 }
+      { name: "گوشت طعم‌دار ادویه‌کاری‌شده (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 410000, costUSD: 1.78 },
+      { name: "نان ترتیلا ذرت دست‌ساز (۲ عدد)", amount: "۲ عدد", costToman: 100000, costUSD: 0.43 },
+      { name: "آووکادو تازه و سس سالسا (۵۰ گرم)", amount: "۵۰ گرم", costToman: 150000, costUSD: 0.65 },
+      { name: "پیاز سفید نگینی، گشنیز و لیمو", amount: "تازه", costToman: 50000, costUSD: 0.22 }
     ],
     nutritionalHighlights: [
       "Gluten-free traditional corn tortillas with bioavailable calcium",
@@ -555,19 +555,19 @@ export const WORLD_FOODS: WorldFood[] = [
     funFactFa: "دانه تف ریزترین غله جهان است (یک‌صد و پنجاهم گندم) اما ۵ برابر گندم آهن و کلسیم دارد.",
     summary: "A wholesome fermented ancient grain meal that is naturally vegan, gluten-free, rich in prebiotic fiber, and packed with plant iron.",
     summaryFa: "یک وعده غذایی باستانی کاملاً گیاهی، بدون گلوتن، سرشار از آهن و فیبر پری‌بیوتیک مفید برای دستگاه گوارش.",
-    priceToman: 85000,
-    priceUSD: 1.45,
+    priceToman: 400000,
+    priceUSD: 1.74,
     ingredientCosts: [
-      { name: "Ancient Teff Flour (80g)", amount: "80g", costToman: 35000, costUSD: 0.6 },
-      { name: "Red Lentils (80g)", amount: "80g", costToman: 22000, costUSD: 0.38 },
-      { name: "Berbere Spice Blend & Garlic", amount: "portion", costToman: 16000, costUSD: 0.28 },
-      { name: "Onions & Vegetable Oil", amount: "portion", costToman: 12000, costUSD: 0.19 }
+      { name: "Ancient Teff Flour (80g)", amount: "80g", costToman: 160000, costUSD: 0.70 },
+      { name: "Red Lentils (80g)", amount: "80g", costToman: 110000, costUSD: 0.48 },
+      { name: "Berbere Spice Blend & Garlic", amount: "portion", costToman: 70000, costUSD: 0.30 },
+      { name: "Onions & Vegetable Oil", amount: "portion", costToman: 60000, costUSD: 0.26 }
     ],
     ingredientCostsFa: [
-      { name: "آرد دانه باستانی تف (۸۰ گرم)", amount: "۸۰ گرم", costToman: 35000, costUSD: 0.6 },
-      { name: "عدس قرمز پخته دال عدس (۸۰ گرم)", amount: "۸۰ گرم", costToman: 22000, costUSD: 0.38 },
-      { name: "ادویه بربره اتیوپی و سیر تازه", amount: "سهم", costToman: 16000, costUSD: 0.28 },
-      { name: "پیاز داغ و روغن گیاهی سالم", amount: "سهم", costToman: 12000, costUSD: 0.19 }
+      { name: "آرد دانه باستانی تف (۸۰ گرم)", amount: "۸۰ گرم", costToman: 160000, costUSD: 0.70 },
+      { name: "عدس قرمز پخته دال عدس (۸۰ گرم)", amount: "۸۰ گرم", costToman: 110000, costUSD: 0.48 },
+      { name: "ادویه بربره اتیوپی و سیر تازه", amount: "سهم", costToman: 70000, costUSD: 0.30 },
+      { name: "پیاز داغ و روغن گیاهی سالم", amount: "سهم", costToman: 60000, costUSD: 0.26 }
     ],
     nutritionalHighlights: [
       "Naturally 100% gluten-free and gut-fermented",

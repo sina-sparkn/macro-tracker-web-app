@@ -1,5 +1,5 @@
 import React from "react";
-import { Globe, Terminal, Activity } from "lucide-react";
+import { Globe, Flame, BookOpen } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
 import { TRANSLATIONS } from "../translations";
 
@@ -20,49 +20,81 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
   const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
+  const calPercent = Math.min(
+    Math.round((dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100),
+    100
+  );
+
   return (
-    <header className="bg-[#111214] border-b border-[#2a2c31] px-4 sm:px-6 py-2.5 flex items-center justify-between text-[11px] font-mono select-none shrink-0 z-30">
-      {/* LEFT TELEMETRY STRIP */}
-      <div className="flex items-center gap-3 sm:gap-5">
-        <div className="flex items-center gap-2 text-[#ff3e00]">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ff3e00] opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ff3e00]" />
-          </span>
-          <span className="font-bold tracking-wider">
-            {isFa ? "شناسه پایانه: ۰۴۳-نوتری" : "TERMINAL_ID: 043-X"}
+    <header className="bg-[#111214] border-b border-[#27272a] px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 select-none shrink-0 z-30">
+      {/* BRAND & APP IDENTITY */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#ff3e00]/15 border border-[#ff3e00]/50 flex items-center justify-center text-[#ff3e00] shrink-0">
+          <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
+        </div>
+        <div className="flex flex-col">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="font-syne font-extrabold text-[#f4f4f5] text-sm sm:text-base tracking-tight whitespace-nowrap">
+              {isFa ? "نوتری‌اسکن" : "NutriScan"}
+            </span>
+            <span className="text-[10px] sm:text-[11px] font-mono text-[#ff3e00] font-semibold px-1.5 py-0.5 bg-[#ff3e00]/10 rounded whitespace-nowrap">
+              {isFa ? "هوشمند" : "AI"}
+            </span>
+          </div>
+          <span className="hidden md:block text-xs text-[#9ca3af] leading-none mt-0.5 whitespace-nowrap">
+            {isFa ? "تحلیل هوشمند ارزش غذایی و کالری" : "Smart Nutrition & Calorie Tracking"}
           </span>
         </div>
-
-        <span className="hidden md:inline text-[#2a2c31]">|</span>
-        <span className="hidden md:inline text-[#707070] tracking-wide">
-          {isFa ? "هسته سیستم: موتور هوشمند تحلیل تغذیه" : "SYSTEM CORE: ANALYSIS ENGINE"}
-        </span>
       </div>
 
-      {/* RIGHT TELEMETRY CONTROLS */}
-      <div className="flex items-center gap-2.5 sm:gap-4">
+      {/* RIGHT ACCESSIBLE CONTROLS */}
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+        {/* CALORIE PROGRESS QUICK BUTTON */}
         <button
           onClick={onOpenDiary}
-          className="bg-[#08090a] hover:bg-[#16171a] border border-[#2a2c31] hover:border-[#ff3e00] text-[#e0e0e0] transition-colors px-2.5 py-1 text-[10px] sm:text-[11px] font-mono cursor-pointer flex items-center gap-2"
-          title={t.dailyCalorieIntake}
+          type="button"
+          aria-label={
+            isFa
+              ? `مشاهده یادداشت روزانه: ${dailyTotals.calories} از ${userProfile.calorieGoal} کالری`
+              : `View daily log: ${dailyTotals.calories} of ${userProfile.calorieGoal} kcal`
+          }
+          className="bg-[#18191d] hover:bg-[#222429] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] transition-colors px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs font-mono cursor-pointer flex items-center gap-1.5 sm:gap-2 focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none min-h-[40px] sm:min-h-[44px] shrink-0 whitespace-nowrap"
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
-          <span className="text-[#ff3e00] font-bold">
-            {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : String(dailyTotals.calories).padStart(4, "0")}
-          </span>
-          <span className="text-[#707070]">
-            / {isFa ? `${userProfile.calorieGoal.toLocaleString("fa-IR")} کالری` : `${userProfile.calorieGoal} KCAL`}
-          </span>
+          <BookOpen className="w-3.5 h-3.5 text-[#ff3e00] shrink-0" />
+          <div className="flex items-center gap-1 sm:gap-1.5 text-xs whitespace-nowrap">
+            <span className="text-[#ff3e00] font-bold">
+              {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
+            </span>
+            <span className="text-[#9ca3af] text-[11px] sm:text-xs">
+              {isFa ? "کالری" : "kcal"}
+            </span>
+            <span className="hidden sm:inline text-[#9ca3af]">
+              / {isFa ? `${userProfile.calorieGoal.toLocaleString("fa-IR")}` : `${userProfile.calorieGoal}`}
+            </span>
+            <span className="hidden md:inline text-[11px] text-[#9ca3af] bg-[#27272a] px-1.5 py-0.5 rounded">
+              {isFa ? `${calPercent.toLocaleString("fa-IR")}٪` : `${calPercent}%`}
+            </span>
+          </div>
         </button>
 
+        {/* LANGUAGE SWITCHER */}
         <button
           onClick={onToggleLanguage}
-          className="px-2.5 py-1 bg-[#08090a] hover:bg-[#16171a] border border-[#2a2c31] hover:border-[#ff3e00] text-[#e0e0e0] hover:text-[#ff3e00] text-[10px] sm:text-[11px] font-mono uppercase transition-colors cursor-pointer flex items-center gap-1.5"
-          title={t.switchLanguage}
+          type="button"
+          aria-label={
+            isFa
+              ? "تغییر زبان به انگلیسی (Switch to English)"
+              : "تغییر زبان به فارسی (Switch to Persian)"
+          }
+          className="px-2.5 sm:px-3 py-1.5 sm:py-2 bg-[#18191d] hover:bg-[#222429] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] hover:text-[#ff3e00] text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 sm:gap-2 focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none min-h-[40px] sm:min-h-[44px] shrink-0 whitespace-nowrap"
         >
-          <Globe className="w-3 h-3 text-[#ff3e00]" />
-          <span>{currentLang === "en" ? "FA (فارسی)" : "EN (English)"}</span>
+          <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ff3e00] shrink-0" />
+          <span className="sm:hidden font-bold text-xs uppercase font-mono">
+            {currentLang === "en" ? "FA" : "EN"}
+          </span>
+          <span className="hidden sm:inline font-medium">
+            {currentLang === "en" ? "فارسی" : "English"}
+          </span>
         </button>
       </div>
     </header>

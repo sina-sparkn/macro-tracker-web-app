@@ -47,6 +47,9 @@ import NutritionModal from "./components/NutritionModal";
 import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
+import { RecommendedDish, getDailyRecommendedDish } from "./recommendedDishes";
+
+export const TOMAN_PER_USD = 230000;
 
 export interface CyberPresetDish {
   refId: string;
@@ -72,8 +75,8 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
     nameFa: "قورمه سبزی با برنج زعفرانی",
     nameEn: "Ghormeh Sabzi with Saffron Rice",
     calories: 420,
-    priceToman: 185000,
-    priceUSD: 3.20,
+    priceToman: 950000,
+    priceUSD: 4.13,
     protein: 28,
     carbs: 38,
     fat: 16,
@@ -95,8 +98,8 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
     nameFa: "آش رشته سنتی",
     nameEn: "Traditional Ash Reshteh",
     calories: 340,
-    priceToman: 95000,
-    priceUSD: 1.80,
+    priceToman: 420000,
+    priceUSD: 1.83,
     protein: 14,
     carbs: 52,
     fat: 9,
@@ -119,8 +122,8 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
     nameFa: "کیمچی و توفو سنتی کره",
     nameEn: "Korean Kimchi & Tofu Plate",
     calories: 145,
-    priceToman: 80000,
-    priceUSD: 1.40,
+    priceToman: 430000,
+    priceUSD: 1.87,
     protein: 15,
     carbs: 12,
     fat: 4,
@@ -142,8 +145,8 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
     nameFa: "تاکو ذرت با آووکادو",
     nameEn: "Corn Taco with Fresh Avocado",
     calories: 360,
-    priceToman: 130000,
-    priceUSD: 2.30,
+    priceToman: 710000,
+    priceUSD: 3.08,
     protein: 12,
     carbs: 42,
     fat: 15,
@@ -162,22 +165,7 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
   }
 ];
 
-export const CYBER_RECOMMENDED_DISH = {
-  refId: "REF_ID: 1020",
-  nameFa: "چلو کباب کوبیده سنتی",
-  nameEn: "Chelo Kabab Koobideh",
-  descFa: "کباب کوبیده سنتی زغالی با گوشت تازه گوسفندی و گوساله، همراه با چلو زعفرانی.",
-  descEn: "Traditional charcoal-grilled minced lamb & beef skewer served with fragrant saffron basmati rice.",
-  calories: 680,
-  protein: 38,
-  carbs: 62,
-  fat: 28,
-  sodium: 610,
-  priceToman: 220000,
-  priceUSD: 3.80,
-  funFactFa: "پاشیدن سماق روی کباب نه تنها طعم لذیذی به آن می‌دهد بلکه به هضم چربی‌ها کمک می‌کند.",
-  funFactEn: "Sprinkling sumac over grilled meats adds zesty aroma and active polyphenols that assist lipid digestion."
-};
+export const CYBER_RECOMMENDED_DISH = getDailyRecommendedDish();
 
 // Helper function to compress and downscale images client-side
 const compressImage = (base64Str: string, mimeType: string, maxDim = 1200, quality = 0.8): Promise<string> => {
@@ -250,8 +238,8 @@ export default function App() {
       carbsTotal: 38,
       fatTotal: 16,
       sodiumTotal: 480,
-      priceToman: 185000,
-      priceUSD: 3.2
+      priceToman: 950000,
+      priceUSD: 4.13
     },
     {
       id: "pre-2",
@@ -267,13 +255,13 @@ export default function App() {
       carbsTotal: 1,
       fatTotal: 3,
       sodiumTotal: 160,
-      priceToman: 55000,
-      priceUSD: 0.95
+      priceToman: 280000,
+      priceUSD: 1.22
     }
   ]);
 
   // User Goals/Profile (Default)
-  const [userProfile, setUserProfile] = useState<UserProfile>({
+  const DEFAULT_USER_PROFILE: UserProfile = {
     name: "Sina",
     calorieGoal: 2000,
     proteinGoal: 80,
@@ -282,9 +270,15 @@ export default function App() {
     sodiumGoal: 2300,
     language: "en",
     currency: "IRT",
-    dailyBudgetToman: 400000,
-    dailyBudgetUSD: 7.5
-  });
+    dailyBudgetToman: 1800000,
+    dailyBudgetUSD: 7.8,
+    exchangeRateTomanPerUSD: 230000
+  };
+
+  const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
+
+  // Recent Scans List (Persisted in localStorage)
+  const [recentScans, setRecentScans] = useState<ScannedLabel[]>([]);
 
   // Active translation selector
   const currentLang = userProfile.language || "en";
@@ -341,7 +335,35 @@ export default function App() {
     const savedProfile = localStorage.getItem("nutriscan_profile");
     if (savedProfile) {
       try {
-        setUserProfile(JSON.parse(savedProfile));
+        const parsed = JSON.parse(savedProfile);
+        if (parsed && typeof parsed === "object") {
+          setUserProfile((prev) => ({
+            ...DEFAULT_USER_PROFILE,
+            ...parsed,
+            calorieGoal: typeof parsed.calorieGoal === "number" ? parsed.calorieGoal : DEFAULT_USER_PROFILE.calorieGoal,
+            proteinGoal: typeof parsed.proteinGoal === "number" ? parsed.proteinGoal : DEFAULT_USER_PROFILE.proteinGoal,
+            carbsGoal: typeof parsed.carbsGoal === "number" ? parsed.carbsGoal : DEFAULT_USER_PROFILE.carbsGoal,
+            fatGoal: typeof parsed.fatGoal === "number" ? parsed.fatGoal : DEFAULT_USER_PROFILE.fatGoal,
+            sodiumGoal: typeof parsed.sodiumGoal === "number" ? parsed.sodiumGoal : DEFAULT_USER_PROFILE.sodiumGoal,
+            dailyBudgetToman: typeof parsed.dailyBudgetToman === "number" ? parsed.dailyBudgetToman : DEFAULT_USER_PROFILE.dailyBudgetToman,
+            dailyBudgetUSD: typeof parsed.dailyBudgetUSD === "number" ? parsed.dailyBudgetUSD : DEFAULT_USER_PROFILE.dailyBudgetUSD,
+            exchangeRateTomanPerUSD: typeof parsed.exchangeRateTomanPerUSD === "number" ? parsed.exchangeRateTomanPerUSD : DEFAULT_USER_PROFILE.exchangeRateTomanPerUSD,
+            currency: parsed.currency || DEFAULT_USER_PROFILE.currency,
+            language: parsed.language || DEFAULT_USER_PROFILE.language
+          }));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    const savedRecentScans = localStorage.getItem("nutriscan_recent_scans");
+    if (savedRecentScans) {
+      try {
+        const parsed = JSON.parse(savedRecentScans);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setRecentScans([parsed[0]]);
+        }
       } catch (e) {
         console.error(e);
       }
@@ -357,6 +379,63 @@ export default function App() {
   const saveProfile = (newProfile: UserProfile) => {
     setUserProfile(newProfile);
     localStorage.setItem("nutriscan_profile", JSON.stringify(newProfile));
+  };
+
+  // Recent scan persistence helper (stores ONLY the single last scan from camera/upload)
+  const addRecentScan = (scanned: ScannedLabel) => {
+    const updated = [scanned];
+    setRecentScans(updated);
+    try {
+      localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updated));
+    } catch (e) {
+      console.error("Error saving recent scan to localStorage:", e);
+    }
+  };
+
+  const handleClearRecentScans = () => {
+    setRecentScans([]);
+    try {
+      localStorage.removeItem("nutriscan_recent_scans");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleSelectRecentScan = (item: ScannedLabel) => {
+    setScannedResult(item);
+    setPortionServings(1);
+    setShowResultDetail(true);
+  };
+
+  const handleQuickLogRecentScan = (scanned: ScannedLabel) => {
+    const rate = (userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0)
+      ? userProfile.exchangeRateTomanPerUSD
+      : TOMAN_PER_USD;
+
+    let costToman = scanned.estimatedPrice?.amountToman;
+    let costUSD = scanned.estimatedPrice?.amountUSD;
+    if (!costToman && costUSD) costToman = Math.round(costUSD * rate);
+    if (!costUSD && costToman) costUSD = Number((costToman / rate).toFixed(2));
+
+    const newItem: FoodLogItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      productName: scanned.productName,
+      brand: scanned.brand,
+      foodType: scanned.foodType || "dish",
+      cuisine: scanned.cuisine,
+      loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      servingsCount: 1,
+      servingSizeText: scanned.servingSize,
+      caloriesTotal: Math.round(scanned.calories),
+      proteinTotal: Number(scanned.protein.toFixed(1)),
+      carbsTotal: Number(scanned.totalCarbohydrate.toFixed(1)),
+      fatTotal: Number(scanned.totalFat.toFixed(1)),
+      sodiumTotal: Math.round(scanned.sodium),
+      priceToman: costToman,
+      priceUSD: costUSD
+    };
+
+    saveDiary([newItem, ...diaryItems]);
   };
 
   // Stop real camera stream
@@ -490,7 +569,13 @@ export default function App() {
         );
       }
 
-      setScannedResult({ ...data, scannedAt: new Date().toLocaleTimeString() });
+      const scannedItem: ScannedLabel = {
+        ...data,
+        id: data.id || `scan-${Date.now()}`,
+        scannedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setScannedResult(scannedItem);
+      addRecentScan(scannedItem);
       setPortionServings(1);
       setShowResultDetail(true);
     } catch (err: any) {
@@ -509,11 +594,17 @@ export default function App() {
     }
   };
 
+  // Active exchange rate based on user setting or fallback
+  const currentExchangeRate = (userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0)
+    ? userProfile.exchangeRateTomanPerUSD
+    : TOMAN_PER_USD;
+
   // Format price helper according to user currency preference
   const formatPrice = (priceToman?: number, priceUSD?: number) => {
+    const rate = currentExchangeRate;
     if (userProfile.currency === "USD") {
       if (priceUSD !== undefined && priceUSD > 0) return `$${priceUSD.toFixed(2)}`;
-      if (priceToman !== undefined && priceToman > 0) return `$${(priceToman / 60000).toFixed(2)}`;
+      if (priceToman !== undefined && priceToman > 0) return `$${(priceToman / rate).toFixed(2)}`;
       return null;
     }
     // Default IRT (Toman)
@@ -523,7 +614,7 @@ export default function App() {
       return `${priceToman.toLocaleString(isFa ? "fa-IR" : "en-US")} ${tomanUnit}`;
     }
     if (priceUSD !== undefined && priceUSD > 0) {
-      return `${Math.round(priceUSD * 60000).toLocaleString(isFa ? "fa-IR" : "en-US")} ${tomanUnit}`;
+      return `${Math.round(priceUSD * rate).toLocaleString(isFa ? "fa-IR" : "en-US")} ${tomanUnit}`;
     }
     return null;
   };
@@ -674,15 +765,23 @@ export default function App() {
 
   // Calculate dynamic totals
   const dailyTotals: DailyTotals = diaryItems.reduce(
-    (acc, curr) => ({
-      calories: acc.calories + curr.caloriesTotal,
-      protein: acc.protein + curr.proteinTotal,
-      carbs: acc.carbs + curr.carbsTotal,
-      fat: acc.fat + curr.fatTotal,
-      sodium: acc.sodium + curr.sodiumTotal,
-      costTomanTotal: acc.costTomanTotal + (curr.priceToman || 0),
-      costUSDTotal: Number((acc.costUSDTotal + (curr.priceUSD || 0)).toFixed(2))
-    }),
+    (acc, curr) => {
+      const rate = currentExchangeRate;
+      let itemToman = curr.priceToman || 0;
+      let itemUSD = curr.priceUSD || 0;
+      if (!itemToman && itemUSD) itemToman = Math.round(itemUSD * rate);
+      if (!itemUSD && itemToman) itemUSD = Number((itemToman / rate).toFixed(2));
+
+      return {
+        calories: acc.calories + curr.caloriesTotal,
+        protein: acc.protein + curr.proteinTotal,
+        carbs: acc.carbs + curr.carbsTotal,
+        fat: acc.fat + curr.fatTotal,
+        sodium: acc.sodium + curr.sodiumTotal,
+        costTomanTotal: acc.costTomanTotal + itemToman,
+        costUSDTotal: Number((acc.costUSDTotal + itemUSD).toFixed(2))
+      };
+    },
     { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, costTomanTotal: 0, costUSDTotal: 0 }
   );
 
@@ -769,24 +868,25 @@ export default function App() {
   };
 
   // Direct 1-click logger for the RECOMMENDED dish in the vitals pane
-  const handleLogRecommendedDish = () => {
+  const handleLogRecommendedDish = (targetDish?: RecommendedDish) => {
+    const dish = targetDish || getDailyRecommendedDish();
     const isFa = currentLang === "fa";
     const newItem: FoodLogItem = {
       id: Math.random().toString(36).substr(2, 9),
-      productName: isFa ? CYBER_RECOMMENDED_DISH.nameFa : CYBER_RECOMMENDED_DISH.nameEn,
-      brand: `${CYBER_RECOMMENDED_DISH.refId} • Persian / سنتی`,
+      productName: isFa ? dish.nameFa : dish.nameEn,
+      brand: `${dish.refId} • ${isFa ? dish.originFa : dish.originEn}`,
       foodType: "dish",
-      cuisine: "Persian / ایرانی",
+      cuisine: isFa ? dish.originFa : dish.originEn,
       loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       servingsCount: 1,
-      servingSizeText: "1 plate (400g)",
-      caloriesTotal: CYBER_RECOMMENDED_DISH.calories,
-      proteinTotal: CYBER_RECOMMENDED_DISH.protein,
-      carbsTotal: CYBER_RECOMMENDED_DISH.carbs,
-      fatTotal: CYBER_RECOMMENDED_DISH.fat,
-      sodiumTotal: CYBER_RECOMMENDED_DISH.sodium,
-      priceToman: CYBER_RECOMMENDED_DISH.priceToman,
-      priceUSD: CYBER_RECOMMENDED_DISH.priceUSD
+      servingSizeText: isFa ? dish.servingSizeFa : dish.servingSizeEn,
+      caloriesTotal: dish.calories,
+      proteinTotal: dish.protein,
+      carbsTotal: dish.carbs,
+      fatTotal: dish.fat,
+      sodiumTotal: dish.sodium,
+      priceToman: dish.priceToman,
+      priceUSD: dish.priceUSD
     };
     saveDiary([newItem, ...diaryItems]);
   };
@@ -859,7 +959,7 @@ export default function App() {
           />
 
           {/* COLUMN 3: MAIN DISPLAY AREA */}
-          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-20 lg:pb-8">
+          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-32 sm:pb-36 lg:pb-10">
             {activeTab === "scan" && (
               <ScannerConsoleView
                 userProfile={userProfile}
@@ -867,12 +967,17 @@ export default function App() {
                 isScanning={isScanning}
                 scanError={scanError}
                 videoRef={videoRef}
+                recentScans={recentScans}
                 onStartCamera={startCamera}
                 onStopCamera={stopCamera}
                 onCaptureSnapshot={captureSnapshot}
                 onFileUpload={handleFileUpload}
                 onSelectCyberDish={handleSelectCyberDish}
                 onSelectWorldFood={handleSelectWorldFood}
+                onLogRecommendedDish={handleLogRecommendedDish}
+                onSelectRecentScan={handleSelectRecentScan}
+                onQuickLogRecentScan={handleQuickLogRecentScan}
+                onClearRecentScans={handleClearRecentScans}
               />
             )}
 
@@ -896,12 +1001,13 @@ export default function App() {
             )}
           </main>
 
-          {/* COLUMN 4: RIGHT VITALS PANE */}
-          <VitalsPane
-            userProfile={userProfile}
-            dailyTotals={dailyTotals}
-            onLogRecommendedDish={handleLogRecommendedDish}
-          />
+          {/* COLUMN 4: RIGHT VITALS PANE (ONLY ON SCAN VIEW) */}
+          {activeTab === "scan" && (
+            <VitalsPane
+              userProfile={userProfile}
+              dailyTotals={dailyTotals}
+            />
+          )}
         </div>
 
         {/* DETAILED NUTRITION MODAL */}
@@ -917,31 +1023,38 @@ export default function App() {
         )}
 
         {/* MOBILE NAVIGATION DOCK (BOTTOM OF SCREEN) */}
-        <nav className="lg:hidden bg-[#08090a]/95 backdrop-blur-md border-t border-[#2a2c31] py-2.5 px-6 flex justify-around items-center shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.6)] z-40 fixed bottom-0 inset-x-0 font-mono">
+        <nav
+          aria-label={currentLang === "fa" ? "ناوبری موبایل" : "Mobile Navigation"}
+          className="lg:hidden bg-[#0e1013] border-t border-[#27272a] py-2 px-4 flex justify-around items-center shrink-0 shadow-2xl z-40 fixed bottom-0 inset-x-0"
+        >
           <button
             onClick={() => setActiveTab("scan")}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer ${
-              activeTab === "scan" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            type="button"
+            aria-selected={activeTab === "scan"}
+            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === "scan" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
             }`}
           >
             <Camera className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">
-              {currentLang === "fa" ? "۰۱ // اسکن" : "01 // SCAN"}
+            <span className="text-xs font-medium">
+              {currentLang === "fa" ? "اسکن" : "Scan"}
             </span>
           </button>
 
           <button
             onClick={() => setActiveTab("diary")}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer relative ${
-              activeTab === "diary" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            type="button"
+            aria-selected={activeTab === "diary"}
+            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer relative ${
+              activeTab === "diary" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
             }`}
           >
             <BookOpen className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">
-              {currentLang === "fa" ? "۰۲ // دفترچه" : "02 // DIARY"}
+            <span className="text-xs font-medium">
+              {currentLang === "fa" ? "یادداشت" : "Diary"}
             </span>
             {diaryItems.length > 0 && (
-              <span className="absolute top-0 right-2 w-4 h-4 bg-[#ff3e00] text-[#08090a] text-[9px] font-bold flex items-center justify-center">
+              <span className="absolute top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-[#ff3e00] text-black text-[10px] font-bold flex items-center justify-center">
                 {currentLang === "fa" ? diaryItems.length.toLocaleString("fa-IR") : diaryItems.length}
               </span>
             )}
@@ -949,13 +1062,15 @@ export default function App() {
 
           <button
             onClick={() => setActiveTab("profile")}
-            className={`flex flex-col items-center gap-1 py-1 px-3 transition-colors cursor-pointer ${
-              activeTab === "profile" ? "text-[#ff3e00]" : "text-[#707070] hover:text-[#e0e0e0]"
+            type="button"
+            aria-selected={activeTab === "profile"}
+            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
+              activeTab === "profile" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
             }`}
           >
             <Sliders className="w-5 h-5" />
-            <span className="text-[9px] uppercase tracking-wider font-bold">
-              {currentLang === "fa" ? "۰۳ // اهداف" : "03 // GOALS"}
+            <span className="text-xs font-medium">
+              {currentLang === "fa" ? "اهداف" : "Goals"}
             </span>
           </button>
         </nav>
