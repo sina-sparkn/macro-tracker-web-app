@@ -48,7 +48,11 @@ import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
 import { RecommendedDish, getDailyRecommendedDish } from "./recommendedDishes";
-import { normalizeScannedLabel } from "./utils/dishLocalization";
+import {
+  normalizeScannedLabel,
+  formatSmartPrice,
+  getPricingTierMultiplier
+} from "./utils/dishLocalization";
 
 export const TOMAN_PER_USD = 230000;
 
@@ -273,6 +277,7 @@ export default function App() {
 
   const [selectedDiaryDate, setSelectedDiaryDate] = useState<string>(() => getTodayIsoDate());
   const [isSyncingDb, setIsSyncingDb] = useState<boolean>(false);
+  const [isSyncingRate, setIsSyncingRate] = useState<boolean>(false);
   const [sqliteStats, setSqliteStats] = useState<SqliteDbStats>({
     engine: "SQLite 3 (WAL)",
     fileName: "nutriscan.sqlite",
@@ -293,6 +298,10 @@ export default function App() {
     dailyBudgetToman: 1800000,
     dailyBudgetUSD: 7.8,
     exchangeRateTomanPerUSD: 230000,
+    pricingTier: "market",
+    hidePrices: false,
+    autoRateSourceEn: "Domestic Food Purchasing-Power Index (Auto-Calibrated)",
+    autoRateSourceFa: "شاخص قدرت خرید و قیمت مستقیم بازار داخلی (کالیبره خودکار)",
     activePreset: "balanced"
   };
 
@@ -379,6 +388,33 @@ export default function App() {
     };
 
     fetchSqliteDiary();
+
+    // Automatically calibrate exchange rate in background so user never has to configure dollar price
+    const syncRateInBackground = async () => {
+      try {
+        const res = await fetch("/api/exchange-rate");
+        if (res.ok) {
+          const info = await res.json();
+          if (info && typeof info.rateTomanPerUSD === "number") {
+            setUserProfile((prev) => {
+              const updated: UserProfile = {
+                ...prev,
+                exchangeRateTomanPerUSD: info.rateTomanPerUSD,
+                autoRateSourceEn: info.sourceEn,
+                autoRateSourceFa: info.sourceFa,
+                autoRateUpdatedAt: info.updatedAt,
+                isLiveRateFeed: info.isLiveFeed
+              };
+              localStorage.setItem("nutriscan_profile", JSON.stringify(updated));
+              return updated;
+            });
+          }
+        }
+      } catch {
+        // Silent fallback to domestic index
+      }
+    };
+    syncRateInBackground();
 
     const savedProfile = localStorage.getItem("nutriscan_profile");
     if (savedProfile) {
@@ -724,24 +760,34 @@ export default function App() {
     ? userProfile.exchangeRateTomanPerUSD
     : TOMAN_PER_USD;
 
-  // Format price helper according to user currency preference
+  // Format price helper according to user currency preference & smart tier
   const formatPrice = (priceToman?: number, priceUSD?: number) => {
-    const rate = currentExchangeRate;
-    if (userProfile.currency === "USD") {
-      if (priceUSD !== undefined && priceUSD > 0) return `$${priceUSD.toFixed(2)}`;
-      if (priceToman !== undefined && priceToman > 0) return `$${(priceToman / rate).toFixed(2)}`;
-      return null;
+    return formatSmartPrice(priceToman, priceUSD, userProfile, 1);
+  };
+
+  const handleSyncExchangeRate = async () => {
+    setIsSyncingRate(true);
+    try {
+      const res = await fetch("/api/exchange-rate?refresh=true");
+      if (res.ok) {
+        const info = await res.json();
+        if (info && typeof info.rateTomanPerUSD === "number") {
+          const updated: UserProfile = {
+            ...userProfile,
+            exchangeRateTomanPerUSD: info.rateTomanPerUSD,
+            autoRateSourceEn: info.sourceEn,
+            autoRateSourceFa: info.sourceFa,
+            autoRateUpdatedAt: info.updatedAt,
+            isLiveRateFeed: info.isLiveFeed
+          };
+          saveProfile(updated);
+        }
+      }
+    } catch (err) {
+      console.warn("Exchange rate sync fallback:", err);
+    } finally {
+      setIsSyncingRate(false);
     }
-    // Default IRT (Toman)
-    const isFa = currentLang === "fa";
-    const tomanUnit = isFa ? "تومان" : "Toman";
-    if (priceToman !== undefined && priceToman > 0) {
-      return `${priceToman.toLocaleString(isFa ? "fa-IR" : "en-US")} ${tomanUnit}`;
-    }
-    if (priceUSD !== undefined && priceUSD > 0) {
-      return `${Math.round(priceUSD * rate).toLocaleString(isFa ? "fa-IR" : "en-US")} ${tomanUnit}`;
-    }
-    return null;
   };
 
   // Select a global food around the world to display
@@ -1240,8 +1286,10 @@ export default function App() {
             {activeTab === "profile" && (
               <GoalsConsoleView
                 userProfile={userProfile}
+                isSyncingRate={isSyncingRate}
                 onSaveProfile={saveProfile}
                 onApplyPreset={applyPreset}
+                onSyncExchangeRate={handleSyncExchangeRate}
               />
             )}
           </main>

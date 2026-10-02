@@ -7,7 +7,8 @@ import {
   deleteDiaryEntryById,
   clearDiaryEntries,
   seedSampleHistory,
-  getDatabaseStats
+  getDatabaseStats,
+  resolveLiveOrIndexedExchangeRate
 } from "../server/sqliteDb";
 
 dotenv.config();
@@ -730,6 +731,22 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
 });
 
 // SQLite Food Diary Routes
+app.get("/api/exchange-rate", async (req, res) => {
+  try {
+    const force = req.query.refresh === "true";
+    const rateInfo = await resolveLiveOrIndexedExchangeRate(force);
+    return res.json(rateInfo);
+  } catch (error: any) {
+    return res.json({
+      rateTomanPerUSD: 230000,
+      sourceEn: "Domestic Food Purchasing-Power Index (Auto-Calibrated)",
+      sourceFa: "شاخص قدرت خرید و قیمت مستقیم بازار داخلی (کالیبره خودکار)",
+      updatedAt: new Date().toISOString(),
+      isLiveFeed: false
+    });
+  }
+});
+
 app.get("/api/diary", (req, res) => {
   try {
     const dateFilter = typeof req.query.date === "string" ? req.query.date : undefined;

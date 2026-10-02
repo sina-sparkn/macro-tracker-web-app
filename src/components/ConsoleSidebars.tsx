@@ -1,6 +1,7 @@
 import React from "react";
 import { Camera, BookOpen, Sliders, Flame } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
+import { formatSmartPrice } from "../utils/dishLocalization";
 
 interface SidebarsProps {
   activeTab: "scan" | "diary" | "profile";
@@ -143,10 +144,10 @@ export const VitalsPane: React.FC<{
   const isFa = currentLang === "fa";
 
   const formatPrice = (toman: number, usd: number) => {
-    if (userProfile.currency === "IRT") {
-      return `${toman.toLocaleString("fa-IR")} تومان`;
+    if (userProfile.hidePrices) {
+      return isFa ? "فقط کالری" : "Calorie-Only";
     }
-    return `$${usd.toFixed(2)}`;
+    return formatSmartPrice(toman, usd, userProfile, 1) || "-";
   };
 
   const currentSpend = userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;

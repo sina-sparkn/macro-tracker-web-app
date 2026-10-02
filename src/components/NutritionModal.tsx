@@ -2,6 +2,7 @@ import React from "react";
 import { X, Plus, AlertTriangle, CheckCircle2, ShieldCheck, Scale, Receipt } from "lucide-react";
 import { ScannedLabel, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
+import { formatSmartPrice } from "../utils/dishLocalization";
 
 interface NutritionModalProps {
   scannedResult: ScannedLabel | null;
@@ -27,13 +28,10 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   const formatPrice = (toman?: number, usd?: number) => {
-    if (userProfile.currency === "IRT" && toman !== undefined) {
-      return `${(toman * portionServings).toLocaleString("fa-IR")} تومان`;
+    if (userProfile.hidePrices) {
+      return isFa ? "حالت فقط کالری" : "Calorie-Only Mode";
     }
-    if (usd !== undefined) {
-      return `$${(usd * portionServings).toFixed(2)}`;
-    }
-    return "-";
+    return formatSmartPrice(toman, usd, userProfile, portionServings) || "-";
   };
 
   const calories = Math.round(scannedResult.calories * portionServings);

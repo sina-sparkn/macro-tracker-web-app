@@ -5,7 +5,7 @@ import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "../worldFoods";
 import { TRANSLATIONS } from "../translations";
 import { CYBER_PRESET_DISHES, CyberPresetDish } from "../App";
 import { RecommendedDish, getDailyRecommendedDish, getDailyFormattedDate } from "../recommendedDishes";
-import { normalizeScannedLabel } from "../utils/dishLocalization";
+import { normalizeScannedLabel, formatSmartPrice } from "../utils/dishLocalization";
 
 interface ScannerConsoleViewProps {
   userProfile: UserProfile;
@@ -60,22 +60,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
     : 230000;
 
   const formatPrice = (toman?: number, usd?: number) => {
-    if (userProfile.currency === "IRT") {
-      if (toman !== undefined && toman > 0) {
-        return `${toman.toLocaleString("fa-IR")} تومان`;
-      }
-      if (usd !== undefined && usd > 0) {
-        return `${Math.round(usd * currentRate).toLocaleString("fa-IR")} تومان`;
-      }
-      return "-";
-    }
-    if (usd !== undefined && usd > 0) {
-      return `$${usd.toFixed(2)}`;
-    }
-    if (toman !== undefined && toman > 0) {
-      return `$${(toman / currentRate).toFixed(2)}`;
-    }
-    return "-";
+    return formatSmartPrice(toman, usd, userProfile, 1) || "-";
   };
 
   const handleQuickLogRecent = (item: ScannedLabel) => {

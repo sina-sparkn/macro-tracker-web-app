@@ -93,6 +93,12 @@ export interface UserProfile {
   currency?: "IRT" | "USD"; // Toman or USD
   dailyBudgetToman?: number;
   dailyBudgetUSD?: number;
-  exchangeRateTomanPerUSD?: number; // Custom USD to Toman rate (e.g. 230000)
+  exchangeRateTomanPerUSD?: number; // Auto-synced USD to Toman rate
+  pricingTier?: "home" | "market" | "restaurant"; // Domestic price tier (0.8x, 1.0x, 1.35x)
+  hidePrices?: boolean; // Optional calorie-only mode
+  autoRateSourceEn?: string;
+  autoRateSourceFa?: string;
+  autoRateUpdatedAt?: string;
+  isLiveRateFeed?: boolean;
   activePreset?: "weight-loss" | "muscle" | "keto" | "balanced" | "custom";
 }

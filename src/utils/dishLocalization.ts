@@ -1,4 +1,40 @@
-import { ScannedLabel } from "../types";
+import { ScannedLabel, UserProfile } from "../types";
+
+export function getPricingTierMultiplier(tier?: "home" | "market" | "restaurant"): number {
+  if (tier === "home") return 0.8;
+  if (tier === "restaurant") return 1.35;
+  return 1.0;
+}
+
+export function formatSmartPrice(
+  priceToman?: number,
+  priceUSD?: number,
+  userProfile?: UserProfile,
+  portionMultiplier = 1
+): string | null {
+  if (userProfile?.hidePrices) {
+    return null;
+  }
+  const tierMult = getPricingTierMultiplier(userProfile?.pricingTier) * portionMultiplier;
+  const rate =
+    userProfile?.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0
+      ? userProfile.exchangeRateTomanPerUSD
+      : 230000;
+  const isFa = userProfile?.language === "fa";
+
+  if (userProfile?.currency === "USD") {
+    let valUsd = priceUSD && priceUSD > 0 ? priceUSD : priceToman ? priceToman / rate : 0;
+    if (valUsd <= 0) return null;
+    return `$${(valUsd * tierMult).toFixed(2)}`;
+  }
+
+  let valToman =
+    priceToman && priceToman > 0 ? priceToman : priceUSD ? Math.round(priceUSD * rate) : 0;
+  if (valToman <= 0) return null;
+  const scaledToman = Math.round((valToman * tierMult) / 1000) * 1000;
+  const unit = isFa ? "تومان" : "Toman";
+  return `${scaledToman.toLocaleString(isFa ? "fa-IR" : "en-US")} ${unit}`;
+}
 
 // Translation dictionary for English dish names to natural Persian
 const DISH_NAME_FA_MAP: Record<string, string> = {

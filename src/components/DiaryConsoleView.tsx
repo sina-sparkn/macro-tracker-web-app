@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { FoodLogItem, DailyTotals, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
+import { formatSmartPrice } from "../utils/dishLocalization";
 
 export interface SqliteDbStats {
   engine: string;
@@ -126,24 +127,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   const [manualPriceToman, setManualPriceToman] = useState("850000");
 
   const formatPrice = (toman?: number, usd?: number) => {
-    if (userProfile.currency === "IRT") {
-      if (toman !== undefined && toman > 0) {
-        return `${toman.toLocaleString(isFa ? "fa-IR" : "en-US")} ${isFa ? "تومان" : "Toman"}`;
-      }
-      if (usd !== undefined && usd > 0) {
-        return `${Math.round(usd * currentRate).toLocaleString(isFa ? "fa-IR" : "en-US")} ${
-          isFa ? "تومان" : "Toman"
-        }`;
-      }
-      return "-";
+    if (userProfile.hidePrices) {
+      return isFa ? "حالت فقط کالری" : "Calorie-Only";
     }
-    if (usd !== undefined && usd > 0) {
-      return `$${usd.toFixed(2)}`;
-    }
-    if (toman !== undefined && toman > 0) {
-      return `$${(toman / currentRate).toFixed(2)}`;
-    }
-    return "-";
+    return formatSmartPrice(toman, usd, userProfile, 1) || "-";
   };
 
   const calorieGoal = userProfile.calorieGoal || 2000;
