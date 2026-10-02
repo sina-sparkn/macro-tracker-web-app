@@ -2,6 +2,14 @@ import express from "express";
 import path from "path";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import {
+  getAllDiaryEntries,
+  insertDiaryEntry,
+  deleteDiaryEntryById,
+  clearDiaryEntries,
+  seedSampleHistory,
+  getDatabaseStats
+} from "./server/sqliteDb";
 
 dotenv.config();
 
@@ -403,8 +411,9 @@ const FALLBACK_FOODS_FA = [
 // API Routes
 app.post("/api/scan-label", async (req, res) => {
   try {
-    const { imageBase64, mimeType, language = "en" } = req.body;
+    const { imageBase64, mimeType, language = "en", exchangeRateTomanPerUSD = 230000 } = req.body || {};
     const isFa = language === "fa";
+    const userRate = Number(exchangeRateTomanPerUSD) > 0 ? Number(exchangeRateTomanPerUSD) : 230000;
 
     if (!imageBase64) {
       return res.status(400).json({ error: "Missing image data" });
@@ -430,44 +439,60 @@ app.post("/api/scan-label", async (req, res) => {
       },
     };
 
-    let promptString = `Analyze this food image. The image can be either:
+    let promptString = "";
+    if (isFa) {
+      promptString = `دستور حیاتی: شما یک متخصص تغذیه و ارزیاب هزینه مواد غذایی ایرانی هستید.
+زبان رابط کاربری فارسی است، بنابراین تمامی مقادیر متنی خروجی JSON (شامل productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, ingredientCosts) باید حتماً و بدون استثنا به زبان فارسی روان، اصیل و طبیعی نوشته شوند. هیچ فیلد متنی انگلیسی نباید در خروجی باشد.
+
+تصویر پیوست را با دقت تحلیل کنید. این تصویر می‌تواند یکی از موارد زیر باشد:
+۱. یک غذای آماده، بشقاب غذای رستورانی یا خوراک خانگی (مانند قورمه سبزی، چلو کباب کوبیده، جوجه کباب، دیزی، پیتزا، پاستا، سالاد و غیره).
+۲. یک محصول بسته‌بندی شده یا جدول ارزش غذایی.
+
+مشخصات غذایی شامل کالری، پروتئین، چربی، کربوهیدرات، فیبر، سدیم و ویتامین‌ها را با دقت تخمین بزنید.
+
+دستورالعمل قیمت‌گذاری واقعی و به‌روز بازار ایران:
+- نرخ مبنای محاسبه: هر ۱ دلار آمریکا = ${userRate.toLocaleString("fa-IR")} تومان.
+- واقعیت قیمت‌های کنونی بازار ایران:
+  * خورش‌ها و غذاهای پخته برنجی سنتی (مانند قورمه سبزی): حدود ۸۵۰,۰۰۰ تا ۱,۰۵۰,۰۰۰ تومان (~۳.۷ تا ۴.۵ دلار)
+  * کباب‌های سنتی ذغالی و چلو کباب (مانند کوبیده یا برگ): حدود ۱,۱۰۰,۰۰۰ تا ۱,۴۰۰,۰۰۰ تومان (~۴.۸ تا ۶.۰ دلار)
+  * لبنیات پرپروتئین یا ماست یونانی: حدود ۳۵۰,۰۰۰ تا ۴۵۰,۰۰۰ تومان (~۱.۵ تا ۲.۰ دلار)
+  * نوشیدنی‌های ارگانیک و گیاهی: حدود ۲۵۰,۰۰۰ تا ۳۲۰,۰۰۰ تومان (~۱.۱ تا ۱.۴ دلار)
+  * غذاهای سبک، آش، سوپ یا پاستا: حدود ۳۸۰,۰۰۰ تا ۵۵۰,۰۰۰ تومان (~۱.۶ تا ۲.۴ دلار)
+- مواد اولیه تشکیل‌دهنده را با مقادیر و برآورد هزینه جداگانه به تومان و دلار بر اساس این نرخ روز درج کنید.
+- رتبه‌بندی کیفی سلامت (healthRatingLabel) حتماً به فارسی باشد (مانند "A - عالی"، "B - خوب"، "C - متوسط").
+- خروجی را دقیقاً طبق اسکیما به فرمت JSON تولید کنید. اعداد باید عددی باشند نه رشته.`;
+    } else {
+      promptString = `Analyze this food image. The image can be either:
 1. A prepared meal, cooked plate of food, or restaurant dish (e.g. Persian Ghormeh Sabzi, Kebab, Rice, Pizza, Pasta, Salad, Burger, Stew, Soup, etc.).
 2. A packaged food product or nutrition facts label.
 
-Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / ایرانی", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
+Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / Iranian", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
 Extract or accurately calculate nutritional values (calories, protein, total fat, carbohydrates, dietary fiber, sugars, sodium, vitamins).
-CRITICAL FOR THIS APPLICATION:
-- Estimate the realistic cost/price per dish or serving in BOTH Iranian Tomans (e.g. 950000 for 950,000 Tomans) and US Dollars (USD).
-- IRAN MARKET BENCHMARK & EXCHANGE RATE: Use the current real-market exchange rate of 1 USD = 230,000 Tomans.
-  Current price reality in Iran:
-  * A simple cup of Greek yogurt (150g) is ~400,000 Tomans (~$1.74 USD).
-  * Standard cooked dishes or stews (e.g. Ghormeh Sabzi) are ~950,000 Tomans (~$4.13 USD).
-  * Grilled meat / Chelo Kabab dishes are ~1,150,000 Tomans (~$5.00 USD).
-  * Vegetarian/pasta/legume dishes (Ash, Pasta, Hummus) are ~390,000 to ~520,000 Tomans (~$1.70 to ~$2.26 USD).
+CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
+- Exchange rate benchmark: 1 USD = ${userRate.toLocaleString("en-US")} Tomans.
+- Current market pricing reality:
+  * Standard cooked dishes or stews (e.g. Ghormeh Sabzi): ~850,000 to 1,050,000 Tomans (~$3.70 - $4.50 USD).
+  * Grilled meat / Chelo Kabab dishes: ~1,100,000 to 1,400,000 Tomans (~$4.80 - $6.00 USD).
+  * Packaged Greek yogurt or high-protein dairy: ~350,000 to 450,000 Tomans (~$1.50 - $2.00 USD).
+  * Plant milk / health beverages: ~250,000 to 320,000 Tomans (~$1.10 - $1.40 USD).
+  * Vegetarian/pasta/legume dishes: ~380,000 to 550,000 Tomans (~$1.65 - $2.40 USD).
 - Break down the constituent raw ingredients with their estimated portion amounts and individual estimated costs in Tomans and USD matching this economic benchmark.
 - Calculate an objective Health Score (1-100) and Nutri-Score rating.
 - Provide key nutritional highlights, warnings, summary, and cultural/historical notes.
 - Format the output strictly according to the provided JSON schema. Ensure numeric values are numbers, not strings.`;
-
-    if (isFa) {
-      promptString += `\n\nCRITICAL LOCALIZATION DIRECTIVE: The user's application interface is in Persian (فارسی).
-You MUST provide all textual fields including productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, and ingredientCosts (both name and amount) in natural, fluent Persian (فارسی).
-For example:
-- productName: "قورمه سبزی با برنج زعفرانی" or "پیتزا پپرونی"
-- servingSize: "۱ بشقاب (۳۵۰ گرم)"
-- healthRatingLabel: "A - عالی" or "B - خوب" or "C - متوسط" or "D - ضعیف"`;
     }
 
     let responseText = "";
     let attempts = 0;
-    const maxAttempts = 3;
     let lastError: any = null;
+    const candidateModels = ["gemini-3.5-flash", "gemini-flash-latest", "gemini-3.8-flash"];
 
-    while (attempts < maxAttempts) {
+    for (const modelCandidate of candidateModels) {
+      if (responseText) break;
       try {
         attempts++;
         const response = await getAIClient().models.generateContent({
-          model: "gemini-3.5-flash",
+          model: modelCandidate,
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
             responseMimeType: "application/json",
@@ -640,20 +665,18 @@ For example:
         lastError = err;
         console.warn(`Attempt ${attempts} failed:`, err.message || String(err));
         
-        // Check if retryable (e.g., 503 UNAVAILABLE, 429 rate limit, high demand API errors)
+        // Check if retryable
         const errStr = String(err).toLowerCase();
         const isRetryable = err.status === 503 || err.statusCode === 503 ||
                             err.status === 429 || err.statusCode === 429 ||
                             errStr.includes("503") || errStr.includes("unavailable") ||
                             errStr.includes("429") || errStr.includes("exhausted") ||
                             errStr.includes("demand");
-        
-        if (attempts < maxAttempts && isRetryable) {
-          const waitTime = attempts * 800;
-          console.log(`Waiting ${waitTime}ms before retry...`);
+
+        if (isRetryable) {
+          const waitTime = attempts * 600;
+          console.log(`Waiting ${waitTime}ms before trying next candidate model...`);
           await sleep(waitTime);
-        } else {
-          break; // Exit loop if not retryable or we're at max attempts
         }
       }
     }
@@ -661,18 +684,19 @@ For example:
     if (!responseText) {
       console.error("==================================================");
       console.error("GEMINI API SCAN CALL COMPLETED WITH FAILURE!");
-      console.error(`- Max attempts (${maxAttempts}) reached or call timed out.`);
+      console.error(`- Candidate models attempted (${candidateModels.join(", ")})`);
       console.error(`- Last API error encountered:`, lastError?.message || String(lastError || "Unknown API error"));
       if (lastError?.stack) {
         console.error(`- Last error stack:\n`, lastError.stack);
       }
-      console.error("Activating local high-fidelity fallback to keep app running smoothly...");
+      console.error(`Activating local high-fidelity ${isFa ? "PERSIAN" : "ENGLISH"} fallback to keep app running smoothly...`);
       console.error("==================================================");
 
-      // Pick a random fallback food to keep the app working for the user beautifully
-      const randomIndex = Math.floor(Math.random() * FALLBACK_FOODS.length);
+      // Pick a random fallback food matching the user's active language
+      const pool = isFa ? FALLBACK_FOODS_FA : FALLBACK_FOODS;
+      const randomIndex = Math.floor(Math.random() * pool.length);
       const fallbackItem = {
-        ...FALLBACK_FOODS[randomIndex],
+        ...pool[randomIndex],
         isDemoFallback: true,
         originalScanError: lastError?.message || String(lastError || "Unknown API error")
       };
@@ -700,6 +724,80 @@ For example:
       details: error.message || String(error),
       stack: error.stack,
     });
+  }
+});
+
+// SQLite Food Diary Routes
+app.get("/api/diary", (req, res) => {
+  try {
+    const dateFilter = typeof req.query.date === "string" ? req.query.date : undefined;
+    const entries = getAllDiaryEntries(dateFilter);
+    const stats = getDatabaseStats();
+    return res.json({ entries, stats });
+  } catch (error: any) {
+    console.error("SQLite GET /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to fetch diary entries from SQLite" });
+  }
+});
+
+app.post("/api/diary", (req, res) => {
+  try {
+    const body = req.body || {};
+    if (Array.isArray(body.items)) {
+      for (const item of body.items) {
+        insertDiaryEntry(item);
+      }
+      const entries = getAllDiaryEntries();
+      const stats = getDatabaseStats();
+      return res.json({ entries, stats });
+    }
+
+    const payload = body.item || body;
+    const inserted = insertDiaryEntry(payload);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ entry: inserted, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite POST /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to insert diary entry into SQLite" });
+  }
+});
+
+app.post("/api/diary/seed", (req, res) => {
+  try {
+    seedSampleHistory(true);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ entries, stats });
+  } catch (error: any) {
+    console.error("SQLite POST /api/diary/seed error:", error);
+    return res.status(500).json({ error: error.message || "Failed to seed SQLite diary" });
+  }
+});
+
+app.delete("/api/diary/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    deleteDiaryEntryById(id);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ deletedId: id, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite DELETE /api/diary/:id error:", error);
+    return res.status(500).json({ error: error.message || "Failed to delete diary entry from SQLite" });
+  }
+});
+
+app.delete("/api/diary", (req, res) => {
+  try {
+    const dateFilter = typeof req.query.date === "string" ? req.query.date : undefined;
+    const clearedCount = clearDiaryEntries(dateFilter);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ clearedCount, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite DELETE /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to clear diary entries in SQLite" });
   }
 });
 

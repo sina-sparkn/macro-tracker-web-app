@@ -33,39 +33,39 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       nameFa: "رژیم متعادل",
       nameEn: "Balanced",
       calories: 2000,
-      protein: 80,
-      carbs: 250,
+      protein: 120,
+      carbs: 220,
       fat: 65,
-      subtitleFa: "۲۰۰۰ کالری • ۸۰ گرم پروتئین",
-      subtitleEn: "2000 kcal • 80g P",
-      macroDetailFa: "کربو ۲۵۰g • چربی ۶۵g",
-      macroDetailEn: "250g C • 65g F"
+      subtitleFa: "۲۰۰۰ کالری • ۱۲۰ گرم پروتئین",
+      subtitleEn: "2000 kcal • 120g P",
+      macroDetailFa: "کربو ۲۲۰g • چربی ۶۵g",
+      macroDetailEn: "220g C • 65g F"
     },
     {
       id: "weight-loss" as const,
       nameFa: "کاهش وزن",
       nameEn: "Weight Loss",
       calories: 1600,
-      protein: 90,
-      carbs: 180,
-      fat: 50,
-      subtitleFa: "۱۶۰۰ کالری • ۹۰ گرم پروتئین",
-      subtitleEn: "1600 kcal • 90g P",
-      macroDetailFa: "کربو ۱۸۰g • چربی ۵۰g",
-      macroDetailEn: "180g C • 50g F"
+      protein: 140,
+      carbs: 130,
+      fat: 45,
+      subtitleFa: "۱۶۰۰ کالری • ۱۴۰ گرم پروتئین",
+      subtitleEn: "1600 kcal • 140g P",
+      macroDetailFa: "کربو ۱۳۰g • چربی ۴۵g",
+      macroDetailEn: "130g C • 45g F"
     },
     {
       id: "muscle" as const,
       nameFa: "عضله‌سازی",
       nameEn: "Muscle Gain",
       calories: 2500,
-      protein: 140,
-      carbs: 300,
-      fat: 75,
-      subtitleFa: "۲۵۰۰ کالری • ۱۴۰ گرم پروتئین",
-      subtitleEn: "2500 kcal • 140g P",
-      macroDetailFa: "کربو ۳۰۰g • چربی ۷۵g",
-      macroDetailEn: "300g C • 75g F"
+      protein: 180,
+      carbs: 260,
+      fat: 70,
+      subtitleFa: "۲۵۰۰ کالری • ۱۸۰ گرم پروتئین",
+      subtitleEn: "2500 kcal • 180g P",
+      macroDetailFa: "کربو ۲۶۰g • چربی ۷۰g",
+      macroDetailEn: "260g C • 70g F"
     },
     {
       id: "keto" as const,
@@ -86,6 +86,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
     if (userProfile.activePreset === preset.id) {
       return true;
     }
+    // Also match if macros match the preset
     return (
       userProfile.calorieGoal === preset.calories &&
       userProfile.proteinGoal === preset.protein &&
@@ -115,8 +116,8 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
             {isFa ? "الگوهای رژیمی آماده" : "Quick Dietary Presets"}
           </h3>
           {activePresetConfig && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/30 px-2 py-0.5 rounded">
-              <Check className="w-3 h-3 stroke-[3]" />
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff3e00] bg-[#ff3e00]/15 border border-[#ff3e00]/50 px-2.5 py-1 rounded shadow-sm">
+              <Check className="w-3.5 h-3.5 stroke-[3] text-[#ff3e00]" />
               <span>
                 {isFa
                   ? `الگوی فعال: ${activePresetConfig.nameFa}`
@@ -135,27 +136,27 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                 onClick={() => onApplyPreset(preset.id)}
                 type="button"
                 aria-pressed={isActive}
-                className={`min-h-[76px] p-3.5 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden ${
+                className={`min-h-[82px] p-3.5 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden ${
                   isActive
-                    ? "bg-gradient-to-b from-[#ff3e00]/15 to-[#18191d] border-2 border-[#ff3e00] shadow-[0_0_16px_rgba(255,62,0,0.18)]"
+                    ? "bg-[#ff3e00]/15 border-2 border-[#ff3e00] ring-2 ring-[#ff3e00]/40 shadow-[0_0_20px_rgba(255,62,0,0.25)]"
                     : "bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00]/60 hover:bg-[#1a1c22]"
                 }`}
               >
                 {/* Active Indicator Top Line */}
                 {isActive && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[#ff3e00]" />
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#ff3e00] shadow-[0_0_8px_#ff3e00]" />
                 )}
 
-                <div className="flex items-center justify-between gap-1 mb-1">
+                <div className="flex items-center justify-between gap-1 mb-1.5">
                   <span
                     className={`font-bold text-sm block ${
-                      isActive ? "text-[#ff3e00]" : "text-[#f4f4f5] group-hover:text-[#ff3e00]"
+                      isActive ? "text-[#ff3e00] font-extrabold" : "text-[#f4f4f5] group-hover:text-[#ff3e00]"
                     }`}
                   >
                     {isFa ? preset.nameFa : preset.nameEn}
                   </span>
                   {isActive ? (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-mono font-extrabold text-[#08090a] bg-[#ff3e00] px-1.5 py-0.5 rounded shadow-sm shrink-0">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-extrabold text-black bg-[#ff3e00] px-2 py-0.5 rounded shadow-md shrink-0">
                       <Check className="w-3 h-3 stroke-[3]" />
                       <span>{isFa ? "فعال" : "ACTIVE"}</span>
                     </span>
@@ -168,13 +169,17 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
 
                 <span
                   className={`text-xs block ${
-                    isActive ? "text-[#f4f4f5] font-semibold" : "text-[#9ca3af]"
+                    isActive ? "text-[#ffffff] font-bold" : "text-[#9ca3af]"
                   }`}
                 >
                   {isFa ? preset.subtitleFa : preset.subtitleEn}
                 </span>
 
-                <span className="text-[11px] text-[#71717a] mt-1 block font-mono">
+                <span
+                  className={`text-[11px] mt-1 block font-mono ${
+                    isActive ? "text-[#ff784e] font-semibold" : "text-[#71717a]"
+                  }`}
+                >
                   {isFa ? preset.macroDetailFa : preset.macroDetailEn}
                 </span>
               </button>

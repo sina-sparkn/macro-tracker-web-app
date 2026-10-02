@@ -54,6 +54,8 @@ export interface ScannedLabel {
 
 export interface FoodLogItem {
   id: string;
+  entryDate?: string; // YYYY-MM-DD
+  createdAt?: number;
   productName: string;
   brand: string;
   foodType?: "dish" | "packaged_food" | "beverage";

@@ -41,15 +41,24 @@ import AndroidFrame from "./components/AndroidFrame";
 import ConsoleHeader from "./components/ConsoleHeader";
 import { IconBar, NavPane, VitalsPane } from "./components/ConsoleSidebars";
 import ScannerConsoleView from "./components/ScannerConsoleView";
-import DiaryConsoleView from "./components/DiaryConsoleView";
+import DiaryConsoleView, { SqliteDbStats } from "./components/DiaryConsoleView";
 import GoalsConsoleView from "./components/GoalsConsoleView";
 import NutritionModal from "./components/NutritionModal";
 import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
 import { RecommendedDish, getDailyRecommendedDish } from "./recommendedDishes";
+import { normalizeScannedLabel } from "./utils/dishLocalization";
 
 export const TOMAN_PER_USD = 230000;
+
+export function getTodayIsoDate(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 
 export interface CyberPresetDish {
   refId: string;
@@ -222,10 +231,11 @@ export default function App() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
-  // Food Diary State (preloaded with some meals with pricing and categorization)
+  // Food Diary State (backed by SQLite database via /api/diary)
   const [diaryItems, setDiaryItems] = useState<FoodLogItem[]>([
     {
       id: "pre-1",
+      entryDate: getTodayIsoDate(),
       productName: "Ghormeh Sabzi with Saffron Rice",
       brand: "Authentic Persian Plate",
       foodType: "dish",
@@ -243,6 +253,7 @@ export default function App() {
     },
     {
       id: "pre-2",
+      entryDate: getTodayIsoDate(),
       productName: "Almond Milk (Unsweetened)",
       brand: "Earth's Own",
       foodType: "beverage",
@@ -259,6 +270,15 @@ export default function App() {
       priceUSD: 1.22
     }
   ]);
+
+  const [selectedDiaryDate, setSelectedDiaryDate] = useState<string>(() => getTodayIsoDate());
+  const [isSyncingDb, setIsSyncingDb] = useState<boolean>(false);
+  const [sqliteStats, setSqliteStats] = useState<SqliteDbStats>({
+    engine: "SQLite 3 (WAL)",
+    fileName: "nutriscan.sqlite",
+    totalEntries: 2,
+    activeDays: 1
+  });
 
   // User Goals/Profile (Default)
   const DEFAULT_USER_PROFILE: UserProfile = {
@@ -322,16 +342,43 @@ export default function App() {
     return messages[scanStep % messages.length];
   };
 
-  // Load persistence from localStorage on mount
+  // Load persistence from SQLite database (/api/diary) and localStorage on mount
   useEffect(() => {
-    const savedDiary = localStorage.getItem("nutriscan_diary");
-    if (savedDiary) {
+    const fetchSqliteDiary = async () => {
+      setIsSyncingDb(true);
       try {
-        setDiaryItems(JSON.parse(savedDiary));
-      } catch (e) {
-        console.error(e);
+        const res = await fetch("/api/diary");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data.entries)) {
+            setDiaryItems(data.entries);
+            localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+          }
+          if (data.stats) {
+            setSqliteStats(data.stats);
+          }
+          return;
+        }
+      } catch (err) {
+        console.warn("SQLite fetch fallback to localStorage:", err);
+      } finally {
+        setIsSyncingDb(false);
       }
-    }
+
+      const savedDiary = localStorage.getItem("nutriscan_diary");
+      if (savedDiary) {
+        try {
+          const parsed = JSON.parse(savedDiary);
+          if (Array.isArray(parsed)) {
+            setDiaryItems(parsed);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    };
+
+    fetchSqliteDiary();
 
     const savedProfile = localStorage.getItem("nutriscan_profile");
     if (savedProfile) {
@@ -364,7 +411,8 @@ export default function App() {
       try {
         const parsed = JSON.parse(savedRecentScans);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setRecentScans([parsed[0]]);
+          const norm = normalizeScannedLabel(parsed[0], currentLang, 230000);
+          setRecentScans([norm]);
         }
       } catch (e) {
         console.error(e);
@@ -372,20 +420,80 @@ export default function App() {
     }
   }, []);
 
-  // Save persistence to localStorage on changes
+  // Save persistence to localStorage & SQLite state helper
   const saveDiary = (newItems: FoodLogItem[]) => {
     setDiaryItems(newItems);
     localStorage.setItem("nutriscan_diary", JSON.stringify(newItems));
+    const distinctDays = new Set(newItems.map((i) => i.entryDate || getTodayIsoDate())).size;
+    setSqliteStats((prev) => ({
+      ...prev,
+      totalEntries: newItems.length,
+      activeDays: distinctDays
+    }));
+  };
+
+  const persistSingleEntryToSqlite = async (newItem: FoodLogItem) => {
+    const itemWithDate: FoodLogItem = {
+      ...newItem,
+      entryDate: newItem.entryDate || getTodayIsoDate(),
+      createdAt: newItem.createdAt || Date.now()
+    };
+    const optimistic = [itemWithDate, ...diaryItems];
+    saveDiary(optimistic);
+
+    setIsSyncingDb(true);
+    try {
+      const res = await fetch("/api/diary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ item: itemWithDate })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.entries)) {
+          setDiaryItems(data.entries);
+          localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+        }
+        if (data.stats) {
+          setSqliteStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to sync new entry to SQLite server, kept in local cache:", err);
+    } finally {
+      setIsSyncingDb(false);
+    }
   };
 
   const saveProfile = (newProfile: UserProfile) => {
     setUserProfile(newProfile);
     localStorage.setItem("nutriscan_profile", JSON.stringify(newProfile));
+    // If language changed, normalize current recent scans to match new language
+    if (recentScans.length > 0) {
+      const updatedRecent = [
+        normalizeScannedLabel(
+          recentScans[0],
+          newProfile.language === "fa" ? "fa" : "en",
+          newProfile.exchangeRateTomanPerUSD || 230000
+        )
+      ];
+      setRecentScans(updatedRecent);
+      try {
+        localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updatedRecent));
+      } catch (e) {
+        console.error(e);
+      }
+    }
   };
 
   // Recent scan persistence helper (stores ONLY the single last scan from camera/upload)
   const addRecentScan = (scanned: ScannedLabel) => {
-    const updated = [scanned];
+    const normalized = normalizeScannedLabel(
+      scanned,
+      currentLang,
+      userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
+    );
+    const updated = [normalized];
     setRecentScans(updated);
     try {
       localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updated));
@@ -404,7 +512,12 @@ export default function App() {
   };
 
   const handleSelectRecentScan = (item: ScannedLabel) => {
-    setScannedResult(item);
+    const normalized = normalizeScannedLabel(
+      item,
+      currentLang,
+      userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
+    );
+    setScannedResult(normalized);
     setPortionServings(1);
     setShowResultDetail(true);
   };
@@ -413,31 +526,34 @@ export default function App() {
     const rate = (userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0)
       ? userProfile.exchangeRateTomanPerUSD
       : TOMAN_PER_USD;
+    const normalized = normalizeScannedLabel(scanned, currentLang, rate);
 
-    let costToman = scanned.estimatedPrice?.amountToman;
-    let costUSD = scanned.estimatedPrice?.amountUSD;
+    let costToman = normalized.estimatedPrice?.amountToman;
+    let costUSD = normalized.estimatedPrice?.amountUSD;
     if (!costToman && costUSD) costToman = Math.round(costUSD * rate);
     if (!costUSD && costToman) costUSD = Number((costToman / rate).toFixed(2));
 
     const newItem: FoodLogItem = {
       id: Math.random().toString(36).substr(2, 9),
-      productName: scanned.productName,
-      brand: scanned.brand,
-      foodType: scanned.foodType || "dish",
-      cuisine: scanned.cuisine,
+      entryDate: getTodayIsoDate(),
+      createdAt: Date.now(),
+      productName: normalized.productName,
+      brand: normalized.brand,
+      foodType: normalized.foodType || "dish",
+      cuisine: normalized.cuisine,
       loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       servingsCount: 1,
-      servingSizeText: scanned.servingSize,
-      caloriesTotal: Math.round(scanned.calories),
-      proteinTotal: Number(scanned.protein.toFixed(1)),
-      carbsTotal: Number(scanned.totalCarbohydrate.toFixed(1)),
-      fatTotal: Number(scanned.totalFat.toFixed(1)),
-      sodiumTotal: Math.round(scanned.sodium),
+      servingSizeText: normalized.servingSize,
+      caloriesTotal: Math.round(normalized.calories),
+      proteinTotal: Number(normalized.protein.toFixed(1)),
+      carbsTotal: Number(normalized.totalCarbohydrate.toFixed(1)),
+      fatTotal: Number(normalized.totalFat.toFixed(1)),
+      sodiumTotal: Math.round(normalized.sodium),
       priceToman: costToman,
       priceUSD: costUSD
     };
 
-    saveDiary([newItem, ...diaryItems]);
+    persistSingleEntryToSqlite(newItem);
   };
 
   // Stop real camera stream
@@ -510,7 +626,8 @@ export default function App() {
         body: JSON.stringify({
           imageBase64: base64Image,
           mimeType: mime || "image/jpeg",
-          language: currentLang
+          language: currentLang,
+          exchangeRateTomanPerUSD: userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
         })
       });
 
@@ -571,8 +688,14 @@ export default function App() {
         );
       }
 
+      const normalizedData = normalizeScannedLabel(
+        data,
+        currentLang,
+        userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
+      );
+
       const scannedItem: ScannedLabel = {
-        ...data,
+        ...normalizedData,
         id: data.id || `scan-${Date.now()}`,
         scannedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
@@ -722,8 +845,11 @@ export default function App() {
   const handleLogToDiary = () => {
     if (!scannedResult) return;
 
+    const todayIso = getTodayIsoDate();
     const newItem: FoodLogItem = {
       id: Math.random().toString(36).substr(2, 9),
+      entryDate: todayIso,
+      createdAt: Date.now(),
       productName: scannedResult.productName,
       brand: scannedResult.brand,
       foodType: scannedResult.foodType || "dish",
@@ -744,48 +870,156 @@ export default function App() {
         : undefined
     };
 
-    const updated = [newItem, ...diaryItems];
-    saveDiary(updated);
+    persistSingleEntryToSqlite(newItem);
+    setSelectedDiaryDate(todayIso);
     
     // Smooth navigation to diary with feedback
     setShowResultDetail(false);
     setActiveTab("diary");
   };
 
-  // Delete logged item
-  const handleDeleteLogItem = (id: string) => {
-    const updated = diaryItems.filter(item => item.id !== id);
-    saveDiary(updated);
+  // Add manual / past entry to SQLite diary
+  const handleAddManualEntry = async (partial: Partial<FoodLogItem>) => {
+    const newItem: FoodLogItem = {
+      id: `sql-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      entryDate: partial.entryDate || getTodayIsoDate(),
+      createdAt: Date.now(),
+      productName: partial.productName || "Custom Dish",
+      brand: partial.brand || "SQLite Diary",
+      foodType: partial.foodType || "dish",
+      cuisine: partial.cuisine || "",
+      loggedAt: partial.loggedAt || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      servingsCount: partial.servingsCount || 1,
+      servingSizeText: partial.servingSizeText || "1 serving",
+      caloriesTotal: Math.round(Number(partial.caloriesTotal || 0)),
+      proteinTotal: Number(Number(partial.proteinTotal || 0).toFixed(1)),
+      carbsTotal: Number(Number(partial.carbsTotal || 0).toFixed(1)),
+      fatTotal: Number(Number(partial.fatTotal || 0).toFixed(1)),
+      sodiumTotal: Math.round(Number(partial.sodiumTotal || 0)),
+      priceToman: partial.priceToman,
+      priceUSD: partial.priceUSD
+    };
+    await persistSingleEntryToSqlite(newItem);
   };
 
-  // Clear all logs
-  const handleClearLogs = () => {
-    if (window.confirm("Are you sure you want to clear your entire nutrition log for today?")) {
-      saveDiary([]);
+  // Seed 7-day sample history in SQLite
+  const handleSeedSampleHistory = async () => {
+    setIsSyncingDb(true);
+    try {
+      const res = await fetch("/api/diary/seed", { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.entries)) {
+          setDiaryItems(data.entries);
+          localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+        }
+        if (data.stats) {
+          setSqliteStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to seed SQLite sample history:", err);
+    } finally {
+      setIsSyncingDb(false);
     }
   };
 
-  // Calculate dynamic totals
-  const dailyTotals: DailyTotals = diaryItems.reduce(
-    (acc, curr) => {
-      const rate = currentExchangeRate;
-      let itemToman = curr.priceToman || 0;
-      let itemUSD = curr.priceUSD || 0;
-      if (!itemToman && itemUSD) itemToman = Math.round(itemUSD * rate);
-      if (!itemUSD && itemToman) itemUSD = Number((itemToman / rate).toFixed(2));
+  // Delete logged item from SQLite
+  const handleDeleteLogItem = async (id: string) => {
+    const updated = diaryItems.filter(item => item.id !== id);
+    saveDiary(updated);
 
-      return {
-        calories: acc.calories + curr.caloriesTotal,
-        protein: acc.protein + curr.proteinTotal,
-        carbs: acc.carbs + curr.carbsTotal,
-        fat: acc.fat + curr.fatTotal,
-        sodium: acc.sodium + curr.sodiumTotal,
-        costTomanTotal: acc.costTomanTotal + itemToman,
-        costUSDTotal: Number((acc.costUSDTotal + itemUSD).toFixed(2))
-      };
-    },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, costTomanTotal: 0, costUSDTotal: 0 }
+    setIsSyncingDb(true);
+    try {
+      const res = await fetch(`/api/diary/${encodeURIComponent(id)}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.entries)) {
+          setDiaryItems(data.entries);
+          localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+        }
+        if (data.stats) {
+          setSqliteStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to delete item on SQLite server:", err);
+    } finally {
+      setIsSyncingDb(false);
+    }
+  };
+
+  // Clear logs (for selected date or all) in SQLite
+  const handleClearLogs = async (dateFilter?: string) => {
+    if (dateFilter) {
+      const remaining = diaryItems.filter(
+        (item) => (item.entryDate || getTodayIsoDate()) !== dateFilter
+      );
+      saveDiary(remaining);
+    } else {
+      saveDiary([]);
+    }
+
+    setIsSyncingDb(true);
+    try {
+      const url = dateFilter
+        ? `/api/diary?date=${encodeURIComponent(dateFilter)}`
+        : "/api/diary";
+      const res = await fetch(url, { method: "DELETE" });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.entries)) {
+          setDiaryItems(data.entries);
+          localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+        }
+        if (data.stats) {
+          setSqliteStats(data.stats);
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to clear logs on SQLite server:", err);
+    } finally {
+      setIsSyncingDb(false);
+    }
+  };
+
+  // Filter items for Today vs Selected Diary Date
+  const todayIso = getTodayIsoDate();
+  const todayDiaryItems = diaryItems.filter(
+    (item) => (item.entryDate || todayIso) === todayIso
   );
+  const selectedDiaryItems =
+    selectedDiaryDate === "all"
+      ? diaryItems
+      : diaryItems.filter((item) => (item.entryDate || todayIso) === selectedDiaryDate);
+
+  const computeTotalsForList = (items: FoodLogItem[]): DailyTotals =>
+    items.reduce(
+      (acc, curr) => {
+        const rate = currentExchangeRate;
+        let itemToman = curr.priceToman || 0;
+        let itemUSD = curr.priceUSD || 0;
+        if (!itemToman && itemUSD) itemToman = Math.round(itemUSD * rate);
+        if (!itemUSD && itemToman) itemUSD = Number((itemToman / rate).toFixed(2));
+
+        return {
+          calories: acc.calories + curr.caloriesTotal,
+          protein: acc.protein + curr.proteinTotal,
+          carbs: acc.carbs + curr.carbsTotal,
+          fat: acc.fat + curr.fatTotal,
+          sodium: acc.sodium + curr.sodiumTotal,
+          costTomanTotal: acc.costTomanTotal + itemToman,
+          costUSDTotal: Number((acc.costUSDTotal + itemUSD).toFixed(2))
+        };
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0, sodium: 0, costTomanTotal: 0, costUSDTotal: 0 }
+    );
+
+  // Calculate dynamic totals for today (header/vitals) and for selected diary view
+  const dailyTotals: DailyTotals = computeTotalsForList(todayDiaryItems);
+  const selectedDiaryTotals: DailyTotals = computeTotalsForList(selectedDiaryItems);
 
   // Percentage calculations
   const calPercent = Math.min(Math.round((dailyTotals.calories / userProfile.calorieGoal) * 100), 100);
@@ -875,6 +1109,8 @@ export default function App() {
     const isFa = currentLang === "fa";
     const newItem: FoodLogItem = {
       id: Math.random().toString(36).substr(2, 9),
+      entryDate: getTodayIsoDate(),
+      createdAt: Date.now(),
       productName: isFa ? dish.nameFa : dish.nameEn,
       brand: `${dish.refId} • ${isFa ? dish.originFa : dish.originEn}`,
       foodType: "dish",
@@ -890,7 +1126,7 @@ export default function App() {
       priceToman: dish.priceToman,
       priceUSD: dish.priceUSD
     };
-    saveDiary([newItem, ...diaryItems]);
+    persistSingleEntryToSqlite(newItem);
   };
 
   return (
@@ -985,11 +1221,18 @@ export default function App() {
 
             {activeTab === "diary" && (
               <DiaryConsoleView
-                diaryItems={diaryItems}
-                dailyTotals={dailyTotals}
+                diaryItems={selectedDiaryItems}
+                allHistoryItems={diaryItems}
+                selectedDate={selectedDiaryDate}
+                onSelectDate={setSelectedDiaryDate}
+                dailyTotals={selectedDiaryTotals}
                 userProfile={userProfile}
+                dbStats={sqliteStats}
+                isSyncingDb={isSyncingDb}
                 onDeleteLogItem={handleDeleteLogItem}
                 onClearLogs={handleClearLogs}
+                onAddManualEntry={handleAddManualEntry}
+                onSeedSampleHistory={handleSeedSampleHistory}
                 onGoToScanner={() => setActiveTab("scan")}
               />
             )}

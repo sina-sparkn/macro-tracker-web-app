@@ -5,6 +5,7 @@ import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "../worldFoods";
 import { TRANSLATIONS } from "../translations";
 import { CYBER_PRESET_DISHES, CyberPresetDish } from "../App";
 import { RecommendedDish, getDailyRecommendedDish, getDailyFormattedDate } from "../recommendedDishes";
+import { normalizeScannedLabel } from "../utils/dishLocalization";
 
 interface ScannerConsoleViewProps {
   userProfile: UserProfile;
@@ -428,7 +429,8 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </div>
         ) : (
           <div className="max-w-xl">
-            {recentScans.slice(0, 1).map((item, idx) => {
+            {recentScans.slice(0, 1).map((rawItem, idx) => {
+              const item = normalizeScannedLabel(rawItem, isFa ? "fa" : "en", currentRate);
               const itemToman = item.estimatedPrice?.amountToman;
               const itemUSD = item.estimatedPrice?.amountUSD;
               const itemId = item.id || `${item.productName}-${idx}`;

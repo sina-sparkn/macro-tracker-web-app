@@ -1,6 +1,14 @@
 import express from "express";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import {
+  getAllDiaryEntries,
+  insertDiaryEntry,
+  deleteDiaryEntryById,
+  clearDiaryEntries,
+  seedSampleHistory,
+  getDatabaseStats
+} from "../server/sqliteDb";
 
 dotenv.config();
 
@@ -78,16 +86,16 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["Ensure controlled oil during herb sautéing"],
     ingredientsList: ["Lamb Chuck", "Parsley", "Leek (Tareh)", "Coriander", "Fenugreek", "Red Kidney Beans", "Dried Lime", "Basmati Rice", "Saffron"],
     estimatedPrice: {
-      amountToman: 185000,
-      amountUSD: 3.2,
+      amountToman: 950000,
+      amountUSD: 4.13,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Lamb Chuck (120g)", amount: "120g", costToman: 110000, costUSD: 1.9 },
-      { name: "Herb Medley (100g)", amount: "100g", costToman: 25000, costUSD: 0.45 },
-      { name: "Basmati Rice & Saffron", amount: "80g", costToman: 26000, costUSD: 0.45 },
-      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 12000, costUSD: 0.22 },
-      { name: "Dried Lime & Spices", amount: "portion", costToman: 12000, costUSD: 0.18 }
+      { name: "Lamb Chuck (120g)", amount: "120g", costToman: 600000, costUSD: 2.61 },
+      { name: "Herb Medley (100g)", amount: "100g", costToman: 130000, costUSD: 0.57 },
+      { name: "Basmati Rice & Saffron", amount: "80g", costToman: 110000, costUSD: 0.48 },
+      { name: "Red Kidney Beans (40g)", amount: "40g", costToman: 60000, costUSD: 0.26 },
+      { name: "Dried Lime & Spices", amount: "portion", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "The undisputed national dish of Iran, balancing hot and cold energies through cooling dried black limes and warm herbs.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -122,16 +130,16 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["High in Saturated Fat", "Calorie dense meal"],
     ingredientsList: ["Minced Lamb/Beef", "Basmati Rice", "Saffron", "Onion", "Sumac", "Tomato", "Butter", "Black Pepper"],
     estimatedPrice: {
-      amountToman: 240000,
-      amountUSD: 4.1,
+      amountToman: 1150000,
+      amountUSD: 5.0,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Minced Meat (200g)", amount: "200g", costToman: 160000, costUSD: 2.8 },
-      { name: "Basmati Rice & Saffron", amount: "120g", costToman: 40000, costUSD: 0.7 },
-      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 18000, costUSD: 0.3 },
-      { name: "Onions & Seasonings", amount: "portion", costToman: 10000, costUSD: 0.18 },
-      { name: "Butter & Garnish", amount: "portion", costToman: 12000, costUSD: 0.12 }
+      { name: "Minced Meat (200g)", amount: "200g", costToman: 820000, costUSD: 3.57 },
+      { name: "Basmati Rice & Saffron", amount: "120g", costToman: 200000, costUSD: 0.87 },
+      { name: "Grilled Tomatoes & Sumac", amount: "2 pcs", costToman: 60000, costUSD: 0.26 },
+      { name: "Onions & Seasonings", amount: "portion", costToman: 40000, costUSD: 0.17 },
+      { name: "Butter & Garnish", amount: "portion", costToman: 30000, costUSD: 0.13 }
     ],
     culturalNotes: "A royal culinary masterpiece dating from the Qajar dynasty, served on festive celebrations throughout Iran.",
     priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
@@ -165,13 +173,13 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: [],
     ingredientsList: ["Cultured Nonfat Milk", "L. Acidophilus", "Bifidus", "L. Casei"],
     estimatedPrice: {
-      amountToman: 45000,
-      amountUSD: 0.8,
+      amountToman: 400000,
+      amountUSD: 1.74,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Cultured Milk Base (150g)", amount: "150g", costToman: 40000, costUSD: 0.7 },
-      { name: "Live Active Cultures", amount: "portion", costToman: 5000, costUSD: 0.1 }
+      { name: "Cultured Milk Base (150g)", amount: "150g", costToman: 350000, costUSD: 1.52 },
+      { name: "Live Active Cultures", amount: "portion", costToman: 50000, costUSD: 0.22 }
     ],
     culturalNotes: "Traditionally strained sheep or cow milk yogurt common across Greece, Turkey, and the Levant.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
@@ -206,15 +214,187 @@ const FALLBACK_FOODS = [
     nutritionalWarnings: ["Low Protein content"],
     ingredientsList: ["Almond Base (Water, Almonds)", "Calcium Carbonate", "Gellan Gum", "Sea Salt", "Natural Flavor", "Vitamin A Palmitate", "Vitamin D2"],
     estimatedPrice: {
-      amountToman: 55000,
-      amountUSD: 0.95,
+      amountToman: 280000,
+      amountUSD: 1.22,
       confidence: "high"
     },
     ingredientCosts: [
-      { name: "Blanched Almonds", amount: "30g", costToman: 35000, costUSD: 0.6 },
-      { name: "Filtered Water & Fortification", amount: "200ml", costToman: 20000, costUSD: 0.35 }
+      { name: "Blanched Almonds", amount: "30g", costToman: 180000, costUSD: 0.78 },
+      { name: "Filtered Water & Fortification", amount: "200ml", costToman: 100000, costUSD: 0.44 }
     ],
     culturalNotes: "Popularized as a dairy alternative with roots in medieval European and Middle Eastern cooking.",
+    priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
+  }
+];
+
+const FALLBACK_FOODS_FA = [
+  {
+    productName: "قورمه سبزی اصیل با برنج زعفرانی",
+    brand: "بشقاب سنتی ایرانی",
+    foodType: "dish",
+    cuisine: "ایرانی",
+    servingSize: "۱ بشقاب (۳۵۰ گرم)",
+    servingsPerContainer: 1,
+    calories: 420,
+    totalFat: 16,
+    saturatedFat: 4,
+    transFat: 0,
+    cholesterol: 45,
+    sodium: 480,
+    totalCarbohydrate: 38,
+    dietaryFiber: 8,
+    totalSugars: 2,
+    addedSugars: 0,
+    protein: 28,
+    vitamins: [
+      { name: "آهن", value: "4.2mg", percentDV: 24 },
+      { name: "ویتامین K", value: "180mcg", percentDV: 150 },
+      { name: "ویتامین C", value: "22mg", percentDV: 25 }
+    ],
+    healthScore: 92,
+    healthRatingLabel: "A - عالی",
+    summary: "خورش اصیل سنتی ایرانی سرشار از آهن با جذب بالا، فیبر رژیمی لوبیا قرمز و سبزیجات معطر غنی از آنتی‌اکسیدان.",
+    nutritionalHighlights: ["پروتئین بالا (۲۸ گرم)", "سرشار از فیبر رژیمی (۸ گرم)", "منبع غنی ویتامین K و آهن طبیعی"],
+    nutritionalWarnings: ["میزان روغن سرخ‌کردن سبزی را در حد ملایم نگه دارید"],
+    ingredientsList: ["گوشت گوساله یا گوسفند", "جعفری", "تره", "گشنیز", "شنبلیله", "لوبیا قرمز", "لیمو عمانی", "برنج زعفرانی"],
+    estimatedPrice: {
+      amountToman: 950000,
+      amountUSD: 4.13,
+      confidence: "high"
+    },
+    ingredientCosts: [
+      { name: "گوشت گوسفندی / گوساله (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 600000, costUSD: 2.61 },
+      { name: "سبزی قورمه سرخ‌شده (۱۰۰ گرم)", amount: "۱۰۰ گرم", costToman: 130000, costUSD: 0.57 },
+      { name: "برنج زعفرانی دم‌کشیده (۸۰ گرم)", amount: "۸۰ گرم", costToman: 110000, costUSD: 0.48 },
+      { name: "لوبیا قرمز درجه یک (۴۰ گرم)", amount: "۴۰ گرم", costToman: 60000, costUSD: 0.26 },
+      { name: "لیمو عمانی و ادویه خورش", amount: "سهم مصرفی", costToman: 50000, costUSD: 0.22 }
+    ],
+    culturalNotes: "خورش ملی و تاریخی ایران که بازتاب تعادل طبع‌های گرم و سرد در مکتب سنتی آشپزی ایرانی است.",
+    priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
+  },
+  {
+    productName: "چلو کباب کوبیده سنتی با گوجه",
+    brand: "کباب سنتی ذغالی",
+    foodType: "dish",
+    cuisine: "ایرانی",
+    servingSize: "۲ سیخ با چلو زعفرانی (۴۰۰ گرم)",
+    servingsPerContainer: 1,
+    calories: 680,
+    totalFat: 28,
+    saturatedFat: 11,
+    transFat: 0.5,
+    cholesterol: 85,
+    sodium: 580,
+    totalCarbohydrate: 62,
+    dietaryFiber: 3,
+    totalSugars: 3,
+    addedSugars: 0,
+    protein: 38,
+    vitamins: [
+      { name: "روی (زینک)", value: "6.8mg", percentDV: 62 },
+      { name: "ویتامین B12", value: "2.4mcg", percentDV: 100 },
+      { name: "آهن", value: "3.8mg", percentDV: 21 }
+    ],
+    healthScore: 78,
+    healthRatingLabel: "B - خوب",
+    summary: "کباب اصیل ذغالی ایرانی با گوشت مخلوط تازه، چلو معطر زعفرانی، گوجه کبابی و سماق کاهنده چربی.",
+    nutritionalHighlights: ["پروتئین بسیار بالا (۳۸ گرم) مناسب عضله‌سازی", "سرشار از روی و ویتامین B12", "پخت سنتی روی زغال"],
+    nutritionalWarnings: ["چربی اشباع نسبتاً بالا", "وعده با تراکم کالری بالا"],
+    ingredientsList: ["گوشت چرخ‌کرده قلوه‌گاه و راسته", "برنج ایرانی", "زعفران", "پیاز", "سماق", "گوجه‌فرنگی", "کره"],
+    estimatedPrice: {
+      amountToman: 1150000,
+      amountUSD: 5.0,
+      confidence: "high"
+    },
+    ingredientCosts: [
+      { name: "گوشت چرخ‌کرده مخلوط (۲۰۰ گرم)", amount: "۲۰۰ گرم", costToman: 820000, costUSD: 3.57 },
+      { name: "برنج طارم ممتاز با زعفران (۱۲۰ گرم)", amount: "۱۲۰ گرم", costToman: 200000, costUSD: 0.87 },
+      { name: "گوجه کبابی و سماق تبریز", amount: "۲ عدد", costToman: 60000, costUSD: 0.26 },
+      { name: "پیاز رنده شده و ادویه", amount: "۵۰ گرم", costToman: 40000, costUSD: 0.17 },
+      { name: "کره حیوانی و لیمو ترش", amount: "سهم مصرفی", costToman: 30000, costUSD: 0.13 }
+    ],
+    culturalNotes: "شاهکار مطبخ قاجار در تبریز و تهران که امروز محبوب‌ترین غذای میهمانی‌ها و نماد افتخار غذایی ایران است.",
+    priceDisclaimer: "قیمت‌ها بر اساس تخمین هزینه مواد اولیه محاسبه شده و جنبه تخمینی دارد."
+  },
+  {
+    productName: "ماست یونانی پرپروتئین طبیعی",
+    brand: "چوبانی ساده",
+    foodType: "packaged_food",
+    cuisine: "مدیترانه‌ای",
+    servingSize: "۱ کاسه (۱۵۰ گرم)",
+    servingsPerContainer: 1,
+    calories: 90,
+    totalFat: 0,
+    saturatedFat: 0,
+    transFat: 0,
+    cholesterol: 5,
+    sodium: 55,
+    totalCarbohydrate: 5,
+    dietaryFiber: 0,
+    totalSugars: 4,
+    addedSugars: 0,
+    protein: 16,
+    vitamins: [
+      { name: "کلسیم", value: "180mg", percentDV: 15 },
+      { name: "پتاسیم", value: "220mg", percentDV: 4 }
+    ],
+    healthScore: 95,
+    healthRatingLabel: "A - عالی",
+    summary: "ماده غذایی فوق‌العاده مغذی با ۱۶ گرم پروتئین خالص، بدون چربی مضر و بدون قند افزوده.",
+    nutritionalHighlights: ["پروتئین بالا (۱۶ گرم)", "بدون قند افزوده", "کاملاً بدون چربی"],
+    nutritionalWarnings: [],
+    ingredientsList: ["شیر بدون چربی پاستوریزه", "باکتری‌های زنده پروبیوتیک فعال"],
+    estimatedPrice: {
+      amountToman: 400000,
+      amountUSD: 1.74,
+      confidence: "high"
+    },
+    ingredientCosts: [
+      { name: "شیر باکیفیت تغلیظ شده (۱۵۰ گرم)", amount: "۱۵۰ گرم", costToman: 350000, costUSD: 1.52 },
+      { name: "کشت پروبیوتیک فعال", amount: "سهم", costToman: 50000, costUSD: 0.22 }
+    ],
+    culturalNotes: "ماست چکیده سنتی که قرن‌ها در یونان، ترکیه و کشورهای حوزه مدیترانه تهیه می‌شود.",
+    priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
+  },
+  {
+    productName: "شیر بادام ارگانیک (بدون قند افزوده)",
+    brand: "ارثز اون",
+    foodType: "beverage",
+    cuisine: "بین‌المللی",
+    servingSize: "۱ لیوان (۲۴۰ میلی‌لیتر)",
+    servingsPerContainer: 4,
+    calories: 35,
+    totalFat: 3,
+    saturatedFat: 0,
+    transFat: 0,
+    cholesterol: 0,
+    sodium: 160,
+    totalCarbohydrate: 1,
+    dietaryFiber: 1,
+    totalSugars: 0,
+    addedSugars: 0,
+    protein: 1,
+    vitamins: [
+      { name: "کلسیم", value: "300mg", percentDV: 25 },
+      { name: "ویتامین D", value: "2mcg", percentDV: 10 },
+      { name: "ویتامین E", value: "7.5mg", percentDV: 50 }
+    ],
+    healthScore: 88,
+    healthRatingLabel: "A - عالی",
+    summary: "جایگزین گیاهی عالی برای لبنیات با کالری بسیار پایین، بدون شکر و غنی شده با کلسیم و ویتامین D.",
+    nutritionalHighlights: ["بدون قند افزوده", "بسیار کم‌کالری", "غنی از کلسیم و ویتامین D"],
+    nutritionalWarnings: ["پروتئین پایین"],
+    ingredientsList: ["پایه بادام ارگانیک", "کربنات کلسیم", "صمغ ژلان", "نمک دریا", "ویتامین D2"],
+    estimatedPrice: {
+      amountToman: 280000,
+      amountUSD: 1.22,
+      confidence: "high"
+    },
+    ingredientCosts: [
+      { name: "بادام خام پوست‌کنده (۳۰ گرم)", amount: "۳۰ گرم", costToman: 180000, costUSD: 0.78 },
+      { name: "آب تصفیه شده و املاح معدنی", amount: "۲۰۰ میلی‌لیتر", costToman: 100000, costUSD: 0.44 }
+    ],
+    culturalNotes: "نوشیدنی گیاهی که در قرون وسطی نیز در آشپزی خاورمیانه و اروپا کاربرد داشته است.",
     priceDisclaimer: "قیمت‌ها به صورت تخمینی ارائه شده‌اند."
   }
 ];
@@ -233,7 +413,9 @@ app.get("/api/health", (req, res) => {
 // API Routes
 app.post("/api/scan-label", async (req, res) => {
   try {
-    const { imageBase64, mimeType } = req.body || {};
+    const { imageBase64, mimeType, language = "en", exchangeRateTomanPerUSD = 230000 } = req.body || {};
+    const isFa = language === "fa";
+    const userRate = Number(exchangeRateTomanPerUSD) > 0 ? Number(exchangeRateTomanPerUSD) : 230000;
 
     if (!imageBase64) {
       return res.status(400).json({ error: "Missing image data" });
@@ -241,9 +423,10 @@ app.post("/api/scan-label", async (req, res) => {
 
     if (!process.env.GEMINI_API_KEY) {
       console.warn("GEMINI_API_KEY is not defined. Falling back to high-fidelity demo data with warning...");
-      const randomIndex = Math.floor(Math.random() * FALLBACK_FOODS.length);
+      const pool = isFa ? FALLBACK_FOODS_FA : FALLBACK_FOODS;
+      const randomIndex = Math.floor(Math.random() * pool.length);
       const fallbackItem = {
-        ...FALLBACK_FOODS[randomIndex],
+        ...pool[randomIndex],
         isDemoFallback: true,
         apiKeyMissingNotice: true,
       };
@@ -258,29 +441,60 @@ app.post("/api/scan-label", async (req, res) => {
       },
     };
 
-    const promptString = `Analyze this food image. The image can be either:
+    let promptString = "";
+    if (isFa) {
+      promptString = `دستور حیاتی: شما یک متخصص تغذیه و ارزیاب هزینه مواد غذایی ایرانی هستید.
+زبان رابط کاربری فارسی است، بنابراین تمامی مقادیر متنی خروجی JSON (شامل productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, ingredientCosts) باید حتماً و بدون استثنا به زبان فارسی روان، اصیل و طبیعی نوشته شوند. هیچ فیلد متنی انگلیسی نباید در خروجی باشد.
+
+تصویر پیوست را با دقت تحلیل کنید. این تصویر می‌تواند یکی از موارد زیر باشد:
+۱. یک غذای آماده، بشقاب غذای رستورانی یا خوراک خانگی (مانند قورمه سبزی، چلو کباب کوبیده، جوجه کباب، دیزی، پیتزا، پاستا، سالاد و غیره).
+۲. یک محصول بسته‌بندی شده یا جدول ارزش غذایی.
+
+مشخصات غذایی شامل کالری، پروتئین، چربی، کربوهیدرات، فیبر، سدیم و ویتامین‌ها را با دقت تخمین بزنید.
+
+دستورالعمل قیمت‌گذاری واقعی و به‌روز بازار ایران:
+- نرخ مبنای محاسبه: هر ۱ دلار آمریکا = ${userRate.toLocaleString("fa-IR")} تومان.
+- واقعیت قیمت‌های کنونی بازار ایران:
+  * خورش‌ها و غذاهای پخته برنجی سنتی (مانند قورمه سبزی): حدود ۸۵۰,۰۰۰ تا ۱,۰۵۰,۰۰۰ تومان (~۳.۷ تا ۴.۵ دلار)
+  * کباب‌های سنتی ذغالی و چلو کباب (مانند کوبیده یا برگ): حدود ۱,۱۰۰,۰۰۰ تا ۱,۴۰۰,۰۰۰ تومان (~۴.۸ تا ۶.۰ دلار)
+  * لبنیات پرپروتئین یا ماست یونانی: حدود ۳۵۰,۰۰۰ تا ۴۵۰,۰۰۰ تومان (~۱.۵ تا ۲.۰ دلار)
+  * نوشیدنی‌های ارگانیک و گیاهی: حدود ۲۵۰,۰۰۰ تا ۳۲۰,۰۰۰ تومان (~۱.۱ تا ۱.۴ دلار)
+  * غذاهای سبک، آش، سوپ یا پاستا: حدود ۳۸۰,۰۰۰ تا ۵۵۰,۰۰۰ تومان (~۱.۶ تا ۲.۴ دلار)
+- مواد اولیه تشکیل‌دهنده را با مقادیر و برآورد هزینه جداگانه به تومان و دلار بر اساس این نرخ روز درج کنید.
+- رتبه‌بندی کیفی سلامت (healthRatingLabel) حتماً به فارسی باشد (مانند "A - عالی"، "B - خوب"، "C - متوسط").
+- خروجی را دقیقاً طبق اسکیما به فرمت JSON تولید کنید. اعداد باید عددی باشند نه رشته.`;
+    } else {
+      promptString = `Analyze this food image. The image can be either:
 1. A prepared meal, cooked plate of food, or restaurant dish (e.g. Persian Ghormeh Sabzi, Kebab, Rice, Pizza, Pasta, Salad, Burger, Stew, Soup, etc.).
 2. A packaged food product or nutrition facts label.
 
-Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / ایرانی", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
+Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / Iranian", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
 Extract or accurately calculate nutritional values (calories, protein, total fat, carbohydrates, dietary fiber, sugars, sodium, vitamins).
-CRITICAL FOR THIS APPLICATION:
-- Estimate the realistic cost/price per dish or serving in BOTH Iranian Tomans (e.g., 185000 for 185,000 Tomans) and US Dollars (USD).
-- Break down the constituent raw ingredients with their estimated portion amounts and individual estimated costs in Tomans and USD.
+CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
+- Exchange rate benchmark: 1 USD = ${userRate.toLocaleString("en-US")} Tomans.
+- Current market pricing reality:
+  * Standard cooked dishes or stews (e.g. Ghormeh Sabzi): ~850,000 to 1,050,000 Tomans (~$3.70 - $4.50 USD).
+  * Grilled meat / Chelo Kabab dishes: ~1,100,000 to 1,400,000 Tomans (~$4.80 - $6.00 USD).
+  * Packaged Greek yogurt or high-protein dairy: ~350,000 to 450,000 Tomans (~$1.50 - $2.00 USD).
+  * Plant milk / health beverages: ~250,000 to 320,000 Tomans (~$1.10 - $1.40 USD).
+  * Vegetarian/pasta/legume dishes: ~380,000 to 550,000 Tomans (~$1.65 - $2.40 USD).
+- Break down the constituent raw ingredients with their estimated portion amounts and individual estimated costs in Tomans and USD matching this economic benchmark.
 - Calculate an objective Health Score (1-100) and Nutri-Score rating.
 - Provide key nutritional highlights, warnings, summary, and cultural/historical notes.
 - Format the output strictly according to the provided JSON schema. Ensure numeric values are numbers, not strings.`;
+    }
 
     let responseText = "";
     let attempts = 0;
-    const maxAttempts = 3;
     let lastError: any = null;
+    const candidateModels = ["gemini-3.5-flash", "gemini-flash-latest", "gemini-3.8-flash"];
 
-    while (attempts < maxAttempts) {
+    for (const modelCandidate of candidateModels) {
+      if (responseText) break;
       try {
         attempts++;
         const response = await getAIClient().models.generateContent({
-          model: "gemini-3.5-flash",
+          model: modelCandidate,
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
             responseMimeType: "application/json",
@@ -399,8 +613,8 @@ CRITICAL FOR THIS APPLICATION:
                   type: Type.OBJECT,
                   description: "Estimated cost of this dish or serving based on raw ingredient market prices.",
                   properties: {
-                    amountToman: { type: Type.NUMBER, description: "Estimated cost in Iranian Tomans, e.g. 185000" },
-                    amountUSD: { type: Type.NUMBER, description: "Estimated cost in US Dollars, e.g. 3.2" },
+                    amountToman: { type: Type.NUMBER, description: "Estimated cost in Iranian Tomans, e.g. 950000" },
+                    amountUSD: { type: Type.NUMBER, description: "Estimated cost in US Dollars, e.g. 4.13" },
                     confidence: { type: Type.STRING, description: "'high', 'medium', or 'low'" }
                   },
                   required: ["amountToman", "amountUSD"]
@@ -453,20 +667,18 @@ CRITICAL FOR THIS APPLICATION:
         lastError = err;
         console.warn(`Attempt ${attempts} failed:`, err.message || String(err));
         
-        // Check if retryable (e.g., 503 UNAVAILABLE, 429 rate limit, high demand API errors)
+        // Check if retryable
         const errStr = String(err).toLowerCase();
         const isRetryable = err.status === 503 || err.statusCode === 503 ||
                             err.status === 429 || err.statusCode === 429 ||
                             errStr.includes("503") || errStr.includes("unavailable") ||
                             errStr.includes("429") || errStr.includes("exhausted") ||
                             errStr.includes("demand");
-        
-        if (attempts < maxAttempts && isRetryable) {
-          const waitTime = attempts * 800;
-          console.log(`Waiting ${waitTime}ms before retry...`);
+
+        if (isRetryable) {
+          const waitTime = attempts * 600;
+          console.log(`Waiting ${waitTime}ms before trying next candidate model...`);
           await sleep(waitTime);
-        } else {
-          break; // Exit loop if not retryable or we're at max attempts
         }
       }
     }
@@ -474,18 +686,19 @@ CRITICAL FOR THIS APPLICATION:
     if (!responseText) {
       console.error("==================================================");
       console.error("GEMINI API SCAN CALL COMPLETED WITH FAILURE!");
-      console.error(`- Max attempts (${maxAttempts}) reached or call timed out.`);
+      console.error(`- Candidate models attempted (${candidateModels.join(", ")})`);
       console.error(`- Last API error encountered:`, lastError?.message || String(lastError || "Unknown API error"));
       if (lastError?.stack) {
         console.error(`- Last error stack:\n`, lastError.stack);
       }
-      console.error("Activating local high-fidelity fallback to keep app running smoothly...");
+      console.error(`Activating local high-fidelity ${isFa ? "PERSIAN" : "ENGLISH"} fallback to keep app running smoothly...`);
       console.error("==================================================");
 
-      // Pick a random fallback food to keep the app working for the user beautifully
-      const randomIndex = Math.floor(Math.random() * FALLBACK_FOODS.length);
+      // Pick a random fallback food matching the user's active language
+      const pool = isFa ? FALLBACK_FOODS_FA : FALLBACK_FOODS;
+      const randomIndex = Math.floor(Math.random() * pool.length);
       const fallbackItem = {
-        ...FALLBACK_FOODS[randomIndex],
+        ...pool[randomIndex],
         isDemoFallback: true,
         originalScanError: lastError?.message || String(lastError || "Unknown API error")
       };
@@ -513,6 +726,80 @@ CRITICAL FOR THIS APPLICATION:
       details: error.message || String(error),
       stack: error.stack,
     });
+  }
+});
+
+// SQLite Food Diary Routes
+app.get("/api/diary", (req, res) => {
+  try {
+    const dateFilter = typeof req.query.date === "string" ? req.query.date : undefined;
+    const entries = getAllDiaryEntries(dateFilter);
+    const stats = getDatabaseStats();
+    return res.json({ entries, stats });
+  } catch (error: any) {
+    console.error("SQLite GET /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to fetch diary entries from SQLite" });
+  }
+});
+
+app.post("/api/diary", (req, res) => {
+  try {
+    const body = req.body || {};
+    if (Array.isArray(body.items)) {
+      for (const item of body.items) {
+        insertDiaryEntry(item);
+      }
+      const entries = getAllDiaryEntries();
+      const stats = getDatabaseStats();
+      return res.json({ entries, stats });
+    }
+
+    const payload = body.item || body;
+    const inserted = insertDiaryEntry(payload);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ entry: inserted, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite POST /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to insert diary entry into SQLite" });
+  }
+});
+
+app.post("/api/diary/seed", (req, res) => {
+  try {
+    seedSampleHistory(true);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ entries, stats });
+  } catch (error: any) {
+    console.error("SQLite POST /api/diary/seed error:", error);
+    return res.status(500).json({ error: error.message || "Failed to seed SQLite diary" });
+  }
+});
+
+app.delete("/api/diary/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    deleteDiaryEntryById(id);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ deletedId: id, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite DELETE /api/diary/:id error:", error);
+    return res.status(500).json({ error: error.message || "Failed to delete diary entry from SQLite" });
+  }
+});
+
+app.delete("/api/diary", (req, res) => {
+  try {
+    const dateFilter = typeof req.query.date === "string" ? req.query.date : undefined;
+    const clearedCount = clearDiaryEntries(dateFilter);
+    const entries = getAllDiaryEntries();
+    const stats = getDatabaseStats();
+    return res.json({ clearedCount, entries, stats });
+  } catch (error: any) {
+    console.error("SQLite DELETE /api/diary error:", error);
+    return res.status(500).json({ error: error.message || "Failed to clear diary entries in SQLite" });
   }
 });
 
