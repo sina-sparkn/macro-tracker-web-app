@@ -396,8 +396,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       loggedAt: manualTime || "13:00",
       productName: manualProductName.trim(),
       brand:
-        manualBrand.trim() ||
-        (isFa ? "ثبت در پایگاه داده SQLite" : "SQLite Diary Record"),
+        manualBrand.trim() || (isFa ? "ثبت در پایگاه داده " : "Diary Record"),
       foodType: "dish",
       cuisine: isFa ? "ایرانی / ملل" : "Custom Entry",
       servingsCount: 1,
@@ -673,7 +672,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
           {confirmingClear && (
             <div className="flex items-center gap-1.5 bg-[#18191d] border border-red-500/50 rounded-lg px-2.5 py-1.5">
               <span className="text-xs text-red-300 font-medium whitespace-nowrap">
-                {isFa ? "حذف قطعی از SQLite؟" : "Delete from SQLite?"}
+                {isFa ? "حذف قطعی ؟" : "Delete?"}
               </span>
               <button
                 onClick={() => {
@@ -708,15 +707,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         >
           <div className="flex items-center justify-between border-b border-[#27272a] pb-3">
             <div>
-              <h3 className="font-syne text-base font-bold text-[#f4f4f5]">
-                {isFa
-                  ? "ثبت وعده غذایی گذشته یا دستی در پایگاه داده SQLite"
-                  : "Record Past or Custom Meal Entry in SQLite"}
-              </h3>
               <p className="text-xs text-[#9ca3af] mt-0.5">
                 {isFa
                   ? "هر وعده غذایی از روزهای گذشته یا امروز را مستقیم در فایل پایگاه داده ذخیره کنید تا در هیستوگرام محاسبه شود."
-                  : "Log meals for any past date or today directly into the SQLite database to update the calorie histogram."}
+                  : "Log meals for any past date or today directly into the database to update the calorie histogram."}
               </p>
             </div>
             <button
@@ -937,7 +931,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 type="submit"
                 className="w-full py-2 px-4 bg-[#ff3e00] hover:bg-[#e03600] text-black font-bold rounded-lg transition-colors cursor-pointer whitespace-nowrap"
               >
-                {isFa ? "ذخیره در پایگاه داده SQLite" : "Save Entry to SQLite"}
+                {isFa ? "ذخیره در پایگاه داده" : "Save Entry"}
               </button>
             </div>
           </div>
@@ -999,8 +993,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? "روی ستون هر روز کلیک کنید تا وعده‌های ثبت‌شده آن تاریخ را در لیست پایین مشاهده یا ویرایش کنید."
                     : "Click any day bar to inspect or manage the recorded food entries for that specific date."
                   : isFa
-                    ? "تحلیل آماری تمام وعده‌های ذخیره‌شده در SQLite بر اساس حجم کالری هر وعده."
-                    : "Statistical breakdown of all SQLite recorded meals grouped by per-meal calorie brackets."}
+                    ? "تحلیل آماری تمام وعده‌های ذخیره‌شده بر اساس حجم کالری هر وعده."
+                    : "Statistical breakdown of all recorded meals grouped by per-meal calorie brackets."}
             </p>
           </div>
 
@@ -1356,8 +1350,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>
                     {isFa
-                      ? "بارگذاری داده‌های نمونه ۷ روز گذشته در SQLite"
-                      : "Load 7-Day Sample History into SQLite"}
+                      ? "بارگذاری داده‌های نمونه ۷ روز گذشته در پایگاه داده"
+                      : "Load 7-Day Sample History into database"}
                   </span>
                 </button>
               )}
@@ -1908,8 +1902,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <h3 className="text-sm font-bold text-[#f4f4f5] uppercase tracking-wide">
               {selectedDate === "all"
                 ? isFa
-                  ? `تمامی وعده‌های ثبت‌شده در SQLite (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
-                  : `All SQLite Recorded Meals (${filteredDiaryItems.length})`
+                  ? `تمامی وعده‌های ثبت‌شده در پایگاه داده (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
+                  : `All Database Recorded Meals (${filteredDiaryItems.length})`
                 : isFa
                   ? `وعده‌های ثبت‌شده — ${formatShortDateLabel(selectedDate, true)} (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
                   : `Recorded Meals — ${formatShortDateLabel(selectedDate, false)} (${filteredDiaryItems.length})`}
@@ -1956,7 +1950,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <p className="text-sm text-[#9ca3af] max-w-md mx-auto mb-5">
               {isFa
                 ? "می‌توانید یک وعده غذایی جدید با دوربین اسکن کنید، وعده‌های گذشته را دستی ثبت نمایید یا داده‌های نمونه ۷ روزه را بارگذاری کنید."
-                : "Scan a meal with your camera, record a past meal entry manually, or load the 7-day sample history into SQLite."}
+                : "Scan a meal with your camera, record a past meal entry manually, or load the 7-day sample history into the database."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               <button
