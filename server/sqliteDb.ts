@@ -87,6 +87,12 @@ export function getSqliteDb(): SqliteDatabase {
       priceUSD REAL DEFAULT 0
     );
 
+    CREATE TABLE IF NOT EXISTS daily_water (
+      entryDate TEXT PRIMARY KEY,
+      glasses INTEGER NOT NULL,
+      updatedAt INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_diary_entry_date ON diary_entries(entryDate);
     CREATE INDEX IF NOT EXISTS idx_diary_created_at ON diary_entries(createdAt DESC);
   `);
@@ -96,17 +102,62 @@ export function getSqliteDb(): SqliteDatabase {
   // Check if initial seed has run
   const seededRow = db
     .prepare("SELECT value FROM meta_settings WHERE key = ?")
-    .get("initial_seed_v1");
+    .get("initial_seed_v2_water");
 
   if (!seededRow) {
     seedSampleHistory(false);
+    seedSampleWater(false);
     db.prepare("INSERT OR REPLACE INTO meta_settings (key, value) VALUES (?, ?)").run(
-      "initial_seed_v1",
+      "initial_seed_v2_water",
       new Date().toISOString()
     );
   }
 
   return db;
+}
+
+export function seedSampleWater(force = false): void {
+  const db = getSqliteDb();
+  const countRow = db.prepare("SELECT COUNT(*) as cnt FROM daily_water").get();
+  if (!force && countRow && Number(countRow.cnt) > 0) {
+    return;
+  }
+
+  const sampleWaterPattern = [5, 8, 7, 9, 8, 6, 8, 7, 8, 9, 6, 8, 7, 8];
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO daily_water (entryDate, glasses, updatedAt)
+    VALUES (?, ?, ?)
+  `);
+
+  for (let i = 0; i < sampleWaterPattern.length; i++) {
+    const iso = getIsoDateOffset(i);
+    stmt.run(iso, sampleWaterPattern[i], Date.now());
+  }
+}
+
+export function getAllWaterRecords(): Record<string, number> {
+  const db = getSqliteDb();
+  try {
+    const rows = db.prepare("SELECT entryDate, glasses FROM daily_water").all();
+    const result: Record<string, number> = {};
+    for (const r of rows as { entryDate: string; glasses: number }[]) {
+      result[r.entryDate] = Number(r.glasses);
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}
+
+export function setWaterRecord(entryDate: string, glasses: number): void {
+  const db = getSqliteDb();
+  db.prepare(`
+    INSERT INTO daily_water (entryDate, glasses, updatedAt)
+    VALUES (?, ?, ?)
+    ON CONFLICT(entryDate) DO UPDATE SET
+      glasses = excluded.glasses,
+      updatedAt = excluded.updatedAt
+  `).run(entryDate, Math.max(0, glasses), Date.now());
 }
 
 export function seedSampleHistory(force = false): void {

@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Trash2,
   Plus,
+  Minus,
   BookOpen,
   Database,
   BarChart3,
@@ -11,7 +12,10 @@ import {
   X,
   RefreshCw,
   ArrowUpRight,
-  Clock
+  Clock,
+  Droplets,
+  GlassWater,
+  Flame
 } from "lucide-react";
 import { FoodLogItem, DailyTotals, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
@@ -101,8 +105,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       : 230000;
 
   // Histogram view controls
-  const [histogramMode, setHistogramMode] = useState<"daily" | "distribution">("daily");
+  const [histogramMode, setHistogramMode] = useState<"daily" | "water" | "distribution">("daily");
   const [histogramRangeDays, setHistogramRangeDays] = useState<7 | 14>(7);
+  const [waterDataVersion, setWaterDataVersion] = useState<number>(0);
 
   // Search & filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -362,6 +367,183 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     Math.max(Math.round((calorieGoal / histogramSummary.maxScaleCalories) * 100), 10),
     92
   );
+
+  // Sync water updates across tabs/sidebars
+  useEffect(() => {
+    const handleWaterSync = () => {
+      setWaterDataVersion((v) => v + 1);
+    };
+    window.addEventListener("nutriscan_water_updated", handleWaterSync);
+    window.addEventListener("storage", handleWaterSync);
+    return () => {
+      window.removeEventListener("nutriscan_water_updated", handleWaterSync);
+      window.removeEventListener("storage", handleWaterSync);
+    };
+  }, []);
+
+  // Helper to read water for a given date from localStorage
+  const getStoredWaterForDate = (isoDate: string) => {
+    try {
+      const rawV2 = localStorage.getItem(`nutriscan_water_v2_${isoDate}`);
+      if (rawV2) {
+        const parsed = JSON.parse(rawV2);
+        const target =
+          typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0
+            ? parsed.targetGlasses
+            : 8;
+        const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
+        const totalGlasses = entries.reduce(
+          (s: number, e: { glasses?: number }) => s + (Number(e.glasses) || 0),
+          0
+        );
+        return {
+          glasses: totalGlasses,
+          ml: totalGlasses * 250,
+          targetGlasses: target
+        };
+      }
+      const legacy = localStorage.getItem(`nutriscan_water_${isoDate}`);
+      if (legacy !== null) {
+        const g = Math.max(0, parseInt(legacy, 10) || 0);
+        return {
+          glasses: g,
+          ml: g * 250,
+          targetGlasses: 8
+        };
+      }
+    } catch {}
+    return { glasses: 0, ml: 0, targetGlasses: 8 };
+  };
+
+  // Helper to update water for a date
+  const updateWaterForDate = (isoDate: string, newGlasses: number, target: number = 8) => {
+    const safeGlasses = Math.max(0, newGlasses);
+    const now = Date.now();
+    const newEntry =
+      safeGlasses > 0
+        ? [
+            {
+              id: `diary-${isoDate}-${now}`,
+              time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              timestamp: now,
+              glasses: safeGlasses,
+              ml: safeGlasses * 250
+            }
+          ]
+        : [];
+
+    try {
+      localStorage.setItem(
+        `nutriscan_water_v2_${isoDate}`,
+        JSON.stringify({ entries: newEntry, targetGlasses: target })
+      );
+      localStorage.setItem(`nutriscan_water_${isoDate}`, String(safeGlasses));
+      window.dispatchEvent(new Event("nutriscan_water_updated"));
+    } catch (e) {
+      console.warn("Could not save water data to localStorage:", e);
+    }
+    setWaterDataVersion((v) => v + 1);
+  };
+
+  // Build daily water histogram data
+  const dailyWaterBuckets = useMemo(() => {
+    // Reference waterDataVersion so this recomputes on changes
+    void waterDataVersion;
+    const days: {
+      date: string;
+      shortLabel: string;
+      weekday: string;
+      glasses: number;
+      ml: number;
+      targetGlasses: number;
+      percentOfGoal: number;
+      status: "empty" | "under" | "optimal" | "over";
+    }[] = [];
+
+    for (let i = histogramRangeDays - 1; i >= 0; i--) {
+      const iso = getLocalIsoDate(i);
+      const data = getStoredWaterForDate(iso);
+      const target = data.targetGlasses || 8;
+      const pct = Math.round((data.glasses / target) * 100);
+
+      let status: "empty" | "under" | "optimal" | "over" = "optimal";
+      if (data.glasses === 0) status = "empty";
+      else if (pct >= 100) status = "optimal";
+      else if (pct < 60) status = "under";
+
+      days.push({
+        date: iso,
+        shortLabel: formatShortDateLabel(iso, isFa),
+        weekday: formatWeekdayShort(iso, isFa),
+        glasses: data.glasses,
+        ml: data.ml,
+        targetGlasses: target,
+        percentOfGoal: pct,
+        status
+      });
+    }
+    return days;
+  }, [histogramRangeDays, isFa, waterDataVersion]);
+
+  // Water histogram summary metrics
+  const waterHistogramSummary = useMemo(() => {
+    const totalGlasses = dailyWaterBuckets.reduce((sum, b) => sum + b.glasses, 0);
+    const activeDays = dailyWaterBuckets.filter((b) => b.glasses > 0);
+    const targetGlasses = dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses || 8;
+    const maxDayGlasses = Math.max(...dailyWaterBuckets.map((b) => b.glasses), 0);
+    const maxScaleGlasses = Math.max(targetGlasses + 2, maxDayGlasses + 1, 10);
+    const avgDailyGlasses =
+      Math.round((totalGlasses / Math.max(histogramRangeDays, 1)) * 10) / 10;
+    const avgDailyMl = Math.round(avgDailyGlasses * 250);
+    const daysOnTarget = dailyWaterBuckets.filter((b) => b.glasses >= b.targetGlasses).length;
+    const peakDay = dailyWaterBuckets.reduce(
+      (peak, b) => (b.glasses > peak.glasses ? b : peak),
+      dailyWaterBuckets[0] || { date: "", shortLabel: "-", glasses: 0, ml: 0 }
+    );
+    const adherencePercent = Math.round((daysOnTarget / Math.max(histogramRangeDays, 1)) * 100);
+
+    return {
+      totalGlasses,
+      activeDaysCount: activeDays.length,
+      targetGlasses,
+      maxScaleGlasses,
+      avgDailyGlasses,
+      avgDailyMl,
+      daysOnTarget,
+      peakDay,
+      adherencePercent
+    };
+  }, [dailyWaterBuckets, histogramRangeDays]);
+
+  const waterGoalLineBottomPercent = Math.min(
+    Math.max(
+      Math.round(
+        (waterHistogramSummary.targetGlasses / waterHistogramSummary.maxScaleGlasses) * 100
+      ),
+      15
+    ),
+    90
+  );
+
+  // Selected date water data for the quick control strip
+  const effectiveSelectedDate = selectedDate === "all" ? getLocalIsoDate(0) : selectedDate;
+  const currentSelectedWater = useMemo(() => {
+    void waterDataVersion;
+    return getStoredWaterForDate(effectiveSelectedDate);
+  }, [effectiveSelectedDate, waterDataVersion]);
+
+  // Seed sample water history if past days are empty
+  const handleSeedSampleWater = () => {
+    const samples = [8, 9, 7, 8, 10, 7, 8, 9, 8, 7, 9, 8, 8, 10];
+    for (let i = 0; i < histogramRangeDays; i++) {
+      const iso = getLocalIsoDate(i);
+      const existing = getStoredWaterForDate(iso);
+      if (existing.glasses === 0) {
+        const sampleGlasses = samples[i % samples.length];
+        updateWaterForDate(iso, sampleGlasses, 8);
+      }
+    }
+  };
 
   return (
     <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-6xl mx-auto w-full pb-24 sm:pb-28 lg:pb-10">
@@ -698,21 +880,43 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         </form>
       )}
 
-      {/* CALORIE INTAKE HISTOGRAM PANEL */}
+      {/* CALORIE & WATER INTAKE HISTOGRAM PANEL */}
       <section
-        aria-label={isFa ? "نمودار هیستوگرام دریافت کالری" : "Calorie Intake Histogram"}
+        aria-label={
+          histogramMode === "water"
+            ? isFa
+              ? "نمودار هیستوگرام مصرف آب"
+              : "Water Intake Histogram"
+            : isFa
+            ? "نمودار هیستوگرام دریافت کالری"
+            : "Calorie Intake Histogram"
+        }
         className="bg-[#111214] border border-[#27272a] rounded-lg p-5 sm:p-6"
       >
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-[#27272a] pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
-              <BarChart3 className="w-4 h-4 text-[#ff3e00]" />
+              {histogramMode === "water" ? (
+                <Droplets className="w-4 h-4 text-cyan-400" />
+              ) : (
+                <BarChart3 className="w-4 h-4 text-[#ff3e00]" />
+              )}
               <span className="font-semibold text-[#f4f4f5]">
-                {isFa ? "هیستوگرام تحلیل دریافت کالری" : "Calorie Intake Histogram"}
+                {histogramMode === "water"
+                  ? isFa
+                    ? "هیستوگرام تحلیل مصرف آب"
+                    : "Daily Water Intake Histogram"
+                  : isFa
+                  ? "هیستوگرام تحلیل دریافت کالری"
+                  : "Calorie Intake Histogram"}
               </span>
               <span aria-hidden="true">·</span>
               <span>
-                {histogramMode === "daily"
+                {histogramMode === "water"
+                  ? isFa
+                    ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه ۸ لیوان`
+                    : `${histogramRangeDays}-day hydration trend vs daily 8-glass target`
+                  : histogramMode === "daily"
                   ? isFa
                     ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه`
                     : `${histogramRangeDays}-day daily calorie intake vs target cap`
@@ -722,7 +926,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </span>
             </div>
             <p className="text-xs text-[#9ca3af] mt-1">
-              {histogramMode === "daily"
+              {histogramMode === "water"
+                ? isFa
+                  ? "روی ستون هر روز کلیک کنید تا مصرف آب آن تاریخ را مشاهده و با دکمه‌های + و - به سادگی تنظیم کنید."
+                  : "Click any day bar to inspect water intake or quickly log/adjust glasses with + and -."
+                : histogramMode === "daily"
                 ? isFa
                   ? "روی ستون هر روز کلیک کنید تا وعده‌های ثبت‌شده آن تاریخ را در لیست پایین مشاهده یا ویرایش کنید."
                   : "Click any day bar to inspect or manage the recorded food entries for that specific date."
@@ -738,13 +946,26 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <button
                 type="button"
                 onClick={() => setHistogramMode("daily")}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap ${
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
                   histogramMode === "daily"
                     ? "bg-[#ff3e00] text-black font-bold"
                     : "text-[#9ca3af] hover:text-[#f4f4f5]"
                 }`}
               >
-                {isFa ? "هیستوگرام روزانه" : "Daily Timeline"}
+                <Flame className="w-3.5 h-3.5" />
+                <span>{isFa ? "کالری روزانه" : "Daily Calories"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setHistogramMode("water")}
+                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  histogramMode === "water"
+                    ? "bg-cyan-500 text-black font-bold shadow-[0_0_12px_rgba(6,182,212,0.4)]"
+                    : "text-cyan-400 hover:text-cyan-300"
+                }`}
+              >
+                <Droplets className="w-3.5 h-3.5" />
+                <span>{isFa ? "مصرف آب" : "Water Intake"}</span>
               </button>
               <button
                 type="button"
@@ -759,7 +980,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </button>
             </div>
 
-            {histogramMode === "daily" && (
+            {(histogramMode === "daily" || histogramMode === "water") && (
               <div className="flex items-center gap-1 p-1 bg-[#08090a] border border-[#27272a] rounded-lg">
                 <button
                   type="button"
@@ -789,66 +1010,132 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         </div>
 
         {/* HISTOGRAM SUMMARY METRICS ROW */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-b border-[#27272a] text-xs">
-          <div>
-            <span className="text-[#9ca3af] block">
-              {isFa ? "میانگین روزانه دوره" : "Period Daily Average"}
-            </span>
-            <span className="font-mono text-lg font-bold text-[#f4f4f5] tabular-nums mt-0.5 block">
-              {isFa
-                ? histogramSummary.avgDailyCals.toLocaleString("fa-IR")
-                : histogramSummary.avgDailyCals.toLocaleString("en-US")}{" "}
-              <span className="text-xs font-normal text-[#9ca3af]">
-                {isFa ? "کالری/روز" : "kcal/day"}
+        {histogramMode === "water" ? (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-b border-[#27272a] text-xs">
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "میانگین مصرف روزانه" : "Period Daily Average"}
               </span>
-            </span>
-          </div>
-
-          <div>
-            <span className="text-[#9ca3af] block">
-              {isFa ? "بیشترین دریافت روزانه" : "Peak Day Intake"}
-            </span>
-            <span className="font-mono text-lg font-bold text-[#ff3e00] tabular-nums mt-0.5 block">
-              {isFa
-                ? histogramSummary.peakDay.calories.toLocaleString("fa-IR")
-                : histogramSummary.peakDay.calories.toLocaleString("en-US")}{" "}
-              <span className="text-xs font-normal text-[#9ca3af]">
-                ({histogramSummary.peakDay.shortLabel})
+              <span className="font-mono text-lg font-bold text-cyan-400 tabular-nums mt-0.5 block">
+                {isFa
+                  ? waterHistogramSummary.avgDailyGlasses.toLocaleString("fa-IR")
+                  : waterHistogramSummary.avgDailyGlasses}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  {isFa ? "لیوان/روز" : "gl/day"}
+                </span>
+                <span className="text-[11px] font-normal text-[#71717a] ml-1">
+                  ({isFa ? waterHistogramSummary.avgDailyMl.toLocaleString("fa-IR") : waterHistogramSummary.avgDailyMl} ml)
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
 
-          <div>
-            <span className="text-[#9ca3af] block">
-              {isFa ? "سقف هدف روزانه" : "Daily Target Cap"}
-            </span>
-            <span className="font-mono text-lg font-bold text-[#22c55e] tabular-nums mt-0.5 block">
-              {isFa
-                ? calorieGoal.toLocaleString("fa-IR")
-                : calorieGoal.toLocaleString("en-US")}{" "}
-              <span className="text-xs font-normal text-[#9ca3af]">
-                {isFa ? "کالری" : "kcal"}
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "بیشترین مصرف در یک روز" : "Peak Day Hydration"}
               </span>
-            </span>
-          </div>
+              <span className="font-mono text-lg font-bold text-cyan-300 tabular-nums mt-0.5 block">
+                {isFa
+                  ? waterHistogramSummary.peakDay.glasses.toLocaleString("fa-IR")
+                  : waterHistogramSummary.peakDay.glasses}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  {isFa ? "لیوان" : "glasses"}
+                </span>
+                <span className="text-xs font-normal text-[#71717a] ml-1">
+                  ({waterHistogramSummary.peakDay.shortLabel})
+                </span>
+              </span>
+            </div>
 
-          <div>
-            <span className="text-[#9ca3af] block">
-              {isFa ? "پایبندی به هدف" : "Goal Adherence"}
-            </span>
-            <span className="font-mono text-lg font-bold text-[#f4f4f5] tabular-nums mt-0.5 block">
-              {isFa
-                ? `${histogramSummary.daysOnTarget.toLocaleString("fa-IR")} از ${Math.max(
-                    histogramSummary.activeDaysCount,
-                    1
-                  ).toLocaleString("fa-IR")} روز`
-                : `${histogramSummary.daysOnTarget} / ${Math.max(
-                    histogramSummary.activeDaysCount,
-                    1
-                  )} days`}
-            </span>
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "هدف روزانه آب" : "Daily Water Target"}
+              </span>
+              <span className="font-mono text-lg font-bold text-emerald-400 tabular-nums mt-0.5 block">
+                {isFa
+                  ? waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")
+                  : waterHistogramSummary.targetGlasses}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  {isFa ? "لیوان (۲۰۰۰ ml)" : "glasses (2,000 ml)"}
+                </span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "پایبندی به هدف آب" : "Hydration Adherence"}
+              </span>
+              <span className="font-mono text-lg font-bold text-[#f4f4f5] tabular-nums mt-0.5 block">
+                {isFa
+                  ? `${waterHistogramSummary.daysOnTarget.toLocaleString("fa-IR")} از ${histogramRangeDays.toLocaleString("fa-IR")} روز`
+                  : `${waterHistogramSummary.daysOnTarget} / ${histogramRangeDays} days`}
+                <span className="text-xs font-normal text-cyan-400 ml-1.5">
+                  ({isFa ? waterHistogramSummary.adherencePercent.toLocaleString("fa-IR") : waterHistogramSummary.adherencePercent}%)
+                </span>
+              </span>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-b border-[#27272a] text-xs">
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "میانگین روزانه دوره" : "Period Daily Average"}
+              </span>
+              <span className="font-mono text-lg font-bold text-[#f4f4f5] tabular-nums mt-0.5 block">
+                {isFa
+                  ? histogramSummary.avgDailyCals.toLocaleString("fa-IR")
+                  : histogramSummary.avgDailyCals.toLocaleString("en-US")}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  {isFa ? "کالری/روز" : "kcal/day"}
+                </span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "بیشترین دریافت روزانه" : "Peak Day Intake"}
+              </span>
+              <span className="font-mono text-lg font-bold text-[#ff3e00] tabular-nums mt-0.5 block">
+                {isFa
+                  ? histogramSummary.peakDay.calories.toLocaleString("fa-IR")
+                  : histogramSummary.peakDay.calories.toLocaleString("en-US")}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  ({histogramSummary.peakDay.shortLabel})
+                </span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "سقف هدف روزانه" : "Daily Target Cap"}
+              </span>
+              <span className="font-mono text-lg font-bold text-[#22c55e] tabular-nums mt-0.5 block">
+                {isFa
+                  ? calorieGoal.toLocaleString("fa-IR")
+                  : calorieGoal.toLocaleString("en-US")}{" "}
+                <span className="text-xs font-normal text-[#9ca3af]">
+                  {isFa ? "کالری" : "kcal"}
+                </span>
+              </span>
+            </div>
+
+            <div>
+              <span className="text-[#9ca3af] block">
+                {isFa ? "پایبندی به هدف" : "Goal Adherence"}
+              </span>
+              <span className="font-mono text-lg font-bold text-[#f4f4f5] tabular-nums mt-0.5 block">
+                {isFa
+                  ? `${histogramSummary.daysOnTarget.toLocaleString("fa-IR")} از ${Math.max(
+                      histogramSummary.activeDaysCount,
+                      1
+                    ).toLocaleString("fa-IR")} روز`
+                  : `${histogramSummary.daysOnTarget} / ${Math.max(
+                      histogramSummary.activeDaysCount,
+                      1
+                    )} days`}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* MODE 1: DAILY CALORIE INTAKE BAR HISTOGRAM */}
         {histogramMode === "daily" ? (
@@ -980,8 +1267,225 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               )}
             </div>
           </div>
+        ) : histogramMode === "water" ? (
+          /* MODE 2: DAILY WATER INTAKE BAR HISTOGRAM */
+          <div className="pt-6">
+            <div className="relative h-60 sm:h-64 w-full bg-[#08090a] border border-[#27272a] rounded-lg px-3 sm:px-5 pt-8 pb-3 flex flex-col justify-end">
+              {/* HORIZONTAL TARGET WATER GOAL LINE */}
+              <div
+                className="absolute inset-x-3 sm:inset-x-5 border-t border-dashed border-cyan-400/80 z-10 pointer-events-none flex items-center justify-between"
+                style={{ bottom: `${waterGoalLineBottomPercent}%` }}
+              >
+                <span className="bg-[#08090a]/95 px-2 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/30 rounded-xs tabular-nums -mt-5">
+                  {isFa
+                    ? `هدف: ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان (${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml)`
+                    : `Target: ${waterHistogramSummary.targetGlasses} gl (${waterHistogramSummary.targetGlasses * 250} ml)`}
+                </span>
+              </div>
+
+              {/* WATER BARS CONTAINER */}
+              <div className="relative z-20 flex items-end justify-between gap-1.5 sm:gap-3 h-full pt-4">
+                {dailyWaterBuckets.map((bucket) => {
+                  const rawHeightPct =
+                    bucket.glasses > 0
+                      ? Math.round(
+                          (bucket.glasses / waterHistogramSummary.maxScaleGlasses) * 100
+                        )
+                      : 4;
+                  const barHeightPct = Math.min(Math.max(rawHeightPct, 6), 96);
+                  const isSelected = effectiveSelectedDate === bucket.date;
+
+                  let barColorClass = "bg-cyan-500 hover:bg-cyan-400";
+                  let statusText = isFa ? "در حال مصرف" : "In Progress";
+                  if (bucket.status === "empty") {
+                    barColorClass = "bg-[#27272a] hover:bg-[#3f3f46]";
+                    statusText = isFa ? "بدون ثبت" : "0 gl";
+                  } else if (bucket.status === "optimal" || bucket.glasses >= bucket.targetGlasses) {
+                    barColorClass =
+                      "bg-emerald-400 hover:bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.4)]";
+                    statusText = isFa ? "هدف محقق شد" : "Goal Met";
+                  } else if (bucket.status === "under") {
+                    barColorClass = "bg-cyan-600 hover:bg-cyan-500";
+                    statusText = isFa ? "کمتر از هدف" : "Under";
+                  }
+
+                  return (
+                    <button
+                      key={bucket.date}
+                      type="button"
+                      onClick={() => onSelectDate(bucket.date)}
+                      aria-label={`${bucket.shortLabel}: ${bucket.glasses} glasses (${bucket.ml} ml)`}
+                      className={`group flex-1 h-full flex flex-col items-center justify-end cursor-pointer rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                        isSelected
+                          ? "bg-cyan-950/40 ring-1 ring-cyan-400"
+                          : "hover:bg-[#18191d]/70"
+                      }`}
+                    >
+                      {/* WATER GLASSES TOP LABEL */}
+                      <span
+                        className={`text-[10px] sm:text-xs font-mono tabular-nums mb-1 transition-colors ${
+                          isSelected
+                            ? "text-cyan-300 font-bold"
+                            : bucket.glasses > 0
+                            ? "text-[#d4d4d8]"
+                            : "text-[#71717a]"
+                        }`}
+                      >
+                        {bucket.glasses > 0
+                          ? isFa
+                            ? `${bucket.glasses.toLocaleString("fa-IR")} ل`
+                            : `${bucket.glasses} gl`
+                          : "0"}
+                      </span>
+
+                      {/* BAR TRACK */}
+                      <div className="w-full max-w-[44px] flex-1 flex items-end justify-center">
+                        <div
+                          className={`w-full rounded-t transition-transform duration-150 group-hover:scale-y-[1.02] origin-bottom ${barColorClass}`}
+                          style={{ height: `${barHeightPct}%` }}
+                        />
+                      </div>
+
+                      {/* DATE & HYDRATION FOOTER */}
+                      <div className="mt-2 text-center leading-tight w-full truncate">
+                        <span
+                          className={`block text-[10px] sm:text-xs font-semibold truncate ${
+                            isSelected ? "text-cyan-400" : "text-[#f4f4f5]"
+                          }`}
+                        >
+                          {bucket.shortLabel}
+                        </span>
+                        <span className="hidden sm:block text-[10px] text-[#9ca3af] font-mono tabular-nums mt-0.5">
+                          {bucket.glasses > 0
+                            ? isFa
+                              ? `${bucket.ml.toLocaleString("fa-IR")} ml · ${statusText}`
+                              : `${bucket.ml} ml · ${statusText}`
+                            : statusText}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* QUICK WATER LOG / ADJUST FOR SELECTED DATE */}
+            <div className="mt-4 p-3.5 bg-[#08090a] border border-cyan-500/25 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0">
+                  <GlassWater className="w-4 h-4 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-[#f4f4f5] flex items-center gap-2">
+                    <span>
+                      {isFa
+                        ? `میزان مصرف آب در تاریخ ${formatShortDateLabel(effectiveSelectedDate, true)}`
+                        : `Water Logged for ${formatShortDateLabel(effectiveSelectedDate, false)}`}
+                    </span>
+                    {effectiveSelectedDate === getLocalIsoDate(0) && (
+                      <span className="px-1.5 py-0.5 text-[10px] rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-mono">
+                        {isFa ? "امروز" : "Today"}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-[#9ca3af] font-mono tabular-nums mt-0.5 flex items-center gap-1.5">
+                    <span className="text-cyan-400 font-bold text-sm">
+                      {isFa ? currentSelectedWater.glasses.toLocaleString("fa-IR") : currentSelectedWater.glasses}
+                    </span>
+                    <span className="text-[#71717a]">
+                      / {isFa ? (currentSelectedWater.targetGlasses || 8).toLocaleString("fa-IR") : (currentSelectedWater.targetGlasses || 8)} {isFa ? "لیوان" : "gl"}
+                    </span>
+                    <span className="text-[#52525b]">·</span>
+                    <span className="text-[#d4d4d8]">
+                      {isFa ? currentSelectedWater.ml.toLocaleString("fa-IR") : currentSelectedWater.ml} ml
+                    </span>
+                    <span className="text-[#52525b]">·</span>
+                    <span
+                      className={`text-[11px] font-medium ${
+                        currentSelectedWater.glasses >= (currentSelectedWater.targetGlasses || 8)
+                          ? "text-emerald-400 font-semibold"
+                          : "text-cyan-300"
+                      }`}
+                    >
+                      {Math.round(
+                        (currentSelectedWater.glasses / (currentSelectedWater.targetGlasses || 8)) * 100
+                      )}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* + AND - BUTTONS FOR SELECTED DATE */}
+              <div className="flex items-center gap-2 self-end sm:self-auto">
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateWaterForDate(
+                      effectiveSelectedDate,
+                      Math.max(0, currentSelectedWater.glasses - 1),
+                      currentSelectedWater.targetGlasses || 8
+                    )
+                  }
+                  disabled={currentSelectedWater.glasses === 0}
+                  aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass"}
+                  className="px-3 py-1.5 bg-[#18191d] hover:bg-[#27272a] disabled:opacity-30 disabled:cursor-not-allowed text-[#d4d4d8] hover:text-white border border-[#27272a] rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                  <span>{isFa ? "۱-" : "-1"}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    updateWaterForDate(
+                      effectiveSelectedDate,
+                      currentSelectedWater.glasses + 1,
+                      currentSelectedWater.targetGlasses || 8
+                    )
+                  }
+                  aria-label={isFa ? "افزودن ۱ لیوان آب" : "Add 1 glass"}
+                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900/70 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{isFa ? "۱+ لیوان" : "+1 Glass"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* WATER HISTOGRAM LEGEND & ACTION STRIP */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mt-3 text-xs text-[#9ca3af]">
+              <div className="flex flex-wrap items-center gap-4">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
+                  <span>{isFa ? "تحقق هدف (۱۰۰٪+)" : "Target Met (100%+)"}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500" />
+                  <span>{isFa ? "در حال مصرف (<۱۰۰٪)" : "In Progress (<100%)"}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-4 border-t border-dashed border-cyan-400" />
+                  <span>{isFa ? "خط هدف ۸ لیوان (۲۰۰۰ ml)" : "Daily 8-Glass Target"}</span>
+                </span>
+              </div>
+
+              {dailyWaterBuckets.filter((b) => b.glasses > 0).length < 3 && (
+                <button
+                  type="button"
+                  onClick={handleSeedSampleWater}
+                  className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>
+                    {isFa
+                      ? `بارگذاری نمونه مصرف آب ${histogramRangeDays.toLocaleString("fa-IR")} روز گذشته`
+                      : `Load ${histogramRangeDays}-Day Sample Hydration`}
+                  </span>
+                </button>
+              )}
+            </div>
+          </div>
         ) : (
-          /* MODE 2: MEAL CALORIE BRACKET FREQUENCY HISTOGRAM */
+          /* MODE 3: MEAL CALORIE BRACKET FREQUENCY HISTOGRAM */
           <div className="pt-5 space-y-3">
             {mealDistributionBins.map((bin) => (
               <div

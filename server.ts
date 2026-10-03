@@ -9,7 +9,9 @@ import {
   clearDiaryEntries,
   seedSampleHistory,
   getDatabaseStats,
-  resolveLiveOrIndexedExchangeRate
+  resolveLiveOrIndexedExchangeRate,
+  getAllWaterRecords,
+  setWaterRecord
 } from "./server/sqliteDb";
 
 dotenv.config();
@@ -754,6 +756,31 @@ app.get("/api/diary", (req, res) => {
   } catch (error: any) {
     console.error("SQLite GET /api/diary error:", error);
     return res.status(500).json({ error: error.message || "Failed to fetch diary entries from SQLite" });
+  }
+});
+
+app.get("/api/water", (_req, res) => {
+  try {
+    const records = getAllWaterRecords();
+    return res.json({ ok: true, records });
+  } catch (error: any) {
+    console.error("SQLite GET /api/water error:", error);
+    return res.status(500).json({ error: error.message || "Failed to fetch water records" });
+  }
+});
+
+app.post("/api/water", (req, res) => {
+  try {
+    const { date, glasses } = req.body || {};
+    if (!date || typeof glasses !== "number") {
+      return res.status(400).json({ error: "date and glasses count are required" });
+    }
+    setWaterRecord(date, glasses);
+    const records = getAllWaterRecords();
+    return res.json({ ok: true, date, glasses, records });
+  } catch (error: any) {
+    console.error("SQLite POST /api/water error:", error);
+    return res.status(500).json({ error: error.message || "Failed to update water record" });
   }
 });
 
