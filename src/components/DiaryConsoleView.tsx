@@ -15,7 +15,7 @@ import {
   Clock,
   Droplets,
   GlassWater,
-  Flame
+  Flame,
 } from "lucide-react";
 import { FoodLogItem, DailyTotals, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
@@ -61,22 +61,30 @@ function formatShortDateLabel(isoDate: string, isFa: boolean): string {
 
   const parts = isoDate.split("-");
   if (parts.length !== 3) return isoDate;
-  const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  const dateObj = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2]),
+  );
   if (isNaN(dateObj.getTime())) return isoDate;
 
   return dateObj.toLocaleDateString(isFa ? "fa-IR" : "en-US", {
     month: "short",
-    day: "numeric"
+    day: "numeric",
   });
 }
 
 function formatWeekdayShort(isoDate: string, isFa: boolean): string {
   const parts = isoDate.split("-");
   if (parts.length !== 3) return "";
-  const dateObj = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  const dateObj = new Date(
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2]),
+  );
   if (isNaN(dateObj.getTime())) return "";
   return dateObj.toLocaleDateString(isFa ? "fa-IR" : "en-US", {
-    weekday: "short"
+    weekday: "short",
   });
 }
 
@@ -93,19 +101,22 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   onClearLogs,
   onAddManualEntry,
   onSeedSampleHistory,
-  onGoToScanner
+  onGoToScanner,
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   const currentRate =
-    userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0
+    userProfile.exchangeRateTomanPerUSD &&
+    userProfile.exchangeRateTomanPerUSD > 0
       ? userProfile.exchangeRateTomanPerUSD
       : 230000;
 
   // Histogram view controls
-  const [histogramMode, setHistogramMode] = useState<"daily" | "water" | "distribution">("daily");
+  const [histogramMode, setHistogramMode] = useState<
+    "daily" | "water" | "distribution"
+  >("daily");
   const [histogramRangeDays, setHistogramRangeDays] = useState<7 | 14>(7);
   const [waterDataVersion, setWaterDataVersion] = useState<number>(0);
 
@@ -120,7 +131,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   const [manualProductName, setManualProductName] = useState("");
   const [manualBrand, setManualBrand] = useState("");
   const [manualDate, setManualDate] = useState(() =>
-    selectedDate === "all" ? getLocalIsoDate(0) : selectedDate
+    selectedDate === "all" ? getLocalIsoDate(0) : selectedDate,
   );
   const [manualTime, setManualTime] = useState("13:30");
   const [manualCalories, setManualCalories] = useState("450");
@@ -144,17 +155,39 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   const fatGoal = userProfile.fatGoal || 65;
   const sodiumGoal = userProfile.sodiumGoal || 2300;
 
-  const calPercent = Math.min(Math.round((dailyTotals.calories / calorieGoal) * 100), 100);
-  const proteinPercent = Math.min(Math.round((dailyTotals.protein / proteinGoal) * 100), 100);
-  const carbsPercent = Math.min(Math.round((dailyTotals.carbs / carbsGoal) * 100), 100);
-  const fatPercent = Math.min(Math.round((dailyTotals.fat / fatGoal) * 100), 100);
-  const sodiumPercent = Math.min(Math.round((dailyTotals.sodium / sodiumGoal) * 100), 100);
+  const calPercent = Math.min(
+    Math.round((dailyTotals.calories / calorieGoal) * 100),
+    100,
+  );
+  const proteinPercent = Math.min(
+    Math.round((dailyTotals.protein / proteinGoal) * 100),
+    100,
+  );
+  const carbsPercent = Math.min(
+    Math.round((dailyTotals.carbs / carbsGoal) * 100),
+    100,
+  );
+  const fatPercent = Math.min(
+    Math.round((dailyTotals.fat / fatGoal) * 100),
+    100,
+  );
+  const sodiumPercent = Math.min(
+    Math.round((dailyTotals.sodium / sodiumGoal) * 100),
+    100,
+  );
 
   const currentSpend =
-    userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;
+    userProfile.currency === "IRT"
+      ? dailyTotals.costTomanTotal
+      : dailyTotals.costUSDTotal;
   const budgetCap =
-    userProfile.currency === "IRT" ? userProfile.dailyBudgetToman : userProfile.dailyBudgetUSD;
-  const budgetPercent = Math.min(Math.round((currentSpend / (budgetCap || 1)) * 100), 100);
+    userProfile.currency === "IRT"
+      ? userProfile.dailyBudgetToman
+      : userProfile.dailyBudgetUSD;
+  const budgetPercent = Math.min(
+    Math.round((currentSpend / (budgetCap || 1)) * 100),
+    100,
+  );
 
   // Build daily calorie histogram data for the last N days (chronological left-to-right)
   const dailyHistogramBuckets = useMemo(() => {
@@ -174,12 +207,24 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     for (let i = histogramRangeDays - 1; i >= 0; i--) {
       const iso = getLocalIsoDate(i);
       const dayEntries = allHistoryItems.filter(
-        (item) => (item.entryDate || getLocalIsoDate(0)) === iso
+        (item) => (item.entryDate || getLocalIsoDate(0)) === iso,
       );
-      const cals = dayEntries.reduce((sum, item) => sum + (item.caloriesTotal || 0), 0);
-      const prot = dayEntries.reduce((sum, item) => sum + (item.proteinTotal || 0), 0);
-      const carb = dayEntries.reduce((sum, item) => sum + (item.carbsTotal || 0), 0);
-      const fatVal = dayEntries.reduce((sum, item) => sum + (item.fatTotal || 0), 0);
+      const cals = dayEntries.reduce(
+        (sum, item) => sum + (item.caloriesTotal || 0),
+        0,
+      );
+      const prot = dayEntries.reduce(
+        (sum, item) => sum + (item.proteinTotal || 0),
+        0,
+      );
+      const carb = dayEntries.reduce(
+        (sum, item) => sum + (item.carbsTotal || 0),
+        0,
+      );
+      const fatVal = dayEntries.reduce(
+        (sum, item) => sum + (item.fatTotal || 0),
+        0,
+      );
       const pct = Math.round((cals / calorieGoal) * 100);
 
       let status: "empty" | "under" | "optimal" | "over" = "optimal";
@@ -197,7 +242,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         fat: Math.round(fatVal),
         mealCount: dayEntries.length,
         percentOfGoal: pct,
-        status
+        status,
       });
     }
     return days;
@@ -215,7 +260,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         min: 0,
         max: 250,
         count: 0,
-        totalCalories: 0
+        totalCalories: 0,
       },
       {
         id: "bin-2",
@@ -226,7 +271,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         min: 251,
         max: 450,
         count: 0,
-        totalCalories: 0
+        totalCalories: 0,
       },
       {
         id: "bin-3",
@@ -237,7 +282,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         min: 451,
         max: 650,
         count: 0,
-        totalCalories: 0
+        totalCalories: 0,
       },
       {
         id: "bin-4",
@@ -248,7 +293,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         min: 651,
         max: 850,
         count: 0,
-        totalCalories: 0
+        totalCalories: 0,
       },
       {
         id: "bin-5",
@@ -259,13 +304,14 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         min: 851,
         max: Infinity,
         count: 0,
-        totalCalories: 0
-      }
+        totalCalories: 0,
+      },
     ];
 
     for (const item of allHistoryItems) {
       const c = item.caloriesTotal || 0;
-      const targetBin = bins.find((b) => c >= b.min && c <= b.max) || bins[bins.length - 1];
+      const targetBin =
+        bins.find((b) => c >= b.min && c <= b.max) || bins[bins.length - 1];
       targetBin.count += 1;
       targetBin.totalCalories += c;
     }
@@ -276,7 +322,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     return bins.map((b) => ({
       ...b,
       heightPercent: Math.round((b.count / maxCount) * 100),
-      sharePercent: Math.round((b.count / totalMeals) * 100)
+      sharePercent: Math.round((b.count / totalMeals) * 100),
     }));
   }, [allHistoryItems]);
 
@@ -285,16 +331,20 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     const activeDays = dailyHistogramBuckets.filter((d) => d.calories > 0);
     const totalPeriodCals = activeDays.reduce((acc, d) => acc + d.calories, 0);
     const avgDailyCals =
-      activeDays.length > 0 ? Math.round(totalPeriodCals / activeDays.length) : 0;
+      activeDays.length > 0
+        ? Math.round(totalPeriodCals / activeDays.length)
+        : 0;
     const peakDay = dailyHistogramBuckets.reduce(
       (max, d) => (d.calories > max.calories ? d : max),
-      dailyHistogramBuckets[0] || { calories: 0, shortLabel: "-", date: "" }
+      dailyHistogramBuckets[0] || { calories: 0, shortLabel: "-", date: "" },
     );
-    const daysOnTarget = activeDays.filter((d) => d.calories <= calorieGoal * 1.05).length;
+    const daysOnTarget = activeDays.filter(
+      (d) => d.calories <= calorieGoal * 1.05,
+    ).length;
     const maxScaleCalories = Math.max(
       calorieGoal * 1.25,
       ...dailyHistogramBuckets.map((d) => d.calories * 1.1),
-      1000
+      1000,
     );
 
     return {
@@ -302,7 +352,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       peakDay,
       daysOnTarget,
       activeDaysCount: activeDays.length,
-      maxScaleCalories
+      maxScaleCalories,
     };
   }, [dailyHistogramBuckets, calorieGoal]);
 
@@ -315,7 +365,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     for (const item of allHistoryItems) {
       if (item.entryDate) baseDates.add(item.entryDate);
     }
-    return Array.from(baseDates).sort((a, b) => b.localeCompare(a)).slice(0, 8);
+    return Array.from(baseDates)
+      .sort((a, b) => b.localeCompare(a))
+      .slice(0, 8);
   }, [allHistoryItems]);
 
   // Filtered entries for the table
@@ -327,7 +379,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         item.productName.toLowerCase().includes(q) ||
         (item.brand && item.brand.toLowerCase().includes(q)) ||
         (item.cuisine && item.cuisine.toLowerCase().includes(q)) ||
-        (item.entryDate && item.entryDate.includes(q))
+        (item.entryDate && item.entryDate.includes(q)),
     );
   }, [diaryItems, searchQuery]);
 
@@ -336,13 +388,16 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     if (!manualProductName.trim()) return;
 
     const tomanVal = Number(manualPriceToman) || 0;
-    const usdVal = tomanVal > 0 ? Number((tomanVal / currentRate).toFixed(2)) : 0;
+    const usdVal =
+      tomanVal > 0 ? Number((tomanVal / currentRate).toFixed(2)) : 0;
 
     await onAddManualEntry({
       entryDate: manualDate || getLocalIsoDate(0),
       loggedAt: manualTime || "13:00",
       productName: manualProductName.trim(),
-      brand: manualBrand.trim() || (isFa ? "ثبت در پایگاه داده SQLite" : "SQLite Diary Record"),
+      brand:
+        manualBrand.trim() ||
+        (isFa ? "ثبت در پایگاه داده SQLite" : "SQLite Diary Record"),
       foodType: "dish",
       cuisine: isFa ? "ایرانی / ملل" : "Custom Entry",
       servingsCount: 1,
@@ -353,7 +408,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       fatTotal: Math.max(0, Number(Number(manualFat || 0).toFixed(1))),
       sodiumTotal: Math.max(0, Math.round(Number(manualSodium) || 0)),
       priceToman: tomanVal,
-      priceUSD: usdVal
+      priceUSD: usdVal,
     });
 
     setManualProductName("");
@@ -364,8 +419,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   };
 
   const goalLineBottomPercent = Math.min(
-    Math.max(Math.round((calorieGoal / histogramSummary.maxScaleCalories) * 100), 10),
-    92
+    Math.max(
+      Math.round((calorieGoal / histogramSummary.maxScaleCalories) * 100),
+      10,
+    ),
+    92,
   );
 
   // Sync water updates across tabs/sidebars
@@ -394,12 +452,12 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
         const totalGlasses = entries.reduce(
           (s: number, e: { glasses?: number }) => s + (Number(e.glasses) || 0),
-          0
+          0,
         );
         return {
           glasses: totalGlasses,
           ml: totalGlasses * 250,
-          targetGlasses: target
+          targetGlasses: target,
         };
       }
       const legacy = localStorage.getItem(`nutriscan_water_${isoDate}`);
@@ -408,7 +466,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         return {
           glasses: g,
           ml: g * 250,
-          targetGlasses: 8
+          targetGlasses: 8,
         };
       }
     } catch {}
@@ -416,7 +474,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   };
 
   // Helper to update water for a date
-  const updateWaterForDate = (isoDate: string, newGlasses: number, target: number = 8) => {
+  const updateWaterForDate = (
+    isoDate: string,
+    newGlasses: number,
+    target: number = 8,
+  ) => {
     const safeGlasses = Math.max(0, newGlasses);
     const now = Date.now();
     const newEntry =
@@ -424,18 +486,21 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         ? [
             {
               id: `diary-${isoDate}-${now}`,
-              time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+              time: new Date(now).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
               timestamp: now,
               glasses: safeGlasses,
-              ml: safeGlasses * 250
-            }
+              ml: safeGlasses * 250,
+            },
           ]
         : [];
 
     try {
       localStorage.setItem(
         `nutriscan_water_v2_${isoDate}`,
-        JSON.stringify({ entries: newEntry, targetGlasses: target })
+        JSON.stringify({ entries: newEntry, targetGlasses: target }),
       );
       localStorage.setItem(`nutriscan_water_${isoDate}`, String(safeGlasses));
       window.dispatchEvent(new Event("nutriscan_water_updated"));
@@ -479,7 +544,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         ml: data.ml,
         targetGlasses: target,
         percentOfGoal: pct,
-        status
+        status,
       });
     }
     return days;
@@ -487,20 +552,31 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
   // Water histogram summary metrics
   const waterHistogramSummary = useMemo(() => {
-    const totalGlasses = dailyWaterBuckets.reduce((sum, b) => sum + b.glasses, 0);
+    const totalGlasses = dailyWaterBuckets.reduce(
+      (sum, b) => sum + b.glasses,
+      0,
+    );
     const activeDays = dailyWaterBuckets.filter((b) => b.glasses > 0);
-    const targetGlasses = dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses || 8;
-    const maxDayGlasses = Math.max(...dailyWaterBuckets.map((b) => b.glasses), 0);
+    const targetGlasses =
+      dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses || 8;
+    const maxDayGlasses = Math.max(
+      ...dailyWaterBuckets.map((b) => b.glasses),
+      0,
+    );
     const maxScaleGlasses = Math.max(targetGlasses + 2, maxDayGlasses + 1, 10);
     const avgDailyGlasses =
       Math.round((totalGlasses / Math.max(histogramRangeDays, 1)) * 10) / 10;
     const avgDailyMl = Math.round(avgDailyGlasses * 250);
-    const daysOnTarget = dailyWaterBuckets.filter((b) => b.glasses >= b.targetGlasses).length;
+    const daysOnTarget = dailyWaterBuckets.filter(
+      (b) => b.glasses >= b.targetGlasses,
+    ).length;
     const peakDay = dailyWaterBuckets.reduce(
       (peak, b) => (b.glasses > peak.glasses ? b : peak),
-      dailyWaterBuckets[0] || { date: "", shortLabel: "-", glasses: 0, ml: 0 }
+      dailyWaterBuckets[0] || { date: "", shortLabel: "-", glasses: 0, ml: 0 },
     );
-    const adherencePercent = Math.round((daysOnTarget / Math.max(histogramRangeDays, 1)) * 100);
+    const adherencePercent = Math.round(
+      (daysOnTarget / Math.max(histogramRangeDays, 1)) * 100,
+    );
 
     return {
       totalGlasses,
@@ -511,22 +587,25 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       avgDailyMl,
       daysOnTarget,
       peakDay,
-      adherencePercent
+      adherencePercent,
     };
   }, [dailyWaterBuckets, histogramRangeDays]);
 
   const waterGoalLineBottomPercent = Math.min(
     Math.max(
       Math.round(
-        (waterHistogramSummary.targetGlasses / waterHistogramSummary.maxScaleGlasses) * 100
+        (waterHistogramSummary.targetGlasses /
+          waterHistogramSummary.maxScaleGlasses) *
+          100,
       ),
-      15
+      15,
     ),
-    90
+    90,
   );
 
   // Selected date water data for the quick control strip
-  const effectiveSelectedDate = selectedDate === "all" ? getLocalIsoDate(0) : selectedDate;
+  const effectiveSelectedDate =
+    selectedDate === "all" ? getLocalIsoDate(0) : selectedDate;
   const currentSelectedWater = useMemo(() => {
     void waterDataVersion;
     return getStoredWaterForDate(effectiveSelectedDate);
@@ -551,20 +630,12 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#27272a] pb-5">
         <div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af] font-mono">
-            <span className="text-[#ff3e00] font-bold uppercase tracking-wide">
-              {isFa ? "پایگاه داده تغذیه SQLite" : "SQLITE NUTRITION DATABASE"}
-            </span>
             <span aria-hidden="true">·</span>
             <span className="inline-flex items-center gap-1.5 text-[#d4d4d8]">
               <Database className="w-3.5 h-3.5 text-[#22c55e]" />
               <span>{dbStats.fileName}</span>
             </span>
             <span aria-hidden="true">·</span>
-            <span className="tabular-nums">
-              {isFa
-                ? `${dbStats.totalEntries.toLocaleString("fa-IR")} رکورد در ${dbStats.activeDays.toLocaleString("fa-IR")} روز`
-                : `${dbStats.totalEntries} records across ${dbStats.activeDays} days`}
-            </span>
             {isSyncingDb && (
               <>
                 <span aria-hidden="true">·</span>
@@ -577,7 +648,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
           </div>
           <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] mt-1">
             {isFa
-              ? "دفترچه خاطرات غذایی و هیستوگرام کالری"
+              ? " خاطرات غذایی و هیستوگرام کالری"
               : "Dietary Journal & Calorie Intake Histogram"}
           </h2>
         </div>
@@ -585,34 +656,19 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             onClick={() => {
-              setManualDate(selectedDate === "all" ? getLocalIsoDate(0) : selectedDate);
+              setManualDate(
+                selectedDate === "all" ? getLocalIsoDate(0) : selectedDate,
+              );
               setShowAddPastModal((prev) => !prev);
             }}
             type="button"
             className="px-4 py-2 bg-[#ff3e00] hover:bg-[#e03600] text-black font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>{isFa ? "ثبت وعده در تاریخ دلخواه" : "Record Past / Custom Meal"}</span>
+            <span>
+              {isFa ? "ثبت وعده در تاریخ دلخواه" : "Record Past / Custom Meal"}
+            </span>
           </button>
-
-          {diaryItems.length > 0 && !confirmingClear && (
-            <button
-              onClick={() => setConfirmingClear(true)}
-              type="button"
-              className="btn-cmd-dim text-xs py-2 px-3.5 cursor-pointer flex items-center gap-1.5 hover:border-red-500 hover:text-red-400 whitespace-nowrap"
-            >
-              <Trash2 className="w-3.5 h-3.5 text-red-400" />
-              <span>
-                {selectedDate === "all"
-                  ? isFa
-                    ? "پاک کردن کل تاریخچه"
-                    : "Clear All History"
-                  : isFa
-                  ? "پاک کردن این روز"
-                  : "Clear Selected Day"}
-              </span>
-            </button>
-          )}
 
           {confirmingClear && (
             <div className="flex items-center gap-1.5 bg-[#18191d] border border-red-500/50 rounded-lg px-2.5 py-1.5">
@@ -621,7 +677,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </span>
               <button
                 onClick={() => {
-                  onClearLogs(selectedDate === "all" ? undefined : selectedDate);
+                  onClearLogs(
+                    selectedDate === "all" ? undefined : selectedDate,
+                  );
                   setConfirmingClear(false);
                 }}
                 type="button"
@@ -683,7 +741,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 p: 28,
                 c: 38,
                 f: 16,
-                toman: 950000
+                toman: 950000,
               },
               {
                 nameEn: "Chelo Kabab Koobideh",
@@ -692,7 +750,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 p: 38,
                 c: 62,
                 f: 28,
-                toman: 1150000
+                toman: 1150000,
               },
               {
                 nameEn: "Zereshk Polo ba Morgh",
@@ -701,7 +759,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 p: 36,
                 c: 64,
                 f: 18,
-                toman: 850000
+                toman: 850000,
               },
               {
                 nameEn: "Persian Omelette & Sangak",
@@ -710,8 +768,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 p: 22,
                 c: 36,
                 f: 22,
-                toman: 360000
-              }
+                toman: 360000,
+              },
             ].map((preset, idx) => (
               <button
                 key={idx}
@@ -741,7 +799,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 required
                 value={manualProductName}
                 onChange={(e) => setManualProductName(e.target.value)}
-                placeholder={isFa ? "مثلاً: چلوکباب سلطانی یا سالاد سزار" : "e.g. Grilled Salmon Bowl"}
+                placeholder={
+                  isFa
+                    ? "مثلاً: چلوکباب سلطانی یا سالاد سزار"
+                    : "e.g. Grilled Salmon Bowl"
+                }
                 className="w-full bg-[#08090a] border border-[#27272a] focus:border-[#ff3e00] rounded-lg px-3 py-2 text-[#f4f4f5] outline-none"
               />
             </div>
@@ -849,7 +911,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 type="text"
                 value={manualBrand}
                 onChange={(e) => setManualBrand(e.target.value)}
-                placeholder={isFa ? "خانگی یا نام رستوران" : "Home Kitchen / Restaurant"}
+                placeholder={
+                  isFa ? "خانگی یا نام رستوران" : "Home Kitchen / Restaurant"
+                }
                 className="w-full bg-[#08090a] border border-[#27272a] focus:border-[#ff3e00] rounded-lg px-3 py-2 text-[#f4f4f5] outline-none"
               />
             </div>
@@ -888,8 +952,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               ? "نمودار هیستوگرام مصرف آب"
               : "Water Intake Histogram"
             : isFa
-            ? "نمودار هیستوگرام دریافت کالری"
-            : "Calorie Intake Histogram"
+              ? "نمودار هیستوگرام دریافت کالری"
+              : "Calorie Intake Histogram"
         }
         className="bg-[#111214] border border-[#27272a] rounded-lg p-5 sm:p-6"
       >
@@ -907,8 +971,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? "هیستوگرام تحلیل مصرف آب"
                     : "Daily Water Intake Histogram"
                   : isFa
-                  ? "هیستوگرام تحلیل دریافت کالری"
-                  : "Calorie Intake Histogram"}
+                    ? "هیستوگرام تحلیل دریافت کالری"
+                    : "Calorie Intake Histogram"}
               </span>
               <span aria-hidden="true">·</span>
               <span>
@@ -917,12 +981,12 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه ۸ لیوان`
                     : `${histogramRangeDays}-day hydration trend vs daily 8-glass target`
                   : histogramMode === "daily"
-                  ? isFa
-                    ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه`
-                    : `${histogramRangeDays}-day daily calorie intake vs target cap`
-                  : isFa
-                  ? "توزیع فراوانی وعده‌ها بر اساس بازه‌های کالری"
-                  : "Meal frequency distribution across calorie brackets"}
+                    ? isFa
+                      ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه`
+                      : `${histogramRangeDays}-day daily calorie intake vs target cap`
+                    : isFa
+                      ? "توزیع فراوانی وعده‌ها بر اساس بازه‌های کالری"
+                      : "Meal frequency distribution across calorie brackets"}
               </span>
             </div>
             <p className="text-xs text-[#9ca3af] mt-1">
@@ -931,12 +995,12 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? "روی ستون هر روز کلیک کنید تا مصرف آب آن تاریخ را مشاهده و با دکمه‌های + و - به سادگی تنظیم کنید."
                   : "Click any day bar to inspect water intake or quickly log/adjust glasses with + and -."
                 : histogramMode === "daily"
-                ? isFa
-                  ? "روی ستون هر روز کلیک کنید تا وعده‌های ثبت‌شده آن تاریخ را در لیست پایین مشاهده یا ویرایش کنید."
-                  : "Click any day bar to inspect or manage the recorded food entries for that specific date."
-                : isFa
-                ? "تحلیل آماری تمام وعده‌های ذخیره‌شده در SQLite بر اساس حجم کالری هر وعده."
-                : "Statistical breakdown of all SQLite recorded meals grouped by per-meal calorie brackets."}
+                  ? isFa
+                    ? "روی ستون هر روز کلیک کنید تا وعده‌های ثبت‌شده آن تاریخ را در لیست پایین مشاهده یا ویرایش کنید."
+                    : "Click any day bar to inspect or manage the recorded food entries for that specific date."
+                  : isFa
+                    ? "تحلیل آماری تمام وعده‌های ذخیره‌شده در SQLite بر اساس حجم کالری هر وعده."
+                    : "Statistical breakdown of all SQLite recorded meals grouped by per-meal calorie brackets."}
             </p>
           </div>
 
@@ -1018,13 +1082,19 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </span>
               <span className="font-mono text-lg font-bold text-cyan-400 tabular-nums mt-0.5 block">
                 {isFa
-                  ? waterHistogramSummary.avgDailyGlasses.toLocaleString("fa-IR")
+                  ? waterHistogramSummary.avgDailyGlasses.toLocaleString(
+                      "fa-IR",
+                    )
                   : waterHistogramSummary.avgDailyGlasses}{" "}
                 <span className="text-xs font-normal text-[#9ca3af]">
                   {isFa ? "لیوان/روز" : "gl/day"}
                 </span>
                 <span className="text-[11px] font-normal text-[#71717a] ml-1">
-                  ({isFa ? waterHistogramSummary.avgDailyMl.toLocaleString("fa-IR") : waterHistogramSummary.avgDailyMl} ml)
+                  (
+                  {isFa
+                    ? waterHistogramSummary.avgDailyMl.toLocaleString("fa-IR")
+                    : waterHistogramSummary.avgDailyMl}{" "}
+                  ml)
                 </span>
               </span>
             </div>
@@ -1035,7 +1105,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </span>
               <span className="font-mono text-lg font-bold text-cyan-300 tabular-nums mt-0.5 block">
                 {isFa
-                  ? waterHistogramSummary.peakDay.glasses.toLocaleString("fa-IR")
+                  ? waterHistogramSummary.peakDay.glasses.toLocaleString(
+                      "fa-IR",
+                    )
                   : waterHistogramSummary.peakDay.glasses}{" "}
                 <span className="text-xs font-normal text-[#9ca3af]">
                   {isFa ? "لیوان" : "glasses"}
@@ -1069,7 +1141,13 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? `${waterHistogramSummary.daysOnTarget.toLocaleString("fa-IR")} از ${histogramRangeDays.toLocaleString("fa-IR")} روز`
                   : `${waterHistogramSummary.daysOnTarget} / ${histogramRangeDays} days`}
                 <span className="text-xs font-normal text-cyan-400 ml-1.5">
-                  ({isFa ? waterHistogramSummary.adherencePercent.toLocaleString("fa-IR") : waterHistogramSummary.adherencePercent}%)
+                  (
+                  {isFa
+                    ? waterHistogramSummary.adherencePercent.toLocaleString(
+                        "fa-IR",
+                      )
+                    : waterHistogramSummary.adherencePercent}
+                  %)
                 </span>
               </span>
             </div>
@@ -1097,7 +1175,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <span className="font-mono text-lg font-bold text-[#ff3e00] tabular-nums mt-0.5 block">
                 {isFa
                   ? histogramSummary.peakDay.calories.toLocaleString("fa-IR")
-                  : histogramSummary.peakDay.calories.toLocaleString("en-US")}{" "}
+                  : histogramSummary.peakDay.calories.toLocaleString(
+                      "en-US",
+                    )}{" "}
                 <span className="text-xs font-normal text-[#9ca3af]">
                   ({histogramSummary.peakDay.shortLabel})
                 </span>
@@ -1126,11 +1206,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 {isFa
                   ? `${histogramSummary.daysOnTarget.toLocaleString("fa-IR")} از ${Math.max(
                       histogramSummary.activeDaysCount,
-                      1
+                      1,
                     ).toLocaleString("fa-IR")} روز`
                   : `${histogramSummary.daysOnTarget} / ${Math.max(
                       histogramSummary.activeDaysCount,
-                      1
+                      1,
                     )} days`}
               </span>
             </div>
@@ -1158,7 +1238,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 {dailyHistogramBuckets.map((bucket) => {
                   const rawHeightPct =
                     bucket.calories > 0
-                      ? Math.round((bucket.calories / histogramSummary.maxScaleCalories) * 100)
+                      ? Math.round(
+                          (bucket.calories /
+                            histogramSummary.maxScaleCalories) *
+                            100,
+                        )
                       : 4;
                   const barHeightPct = Math.min(Math.max(rawHeightPct, 6), 96);
                   const isSelected = selectedDate === bucket.date;
@@ -1183,7 +1267,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       onClick={() => onSelectDate(bucket.date)}
                       aria-label={`${bucket.shortLabel}: ${bucket.calories} kcal (${bucket.mealCount} meals)`}
                       className={`group flex-1 h-full flex flex-col items-center justify-end cursor-pointer rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
-                        isSelected ? "bg-[#ff3e00]/10 ring-1 ring-[#ff3e00]" : "hover:bg-[#18191d]/70"
+                        isSelected
+                          ? "bg-[#ff3e00]/10 ring-1 ring-[#ff3e00]"
+                          : "hover:bg-[#18191d]/70"
                       }`}
                     >
                       {/* CALORIE VALUE TOP LABEL */}
@@ -1192,8 +1278,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                           isSelected
                             ? "text-[#ff3e00] font-bold"
                             : bucket.calories > 0
-                            ? "text-[#d4d4d8]"
-                            : "text-[#71717a]"
+                              ? "text-[#d4d4d8]"
+                              : "text-[#71717a]"
                         }`}
                       >
                         {bucket.calories > 0
@@ -1239,15 +1325,25 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <div className="flex flex-wrap items-center gap-4">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-[#ff3e00]" />
-                  <span>{isFa ? "در محدوده هدف کالری" : "Within Daily Calorie Target"}</span>
+                  <span>
+                    {isFa
+                      ? "در محدوده هدف کالری"
+                      : "Within Daily Calorie Target"}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-amber-500" />
-                  <span>{isFa ? "فراتر از سقف روزانه (>۱۰۵٪)" : "Above Target Cap (>105%)"}</span>
+                  <span>
+                    {isFa
+                      ? "فراتر از سقف روزانه (>۱۰۵٪)"
+                      : "Above Target Cap (>105%)"}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-4 border-t border-dashed border-[#22c55e]" />
-                  <span>{isFa ? "مرز هدف روزانه" : "Daily Goal Threshold"}</span>
+                  <span>
+                    {isFa ? "مرز هدف روزانه" : "Daily Goal Threshold"}
+                  </span>
                 </span>
               </div>
 
@@ -1289,7 +1385,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   const rawHeightPct =
                     bucket.glasses > 0
                       ? Math.round(
-                          (bucket.glasses / waterHistogramSummary.maxScaleGlasses) * 100
+                          (bucket.glasses /
+                            waterHistogramSummary.maxScaleGlasses) *
+                            100,
                         )
                       : 4;
                   const barHeightPct = Math.min(Math.max(rawHeightPct, 6), 96);
@@ -1300,7 +1398,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   if (bucket.status === "empty") {
                     barColorClass = "bg-[#27272a] hover:bg-[#3f3f46]";
                     statusText = isFa ? "بدون ثبت" : "0 gl";
-                  } else if (bucket.status === "optimal" || bucket.glasses >= bucket.targetGlasses) {
+                  } else if (
+                    bucket.status === "optimal" ||
+                    bucket.glasses >= bucket.targetGlasses
+                  ) {
                     barColorClass =
                       "bg-emerald-400 hover:bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.4)]";
                     statusText = isFa ? "هدف محقق شد" : "Goal Met";
@@ -1327,8 +1428,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                           isSelected
                             ? "text-cyan-300 font-bold"
                             : bucket.glasses > 0
-                            ? "text-[#d4d4d8]"
-                            : "text-[#71717a]"
+                              ? "text-[#d4d4d8]"
+                              : "text-[#71717a]"
                         }`}
                       >
                         {bucket.glasses > 0
@@ -1390,26 +1491,41 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   </div>
                   <div className="text-xs text-[#9ca3af] font-mono tabular-nums mt-0.5 flex items-center gap-1.5">
                     <span className="text-cyan-400 font-bold text-sm">
-                      {isFa ? currentSelectedWater.glasses.toLocaleString("fa-IR") : currentSelectedWater.glasses}
+                      {isFa
+                        ? currentSelectedWater.glasses.toLocaleString("fa-IR")
+                        : currentSelectedWater.glasses}
                     </span>
                     <span className="text-[#71717a]">
-                      / {isFa ? (currentSelectedWater.targetGlasses || 8).toLocaleString("fa-IR") : (currentSelectedWater.targetGlasses || 8)} {isFa ? "لیوان" : "gl"}
+                      /{" "}
+                      {isFa
+                        ? (
+                            currentSelectedWater.targetGlasses || 8
+                          ).toLocaleString("fa-IR")
+                        : currentSelectedWater.targetGlasses || 8}{" "}
+                      {isFa ? "لیوان" : "gl"}
                     </span>
                     <span className="text-[#52525b]">·</span>
                     <span className="text-[#d4d4d8]">
-                      {isFa ? currentSelectedWater.ml.toLocaleString("fa-IR") : currentSelectedWater.ml} ml
+                      {isFa
+                        ? currentSelectedWater.ml.toLocaleString("fa-IR")
+                        : currentSelectedWater.ml}{" "}
+                      ml
                     </span>
                     <span className="text-[#52525b]">·</span>
                     <span
                       className={`text-[11px] font-medium ${
-                        currentSelectedWater.glasses >= (currentSelectedWater.targetGlasses || 8)
+                        currentSelectedWater.glasses >=
+                        (currentSelectedWater.targetGlasses || 8)
                           ? "text-emerald-400 font-semibold"
                           : "text-cyan-300"
                       }`}
                     >
                       {Math.round(
-                        (currentSelectedWater.glasses / (currentSelectedWater.targetGlasses || 8)) * 100
-                      )}%
+                        (currentSelectedWater.glasses /
+                          (currentSelectedWater.targetGlasses || 8)) *
+                          100,
+                      )}
+                      %
                     </span>
                   </div>
                 </div>
@@ -1423,7 +1539,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     updateWaterForDate(
                       effectiveSelectedDate,
                       Math.max(0, currentSelectedWater.glasses - 1),
-                      currentSelectedWater.targetGlasses || 8
+                      currentSelectedWater.targetGlasses || 8,
                     )
                   }
                   disabled={currentSelectedWater.glasses === 0}
@@ -1439,7 +1555,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     updateWaterForDate(
                       effectiveSelectedDate,
                       currentSelectedWater.glasses + 1,
-                      currentSelectedWater.targetGlasses || 8
+                      currentSelectedWater.targetGlasses || 8,
                     )
                   }
                   aria-label={isFa ? "افزودن ۱ لیوان آب" : "Add 1 glass"}
@@ -1456,15 +1572,21 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <div className="flex flex-wrap items-center gap-4">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.5)]" />
-                  <span>{isFa ? "تحقق هدف (۱۰۰٪+)" : "Target Met (100%+)"}</span>
+                  <span>
+                    {isFa ? "تحقق هدف (۱۰۰٪+)" : "Target Met (100%+)"}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-xs bg-cyan-500" />
-                  <span>{isFa ? "در حال مصرف (<۱۰۰٪)" : "In Progress (<100%)"}</span>
+                  <span>
+                    {isFa ? "در حال مصرف (<۱۰۰٪)" : "In Progress (<100%)"}
+                  </span>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-4 border-t border-dashed border-cyan-400" />
-                  <span>{isFa ? "خط هدف ۸ لیوان (۲۰۰۰ ml)" : "Daily 8-Glass Target"}</span>
+                  <span>
+                    {isFa ? "خط هدف ۸ لیوان (۲۰۰۰ ml)" : "Daily 8-Glass Target"}
+                  </span>
                 </span>
               </div>
 
@@ -1505,18 +1627,24 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   <div className="w-full bg-[#18191d] h-6 rounded overflow-hidden flex items-center p-0.5">
                     <div
                       className="h-full bg-[#ff3e00] rounded-xs transition-all"
-                      style={{ width: `${Math.max(bin.heightPercent, bin.count > 0 ? 6 : 0)}%` }}
+                      style={{
+                        width: `${Math.max(bin.heightPercent, bin.count > 0 ? 6 : 0)}%`,
+                      }}
                     />
                   </div>
                 </div>
 
                 <div className="sm:w-40 shrink-0 flex sm:justify-end items-center gap-2 text-xs font-mono tabular-nums">
                   <span className="text-[#ff3e00] font-bold">
-                    {isFa ? `${bin.count.toLocaleString("fa-IR")} وعده` : `${bin.count} meals`}
+                    {isFa
+                      ? `${bin.count.toLocaleString("fa-IR")} وعده`
+                      : `${bin.count} meals`}
                   </span>
                   <span className="text-[#9ca3af]">·</span>
                   <span className="text-[#d4d4d8]">
-                    {isFa ? `${bin.sharePercent.toLocaleString("fa-IR")}٪` : `${bin.sharePercent}%`}
+                    {isFa
+                      ? `${bin.sharePercent.toLocaleString("fa-IR")}٪`
+                      : `${bin.sharePercent}%`}
                   </span>
                 </div>
               </div>
@@ -1545,7 +1673,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
           {recentDateTabs.map((iso) => {
             const countForDay = allHistoryItems.filter(
-              (i) => (i.entryDate || getLocalIsoDate(0)) === iso
+              (i) => (i.entryDate || getLocalIsoDate(0)) === iso,
             ).length;
             const isSelected = selectedDate === iso;
             return (
@@ -1574,7 +1702,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
         {/* DATE PICKER JUMP */}
         <div className="flex items-center gap-2 shrink-0">
-          <label htmlFor="diary-date-jump" className="text-xs text-[#9ca3af] whitespace-nowrap">
+          <label
+            htmlFor="diary-date-jump"
+            className="text-xs text-[#9ca3af] whitespace-nowrap"
+          >
             {isFa ? "انتخاب تاریخ:" : "Jump to date:"}
           </label>
           <input
@@ -1601,15 +1732,19 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? "مجموع کالری تاریخچه"
                   : "Total Recorded Calories"
                 : isFa
-                ? `کالری (${formatShortDateLabel(selectedDate, true)})`
-                : `Calorie Intake (${formatShortDateLabel(selectedDate, false)})`}
+                  ? `کالری (${formatShortDateLabel(selectedDate, true)})`
+                  : `Calorie Intake (${formatShortDateLabel(selectedDate, false)})`}
             </span>
             <span className="text-[#ff3e00] font-bold font-mono tabular-nums">
-              {isFa ? `${calPercent.toLocaleString("fa-IR")}٪` : `${calPercent}%`}
+              {isFa
+                ? `${calPercent.toLocaleString("fa-IR")}٪`
+                : `${calPercent}%`}
             </span>
           </div>
           <div className="font-syne text-3xl font-extrabold text-[#ffffff] tabular-nums">
-            {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
+            {isFa
+              ? dailyTotals.calories.toLocaleString("fa-IR")
+              : dailyTotals.calories}
             <span className="text-xs font-normal text-[#9ca3af] ml-1 rtl:mr-1 rtl:ml-0">
               {isFa ? "کالری" : "kcal"}
             </span>
@@ -1640,10 +1775,15 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? `پروتئین: ${Math.round(dailyTotals.protein).toLocaleString("fa-IR")} از ${proteinGoal.toLocaleString("fa-IR")} گرم`
                     : `Protein: ${Math.round(dailyTotals.protein)}g / ${proteinGoal}g`}
                 </span>
-                <span className="text-[#ff3e00] font-semibold">{proteinPercent}%</span>
+                <span className="text-[#ff3e00] font-semibold">
+                  {proteinPercent}%
+                </span>
               </div>
               <div className="w-full bg-[#27272a] h-1.5 rounded-full overflow-hidden">
-                <div className="h-full bg-[#ff3e00]" style={{ width: `${proteinPercent}%` }} />
+                <div
+                  className="h-full bg-[#ff3e00]"
+                  style={{ width: `${proteinPercent}%` }}
+                />
               </div>
             </div>
 
@@ -1654,10 +1794,15 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? `کربوهیدرات: ${Math.round(dailyTotals.carbs).toLocaleString("fa-IR")} از ${carbsGoal.toLocaleString("fa-IR")} گرم`
                     : `Carbs: ${Math.round(dailyTotals.carbs)}g / ${carbsGoal}g`}
                 </span>
-                <span className="text-[#ff3e00] font-semibold">{carbsPercent}%</span>
+                <span className="text-[#ff3e00] font-semibold">
+                  {carbsPercent}%
+                </span>
               </div>
               <div className="w-full bg-[#27272a] h-1.5 rounded-full overflow-hidden">
-                <div className="h-full bg-[#ff3e00]" style={{ width: `${carbsPercent}%` }} />
+                <div
+                  className="h-full bg-[#ff3e00]"
+                  style={{ width: `${carbsPercent}%` }}
+                />
               </div>
             </div>
 
@@ -1668,10 +1813,15 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     ? `چربی: ${Math.round(dailyTotals.fat).toLocaleString("fa-IR")} از ${fatGoal.toLocaleString("fa-IR")} گرم`
                     : `Fat: ${Math.round(dailyTotals.fat)}g / ${fatGoal}g`}
                 </span>
-                <span className="text-[#ff3e00] font-semibold">{fatPercent}%</span>
+                <span className="text-[#ff3e00] font-semibold">
+                  {fatPercent}%
+                </span>
               </div>
               <div className="w-full bg-[#27272a] h-1.5 rounded-full overflow-hidden">
-                <div className="h-full bg-[#ff3e00]" style={{ width: `${fatPercent}%` }} />
+                <div
+                  className="h-full bg-[#ff3e00]"
+                  style={{ width: `${fatPercent}%` }}
+                />
               </div>
             </div>
           </div>
@@ -1681,7 +1831,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         <div className="bg-[#111214] border border-[#27272a] rounded-lg p-5">
           <div className="flex justify-between items-center text-xs text-[#9ca3af] mb-2 font-medium">
             <span>{isFa ? "هزینه کل وعده‌ها" : "Meal Spend"}</span>
-            <span className="text-[#ff3e00] font-bold tabular-nums">{budgetPercent}%</span>
+            <span className="text-[#ff3e00] font-bold tabular-nums">
+              {budgetPercent}%
+            </span>
           </div>
           <div className="font-syne text-2xl font-bold text-[#f4f4f5] tabular-nums">
             {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
@@ -1705,8 +1857,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 budgetPercent > 100
                   ? "bg-red-500"
                   : budgetPercent > 80
-                  ? "bg-amber-500"
-                  : "bg-[#ff3e00]"
+                    ? "bg-amber-500"
+                    : "bg-[#ff3e00]"
               } transition-all`}
               style={{ width: `${Math.min(budgetPercent, 100)}%` }}
             />
@@ -1719,14 +1871,18 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <span>{isFa ? "سقف مصرف سدیم" : "Sodium Intake"}</span>
             <span
               className={`tabular-nums ${
-                sodiumPercent > 90 ? "text-amber-400 font-bold" : "text-[#9ca3af]"
+                sodiumPercent > 90
+                  ? "text-amber-400 font-bold"
+                  : "text-[#9ca3af]"
               }`}
             >
               {sodiumPercent}%
             </span>
           </div>
           <div className="font-syne text-2xl font-bold text-[#f4f4f5] tabular-nums">
-            {isFa ? dailyTotals.sodium.toLocaleString("fa-IR") : dailyTotals.sodium}{" "}
+            {isFa
+              ? dailyTotals.sodium.toLocaleString("fa-IR")
+              : dailyTotals.sodium}{" "}
             <span className="text-xs font-normal text-[#9ca3af]">
               {isFa ? "میلی‌گرم" : "mg"}
             </span>
@@ -1755,8 +1911,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? `تمامی وعده‌های ثبت‌شده در SQLite (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
                   : `All SQLite Recorded Meals (${filteredDiaryItems.length})`
                 : isFa
-                ? `وعده‌های ثبت‌شده — ${formatShortDateLabel(selectedDate, true)} (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
-                : `Recorded Meals — ${formatShortDateLabel(selectedDate, false)} (${filteredDiaryItems.length})`}
+                  ? `وعده‌های ثبت‌شده — ${formatShortDateLabel(selectedDate, true)} (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
+                  : `Recorded Meals — ${formatShortDateLabel(selectedDate, false)} (${filteredDiaryItems.length})`}
             </h3>
           </div>
 
@@ -1768,7 +1924,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={isFa ? "جستجو در وعده‌ها..." : "Search recorded meals..."}
+                placeholder={
+                  isFa ? "جستجو در وعده‌ها..." : "Search recorded meals..."
+                }
                 className="bg-[#111214] border border-[#27272a] focus:border-[#ff3e00] rounded-lg pl-8 pr-3 rtl:pr-8 rtl:pl-3 py-1.5 text-xs text-[#f4f4f5] outline-none w-48 sm:w-56"
               />
             </div>
@@ -1776,7 +1934,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <button
               onClick={onGoToScanner}
               type="button"
-              aria-label={isFa ? "اسکن و افزودن وعده غذایی جدید" : "Scan and add new meal"}
+              aria-label={
+                isFa ? "اسکن و افزودن وعده غذایی جدید" : "Scan and add new meal"
+              }
               className="text-xs text-[#ff3e00] hover:underline cursor-pointer flex items-center gap-1 font-semibold focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none whitespace-nowrap"
             >
               <Plus className="w-4 h-4" />
@@ -1811,7 +1971,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 type="button"
                 className="btn-cmd-dim px-4 py-2.5 cursor-pointer text-xs font-semibold"
               >
-                {isFa ? "ثبت دستی وعده در این تاریخ" : "Record Entry for This Date"}
+                {isFa
+                  ? "ثبت دستی وعده در این تاریخ"
+                  : "Record Entry for This Date"}
               </button>
               {allHistoryItems.length === 0 && (
                 <button
@@ -1819,7 +1981,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   type="button"
                   className="btn-cmd-dim px-4 py-2.5 cursor-pointer text-xs font-semibold text-[#ff3e00]"
                 >
-                  {isFa ? "بارگذاری تاریخچه نمونه ۷ روزه" : "Seed 7-Day Sample Data"}
+                  {isFa
+                    ? "بارگذاری تاریخچه نمونه ۷ روزه"
+                    : "Seed 7-Day Sample Data"}
                 </button>
               )}
             </div>
@@ -1851,7 +2015,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                           {item.loggedAt}
                         </span>
                         <span aria-hidden="true">·</span>
-                        <span className="font-sans">{item.servingSizeText}</span>
+                        <span className="font-sans">
+                          {item.servingSizeText}
+                        </span>
                         {item.brand && (
                           <>
                             <span aria-hidden="true">·</span>
@@ -1869,7 +2035,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                           ? `${item.caloriesTotal.toLocaleString("fa-IR")} کالری`
                           : `${item.caloriesTotal} kcal`}
                       </span>
-                      <span aria-hidden="true" className="text-[#3f3f46] hidden sm:inline">
+                      <span
+                        aria-hidden="true"
+                        className="text-[#3f3f46] hidden sm:inline"
+                      >
                         ·
                       </span>
                       <span className="text-[#d4d4d8] hidden sm:inline">
@@ -1877,7 +2046,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                           ? `پ: ${item.proteinTotal}g · ک: ${item.carbsTotal}g · چ: ${item.fatTotal}g`
                           : `P: ${item.proteinTotal}g · C: ${item.carbsTotal}g · F: ${item.fatTotal}g`}
                       </span>
-                      {(item.priceToman || item.priceUSD) ? (
+                      {item.priceToman || item.priceUSD ? (
                         <>
                           <span aria-hidden="true" className="text-[#3f3f46]">
                             ·
@@ -1893,7 +2062,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       onClick={() => onDeleteLogItem(item.id)}
                       type="button"
                       aria-label={
-                        isFa ? `حذف ${item.productName}` : `Delete ${item.productName}`
+                        isFa
+                          ? `حذف ${item.productName}`
+                          : `Delete ${item.productName}`
                       }
                       className="min-h-[40px] min-w-[40px] p-2 text-[#9ca3af] hover:text-red-400 hover:bg-red-950/30 rounded transition-colors cursor-pointer flex items-center justify-center focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none"
                     >
