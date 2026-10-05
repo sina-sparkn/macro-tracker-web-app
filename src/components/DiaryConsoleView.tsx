@@ -628,6 +628,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       {/* HEADER STRIP & SQLITE DATABASE STATUS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#27272a] pb-5">
         <div>
+<<<<<<< HEAD
           <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af] font-mono">
             <span aria-hidden="true">·</span>
 
@@ -642,6 +643,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               </>
             )}
           </div>
+=======
+>>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
           <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] mt-1">
             {isFa
               ? " خاطرات غذایی و هیستوگرام کالری"
