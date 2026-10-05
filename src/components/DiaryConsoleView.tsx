@@ -630,10 +630,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         <div>
           <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af] font-mono">
             <span aria-hidden="true">·</span>
-            <span className="inline-flex items-center gap-1.5 text-[#d4d4d8]">
-              <Database className="w-3.5 h-3.5 text-[#22c55e]" />
-              <span>{dbStats.fileName}</span>
-            </span>
+
             <span aria-hidden="true">·</span>
             {isSyncingDb && (
               <>
@@ -1023,7 +1020,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 }`}
               >
                 <Droplets className="w-3.5 h-3.5" />
-                <span>{isFa ? "مصرف آب" : "Water Intake"}</span>
+                <span>{isFa ? " آب" : "Water "}</span>
               </button>
               <button
                 type="button"
@@ -1556,7 +1553,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900/70 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{isFa ? "۱+ لیوان" : "+1 Glass"}</span>
+                  <span>{isFa ? "۱ لیوان" : "1 Glass"}</span>
                 </button>
               </div>
             </div>
@@ -1647,73 +1644,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         )}
       </section>
 
-      {/* DATE FILTER & PAST ENTRIES SELECTOR BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#111214] border border-[#27272a] rounded-lg p-3.5">
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <Calendar className="w-4 h-4 text-[#ff3e00] shrink-0 mr-1 rtl:ml-1 rtl:mr-0" />
-          <button
-            type="button"
-            onClick={() => onSelectDate("all")}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 ${
-              selectedDate === "all"
-                ? "bg-[#ff3e00] text-black font-bold"
-                : "bg-[#18191d] text-[#d4d4d8] hover:text-white"
-            }`}
-          >
-            {isFa
-              ? `همه روزها (${allHistoryItems.length.toLocaleString("fa-IR")})`
-              : `All History (${allHistoryItems.length})`}
-          </button>
-
-          {recentDateTabs.map((iso) => {
-            const countForDay = allHistoryItems.filter(
-              (i) => (i.entryDate || getLocalIsoDate(0)) === iso,
-            ).length;
-            const isSelected = selectedDate === iso;
-            return (
-              <button
-                key={iso}
-                type="button"
-                onClick={() => onSelectDate(iso)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-                  isSelected
-                    ? "bg-[#ff3e00] text-black font-bold"
-                    : "bg-[#18191d] text-[#d4d4d8] hover:text-white"
-                }`}
-              >
-                <span>{formatShortDateLabel(iso, isFa)}</span>
-                <span
-                  className={`text-[10px] font-mono tabular-nums ${
-                    isSelected ? "text-black/80" : "text-[#9ca3af]"
-                  }`}
-                >
-                  ({isFa ? countForDay.toLocaleString("fa-IR") : countForDay})
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* DATE PICKER JUMP */}
-        <div className="flex items-center gap-2 shrink-0">
-          <label
-            htmlFor="diary-date-jump"
-            className="text-xs text-[#9ca3af] whitespace-nowrap"
-          >
-            {isFa ? "انتخاب تاریخ:" : "Jump to date:"}
-          </label>
-          <input
-            id="diary-date-jump"
-            type="date"
-            value={selectedDate === "all" ? getLocalIsoDate(0) : selectedDate}
-            max={getLocalIsoDate(0)}
-            onChange={(e) => {
-              if (e.target.value) onSelectDate(e.target.value);
-            }}
-            className="bg-[#08090a] border border-[#27272a] focus:border-[#ff3e00] rounded-md px-2.5 py-1 text-xs text-[#f4f4f5] font-mono tabular-nums outline-none"
-          />
-        </div>
-      </div>
+      {/* DATE PICKER JUMP */}
 
       {/* INTAKE TELEMETRY DASHBOARD FOR SELECTED VIEW */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -1,11 +1,34 @@
 import React, { useState } from "react";
-import { Camera, Upload, Sparkles, AlertTriangle, X, ChevronRight, Utensils, Check, Plus, Info, History, Clock, Trash2, RefreshCw, Calendar } from "lucide-react";
+import {
+  Camera,
+  Upload,
+  Sparkles,
+  AlertTriangle,
+  X,
+  ChevronRight,
+  Utensils,
+  Check,
+  Plus,
+  Info,
+  History,
+  Clock,
+  Trash2,
+  RefreshCw,
+  Calendar,
+} from "lucide-react";
 import { ScannedLabel, UserProfile } from "../types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "../worldFoods";
 import { TRANSLATIONS } from "../translations";
 import { CYBER_PRESET_DISHES, CyberPresetDish } from "../App";
-import { RecommendedDish, getDailyRecommendedDish, getDailyFormattedDate } from "../recommendedDishes";
-import { normalizeScannedLabel, formatSmartPrice } from "../utils/dishLocalization";
+import {
+  RecommendedDish,
+  getDailyRecommendedDish,
+  getDailyFormattedDate,
+} from "../recommendedDishes";
+import {
+  normalizeScannedLabel,
+  formatSmartPrice,
+} from "../utils/dishLocalization";
 
 interface ScannerConsoleViewProps {
   userProfile: UserProfile;
@@ -42,7 +65,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   onLogRecommendedDish,
   onSelectRecentScan,
   onQuickLogRecentScan,
-  onClearRecentScans
+  onClearRecentScans,
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
@@ -52,12 +75,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   const [loggedRecentId, setLoggedRecentId] = useState<string | null>(null);
   const [dailyDishOffset, setDailyDishOffset] = useState<number>(0);
 
-  const todayRecommendedDish = getDailyRecommendedDish(new Date(), dailyDishOffset);
+  const todayRecommendedDish = getDailyRecommendedDish(
+    new Date(),
+    dailyDishOffset,
+  );
   const todayDateLabel = getDailyFormattedDate(new Date(), isFa ? "fa" : "en");
 
-  const currentRate = userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0
-    ? userProfile.exchangeRateTomanPerUSD
-    : 230000;
+  const currentRate =
+    userProfile.exchangeRateTomanPerUSD &&
+    userProfile.exchangeRateTomanPerUSD > 0
+      ? userProfile.exchangeRateTomanPerUSD
+      : 230000;
 
   const formatPrice = (toman?: number, usd?: number) => {
     return formatSmartPrice(toman, usd, userProfile, 1) || "-";
@@ -92,11 +120,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
       carbs: todayRecommendedDish.carbs,
       fat: todayRecommendedDish.fat,
       sodium: todayRecommendedDish.sodium,
-      origin: isFa ? todayRecommendedDish.originFa : todayRecommendedDish.originEn,
-      servingSize: isFa ? todayRecommendedDish.servingSizeFa : todayRecommendedDish.servingSizeEn,
-      ingredients: isFa ? todayRecommendedDish.ingredientsFa : todayRecommendedDish.ingredientsEn,
+      origin: isFa
+        ? todayRecommendedDish.originFa
+        : todayRecommendedDish.originEn,
+      servingSize: isFa
+        ? todayRecommendedDish.servingSizeFa
+        : todayRecommendedDish.servingSizeEn,
+      ingredients: isFa
+        ? todayRecommendedDish.ingredientsFa
+        : todayRecommendedDish.ingredientsEn,
       summaryFa: todayRecommendedDish.descFa,
-      summaryEn: todayRecommendedDish.descEn
+      summaryEn: todayRecommendedDish.descEn,
     };
     onSelectCyberDish(dishAdapter);
   };
@@ -114,10 +148,14 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           <div>
             <div className="inline-flex items-center gap-2 text-[#ff3e00] font-mono text-xs mb-2 uppercase tracking-wide bg-[#ff3e00]/10 px-2.5 py-1 rounded">
               <span className="w-2 h-2 rounded-full bg-[#ff3e00]" />
-              <span>{isFa ? "بینایی هوش مصنوعی تغذیه" : "AI NUTRITION VISION"}</span>
+              <span>
+                {isFa ? "بینایی هوش مصنوعی تغذیه" : "AI NUTRITION VISION"}
+              </span>
             </div>
             <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] tracking-tight">
-              {isFa ? "اسکن بشقاب غذا یا جدول ارزش غذایی" : "Scan Plate or Nutrition Label"}
+              {isFa
+                ? "اسکن بشقاب غذا یا جدول ارزش غذایی"
+                : "Scan Plate or Nutrition Label"}
             </h2>
           </div>
         </div>
@@ -133,7 +171,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           <button
             onClick={onStartCamera}
             type="button"
-            aria-label={isFa ? "روشن کردن دوربین جهت اسکن غذا" : "Start camera to scan food"}
+            aria-label={
+              isFa
+                ? "روشن کردن دوربین جهت اسکن غذا"
+                : "Start camera to scan food"
+            }
             className="btn-cmd cursor-pointer flex items-center gap-2 text-sm font-semibold"
           >
             <Camera className="w-4 h-4" />
@@ -141,7 +183,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </button>
 
           <label
-            aria-label={isFa ? "بارگذاری عکس غذا از گالری" : "Upload food photo from gallery"}
+            aria-label={
+              isFa
+                ? "بارگذاری عکس غذا از گالری"
+                : "Upload food photo from gallery"
+            }
             className="btn-cmd-dim cursor-pointer flex items-center gap-2 text-sm font-medium"
           >
             <Upload className="w-4 h-4 text-[#ff3e00]" />
@@ -242,24 +288,16 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                   : `${todayRecommendedDish.calories} kcal • ${todayRecommendedDish.protein}g Protein`}
               </span>
 
-              {/* SHUFFLE / CYCLE TO NEXT DISH */}
-              <button
-                onClick={() => setDailyDishOffset((prev) => prev + 1)}
-                type="button"
-                aria-label={isFa ? "مشاهده پیشنهاد غذای دیگر" : "Shuffle next dish"}
-                className="px-2.5 py-1 text-xs text-[#d4d4d8] hover:text-white bg-[#111214] hover:bg-[#27272a] border border-[#27272a] hover:border-[#ff3e00]/50 rounded flex items-center gap-1.5 transition-colors cursor-pointer"
-                title={isFa ? "مشاهده پیشنهاد دیگر" : "Shuffle next recommendation"}
-              >
-                <RefreshCw className="w-3.5 h-3.5 text-[#ff3e00]" />
-                <span className="font-mono text-[11px]">{isFa ? "پیشنهاد دیگر" : "Next Dish"}</span>
-              </button>
-
               {dailyDishOffset !== 0 && (
                 <button
                   onClick={() => setDailyDishOffset(0)}
                   type="button"
                   className="px-2 py-1 text-[11px] text-[#ff3e00] hover:text-[#ff784e] bg-[#ff3e00]/10 border border-[#ff3e00]/30 rounded transition-colors cursor-pointer"
-                  title={isFa ? "بازگشت به غذای تعیین‌شده برای تاریخ امروز" : "Reset to today's date dish"}
+                  title={
+                    isFa
+                      ? "بازگشت به غذای تعیین‌شده برای تاریخ امروز"
+                      : "Reset to today's date dish"
+                  }
                 >
                   {isFa ? "پیشنهاد اصلی امروز" : "Today's Pick"}
                 </button>
@@ -273,9 +311,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
               {isFa ? todayRecommendedDish.nameFa : todayRecommendedDish.nameEn}
             </h3>
             <div className="flex items-center gap-1.5 text-xs font-mono text-[#a1a1aa] bg-[#08090a] px-2.5 py-1 rounded border border-[#27272a]">
-              <span>{isFa ? todayRecommendedDish.originFa : todayRecommendedDish.originEn}</span>
+              <span>
+                {isFa
+                  ? todayRecommendedDish.originFa
+                  : todayRecommendedDish.originEn}
+              </span>
               <span>•</span>
-              <span>{isFa ? todayRecommendedDish.servingSizeFa : todayRecommendedDish.servingSizeEn}</span>
+              <span>
+                {isFa
+                  ? todayRecommendedDish.servingSizeFa
+                  : todayRecommendedDish.servingSizeEn}
+              </span>
             </div>
           </div>
 
@@ -286,30 +332,47 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           {/* NUTRITION METRICS GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-5 font-mono">
             <div className="bg-[#08090a] border border-[#27272a] p-3 rounded text-center">
-              <span className="text-xs text-[#9ca3af] block">{isFa ? "پروتئین" : "Protein"}</span>
+              <span className="text-xs text-[#9ca3af] block">
+                {isFa ? "پروتئین" : "Protein"}
+              </span>
               <span className="text-base font-bold text-sky-400 mt-0.5 block">
-                {isFa ? `${todayRecommendedDish.protein.toLocaleString("fa-IR")} گرم` : `${todayRecommendedDish.protein}g`}
+                {isFa
+                  ? `${todayRecommendedDish.protein.toLocaleString("fa-IR")} گرم`
+                  : `${todayRecommendedDish.protein}g`}
               </span>
             </div>
 
             <div className="bg-[#08090a] border border-[#27272a] p-3 rounded text-center">
-              <span className="text-xs text-[#9ca3af] block">{isFa ? "کربوهیدرات" : "Carbs"}</span>
+              <span className="text-xs text-[#9ca3af] block">
+                {isFa ? "کربوهیدرات" : "Carbs"}
+              </span>
               <span className="text-base font-bold text-amber-400 mt-0.5 block">
-                {isFa ? `${todayRecommendedDish.carbs.toLocaleString("fa-IR")} گرم` : `${todayRecommendedDish.carbs}g`}
+                {isFa
+                  ? `${todayRecommendedDish.carbs.toLocaleString("fa-IR")} گرم`
+                  : `${todayRecommendedDish.carbs}g`}
               </span>
             </div>
 
             <div className="bg-[#08090a] border border-[#27272a] p-3 rounded text-center">
-              <span className="text-xs text-[#9ca3af] block">{isFa ? "چربی سالم" : "Fat"}</span>
+              <span className="text-xs text-[#9ca3af] block">
+                {isFa ? "چربی سالم" : "Fat"}
+              </span>
               <span className="text-base font-bold text-rose-400 mt-0.5 block">
-                {isFa ? `${todayRecommendedDish.fat.toLocaleString("fa-IR")} گرم` : `${todayRecommendedDish.fat}g`}
+                {isFa
+                  ? `${todayRecommendedDish.fat.toLocaleString("fa-IR")} گرم`
+                  : `${todayRecommendedDish.fat}g`}
               </span>
             </div>
 
             <div className="bg-[#08090a] border border-[#27272a] p-3 rounded text-center">
-              <span className="text-xs text-[#9ca3af] block">{isFa ? "برآورد هزینه" : "Est. Cost"}</span>
+              <span className="text-xs text-[#9ca3af] block">
+                {isFa ? "برآورد هزینه" : "Est. Cost"}
+              </span>
               <span className="text-base font-bold text-[#ff3e00] mt-0.5 block">
-                {formatPrice(todayRecommendedDish.priceToman, todayRecommendedDish.priceUSD)}
+                {formatPrice(
+                  todayRecommendedDish.priceToman,
+                  todayRecommendedDish.priceUSD,
+                )}
               </span>
             </div>
           </div>
@@ -318,8 +381,12 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           <div className="bg-[#08090a]/80 border border-[#27272a] p-3.5 rounded-lg mb-5 flex items-start gap-3">
             <Info className="w-5 h-5 text-[#ff3e00] shrink-0 mt-0.5" />
             <p className="text-xs sm:text-sm text-[#d4d4d8] leading-relaxed">
-              <strong className="text-[#f4f4f5]">{isFa ? "نکته سلامت و تغذیه: " : "Nutritional Tip: "}</strong>
-              {isFa ? todayRecommendedDish.funFactFa : todayRecommendedDish.funFactEn}
+              <strong className="text-[#f4f4f5]">
+                {isFa ? "نکته سلامت و تغذیه: " : "Nutritional Tip: "}
+              </strong>
+              {isFa
+                ? todayRecommendedDish.funFactFa
+                : todayRecommendedDish.funFactEn}
             </p>
           </div>
 
@@ -328,7 +395,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
             <button
               onClick={handleLogRecommended}
               type="button"
-              aria-label={isFa ? "ثبت این غذا در یادداشت روزانه" : "Add this meal to daily log"}
+              aria-label={
+                isFa
+                  ? "ثبت این غذا در یادداشت روزانه"
+                  : "Add this meal to daily log"
+              }
               className={`btn-cmd cursor-pointer px-5 py-2.5 text-sm font-bold flex items-center gap-2 transition-all ${
                 justLogged ? "bg-emerald-500 border-emerald-500 text-black" : ""
               }`}
@@ -341,7 +412,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
               ) : (
                 <>
                   <Plus className="w-4 h-4" />
-                  <span>{isFa ? "ثبت این غذا در دفترچه" : "Add to Daily Diary"}</span>
+                  <span>
+                    {isFa ? "ثبت این غذا در دفترچه" : "Add to Daily Diary"}
+                  </span>
                 </>
               )}
             </button>
@@ -349,7 +422,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
             <button
               onClick={handleOpenRecommendedDetails}
               type="button"
-              aria-label={isFa ? "مشاهده جزئیات کامل ارزش غذایی" : "View full nutrition details"}
+              aria-label={
+                isFa
+                  ? "مشاهده جزئیات کامل ارزش غذایی"
+                  : "View full nutrition details"
+              }
               className="btn-cmd-dim cursor-pointer px-4 py-2.5 text-sm font-medium flex items-center gap-2"
             >
               <Utensils className="w-4 h-4 text-[#ff3e00]" />
@@ -415,11 +492,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
         ) : (
           <div className="max-w-xl">
             {recentScans.slice(0, 1).map((rawItem, idx) => {
-              const item = normalizeScannedLabel(rawItem, isFa ? "fa" : "en", currentRate);
+              const item = normalizeScannedLabel(
+                rawItem,
+                isFa ? "fa" : "en",
+                currentRate,
+              );
               const itemToman = item.estimatedPrice?.amountToman;
               const itemUSD = item.estimatedPrice?.amountUSD;
               const itemId = item.id || `${item.productName}-${idx}`;
-              const isItemLogged = loggedRecentId === itemId || loggedRecentId === item.productName;
+              const isItemLogged =
+                loggedRecentId === itemId ||
+                loggedRecentId === item.productName;
 
               return (
                 <div
@@ -430,8 +513,12 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <span className="text-[11px] font-mono text-[#ff3e00] bg-[#ff3e00]/10 border border-[#ff3e00]/20 px-2.5 py-0.5 rounded font-semibold">
                         {item.foodType === "beverage"
-                          ? (isFa ? "نوشیدنی اسکن‌شده" : "Scanned Beverage")
-                          : (isFa ? "غذای اسکن‌شده" : "Scanned Food / Dish")}
+                          ? isFa
+                            ? "نوشیدنی اسکن‌شده"
+                            : "Scanned Beverage"
+                          : isFa
+                            ? "غذای اسکن‌شده"
+                            : "Scanned Food / Dish"}
                       </span>
                       {item.scannedAt && (
                         <span className="text-[11px] text-[#a1a1aa] font-mono shrink-0 bg-[#111214] px-2 py-0.5 rounded border border-[#27272a]">
@@ -452,7 +539,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
                     <div className="flex items-center justify-between text-xs sm:text-sm font-mono my-3 pt-2.5 border-t border-[#27272a]">
                       <span className="text-[#f4f4f5] font-bold">
-                        {isFa ? `${item.calories.toLocaleString("fa-IR")} کالری` : `${item.calories} kcal`}
+                        {isFa
+                          ? `${item.calories.toLocaleString("fa-IR")} کالری`
+                          : `${item.calories} kcal`}
                       </span>
                       <span className="text-[#ff3e00] font-extrabold text-sm sm:text-base">
                         {formatPrice(itemToman, itemUSD)}
@@ -460,11 +549,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-[#d4d4d8] font-mono mb-4 bg-[#111214] px-3 py-1.5 rounded border border-[#27272a]">
-                      <span className="font-semibold text-sky-400">P: {Math.round(item.protein)}g</span>
+                      <span className="font-semibold text-sky-400">
+                        P: {Math.round(item.protein)}g
+                      </span>
                       <span className="text-[#52525b]">•</span>
-                      <span className="font-semibold text-amber-400">C: {Math.round(item.totalCarbohydrate)}g</span>
+                      <span className="font-semibold text-amber-400">
+                        C: {Math.round(item.totalCarbohydrate)}g
+                      </span>
                       <span className="text-[#52525b]">•</span>
-                      <span className="font-semibold text-rose-400">F: {Math.round(item.totalFat)}g</span>
+                      <span className="font-semibold text-rose-400">
+                        F: {Math.round(item.totalFat)}g
+                      </span>
                     </div>
                   </div>
 
@@ -472,7 +567,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                     <button
                       onClick={() => onSelectRecentScan(item)}
                       type="button"
-                      aria-label={isFa ? `مشاهده جزئیات ${item.productName}` : `Inspect ${item.productName}`}
+                      aria-label={
+                        isFa
+                          ? `مشاهده جزئیات ${item.productName}`
+                          : `Inspect ${item.productName}`
+                      }
                       className="py-2 px-3 bg-[#111214] hover:bg-[#27272a] text-[#d4d4d8] hover:text-white rounded text-xs font-semibold transition-colors text-center cursor-pointer border border-[#27272a]"
                     >
                       {isFa ? "مشاهده جزئیات" : "Inspect Details"}
@@ -481,7 +580,11 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                     <button
                       onClick={() => handleQuickLogRecent(item)}
                       type="button"
-                      aria-label={isFa ? `ثبت مجدد ${item.productName} در دفترچه` : `Re-log ${item.productName}`}
+                      aria-label={
+                        isFa
+                          ? `ثبت مجدد ${item.productName} در دفترچه`
+                          : `Re-log ${item.productName}`
+                      }
                       className={`py-2 px-3 rounded text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5 ${
                         isItemLogged
                           ? "bg-emerald-500 text-black border border-emerald-400"
@@ -496,7 +599,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                       ) : (
                         <>
                           <Plus className="w-3.5 h-3.5" />
-                          <span>{isFa ? "ثبت مجدد در دفترچه" : "Re-log to Diary"}</span>
+                          <span>
+                            {isFa ? "ثبت مجدد در دفترچه" : "Re-log to Diary"}
+                          </span>
                         </>
                       )}
                     </button>
@@ -532,7 +637,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                   onSelectCyberDish(dish);
                 }
               }}
-              aria-label={isFa ? `انتخاب ${dish.nameFa}` : `Select ${dish.nameEn}`}
+              aria-label={
+                isFa ? `انتخاب ${dish.nameFa}` : `Select ${dish.nameEn}`
+              }
               className="bg-[#111214] border border-[#27272a] hover:border-[#ff3e00] rounded-lg p-4 sm:p-5 transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
             >
               <div className="flex justify-between items-center mb-2">
@@ -540,7 +647,8 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                   {dish.origin || (isFa ? "اصیل ایرانی" : "Authentic")}
                 </span>
                 <span className="text-xs text-[#ff3e00] group-hover:underline transition-colors flex items-center gap-1 font-semibold">
-                  {isFa ? "مشاهده جزئیات" : "Details"} <ChevronRight className="w-3.5 h-3.5" />
+                  {isFa ? "مشاهده جزئیات" : "Details"}{" "}
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </span>
               </div>
 
@@ -550,7 +658,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
               <div className="flex items-center justify-between text-xs font-mono pt-2.5 border-t border-[#27272a]">
                 <span className="text-[#ff3e00] font-bold">
-                  {isFa ? `${dish.calories.toLocaleString("fa-IR")} کالری` : `${dish.calories} kcal`}
+                  {isFa
+                    ? `${dish.calories.toLocaleString("fa-IR")} کالری`
+                    : `${dish.calories} kcal`}
                 </span>
                 <span className="text-[#9ca3af]">
                   {formatPrice(dish.priceToman, dish.priceUSD)}
@@ -578,10 +688,14 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
             {[
               { id: "all", labelEn: "All", labelFa: "همه" },
               { id: "Persian", labelEn: "Persian", labelFa: "ایرانی" },
-              { id: "Middle East", labelEn: "Middle East", labelFa: "خاورمیانه" },
+              {
+                id: "Middle East",
+                labelEn: "Middle East",
+                labelFa: "خاورمیانه",
+              },
               { id: "Asia", labelEn: "Asia", labelFa: "آسیا" },
               { id: "Europe", labelEn: "Europe", labelFa: "اروپا" },
-              { id: "Americas", labelEn: "Americas", labelFa: "آمریکا" }
+              { id: "Americas", labelEn: "Americas", labelFa: "آمریکا" },
             ].map((cat) => (
               <button
                 key={cat.id}
@@ -615,13 +729,17 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                     onSelectWorldFood(rawFood);
                   }
                 }}
-                aria-label={isFa ? `انتخاب ${food.name}` : `Select ${food.name}`}
+                aria-label={
+                  isFa ? `انتخاب ${food.name}` : `Select ${food.name}`
+                }
                 className="bg-[#111214] border border-[#27272a] hover:border-[#ff3e00] rounded-lg p-4 transition-all cursor-pointer group flex flex-col justify-between focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
               >
                 <div>
                   <div className="flex justify-between items-center text-xs font-mono text-[#9ca3af] mb-1.5">
                     <span>{food.origin}</span>
-                    <span className="text-[#ff3e00] font-bold">{food.healthRatingLabel}</span>
+                    <span className="text-[#ff3e00] font-bold">
+                      {food.healthRatingLabel}
+                    </span>
                   </div>
 
                   <h4 className="font-syne sm:font-vazirmatn text-sm font-bold text-[#f4f4f5] group-hover:text-[#ff3e00] transition-colors line-clamp-1 mb-1.5">
@@ -635,9 +753,13 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
                 <div className="pt-2.5 border-t border-[#27272a] flex justify-between items-center font-mono text-xs">
                   <span className="text-[#ff3e00] font-bold">
-                    {isFa ? `${food.calories.toLocaleString("fa-IR")} کالری` : `${food.calories} kcal`}
+                    {isFa
+                      ? `${food.calories.toLocaleString("fa-IR")} کالری`
+                      : `${food.calories} kcal`}
                   </span>
-                  <span className="text-[#9ca3af]">{formatPrice(food.priceToman, food.priceUSD)}</span>
+                  <span className="text-[#9ca3af]">
+                    {formatPrice(food.priceToman, food.priceUSD)}
+                  </span>
                 </div>
               </div>
             );

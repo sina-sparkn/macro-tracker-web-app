@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Flame, Droplets, Plus, Minus, Camera, BookOpen, Sliders } from "lucide-react";
+import {
+  Flame,
+  Droplets,
+  Plus,
+  Minus,
+  Camera,
+  BookOpen,
+  Sliders,
+} from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
 import { formatSmartPrice } from "../utils/dishLocalization";
 
@@ -24,7 +32,8 @@ export const playWaterDropChime = () => {
   try {
     const AudioCtx =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
@@ -97,9 +106,6 @@ export const NavPane: React.FC<{
             <Flame className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="font-syne text-lg font-extrabold text-[#f4f4f5] leading-tight">
-              {isFa ? "نوتری‌اسکن" : "NutriScan"}
-            </h1>
             <p className="text-xs text-[#9ca3af] mt-0.5 font-medium">
               {isFa ? "پایش هوشمند تغذیه" : "Smart Nutrition Tracker"}
             </p>
@@ -121,7 +127,9 @@ export const NavPane: React.FC<{
             }`}
           >
             <div className="flex items-center gap-3">
-              <Camera className={`w-5 h-5 ${activeTab === "scan" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
+              <Camera
+                className={`w-5 h-5 ${activeTab === "scan" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
+              />
               <span>{isFa ? "اسکن غذا" : "Scan Meal"}</span>
             </div>
             {activeTab === "scan" && (
@@ -142,7 +150,9 @@ export const NavPane: React.FC<{
             }`}
           >
             <div className="flex items-center gap-3">
-              <BookOpen className={`w-5 h-5 ${activeTab === "diary" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
+              <BookOpen
+                className={`w-5 h-5 ${activeTab === "diary" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
+              />
               <span>{isFa ? "یادداشت روزانه" : "Food Diary"}</span>
             </div>
             {diaryCount > 0 ? (
@@ -159,7 +169,9 @@ export const NavPane: React.FC<{
             type="button"
             role="tab"
             aria-selected={activeTab === "profile"}
-            aria-label={isFa ? "اهداف و تنظیمات بودجه" : "Goals and Budget Settings"}
+            aria-label={
+              isFa ? "اهداف و تنظیمات بودجه" : "Goals and Budget Settings"
+            }
             className={`w-full min-h-[48px] px-3.5 py-3 rounded-lg text-sm font-semibold flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
               activeTab === "profile"
                 ? "bg-[#ff3e00]/15 text-[#ffffff] border border-[#ff3e00]"
@@ -167,7 +179,9 @@ export const NavPane: React.FC<{
             }`}
           >
             <div className="flex items-center gap-3">
-              <Sliders className={`w-5 h-5 ${activeTab === "profile" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
+              <Sliders
+                className={`w-5 h-5 ${activeTab === "profile" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
+              />
               <span>{isFa ? "اهداف و بودجه" : "Goals & Budget"}</span>
             </div>
             {activeTab === "profile" && (
@@ -184,7 +198,9 @@ export const NavPane: React.FC<{
           <span>{isFa ? "آماده تحلیل و اسکن هوشمند" : "System Ready"}</span>
         </div>
         <p className="text-[11px] text-[#71717a] leading-relaxed">
-          {isFa ? "شناسایی کالری، ماکروها و تفکیک هزینه" : "Calories, macros & cost parsing"}
+          {isFa
+            ? "شناسایی کالری، ماکروها و تفکیک هزینه"
+            : "Calories, macros & cost parsing"}
         </p>
       </div>
     </aside>
@@ -216,7 +232,10 @@ export const VitalsPane: React.FC<{
       const raw = localStorage.getItem(getV2StorageKey());
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0) {
+        if (
+          typeof parsed.targetGlasses === "number" &&
+          parsed.targetGlasses > 0
+        ) {
           return parsed.targetGlasses;
         }
       }
@@ -246,8 +265,8 @@ export const VitalsPane: React.FC<{
               time: "Earlier",
               timestamp: Date.now() - 3600000,
               glasses: count,
-              ml: count * 250
-            }
+              ml: count * 250,
+            },
           ];
         }
       }
@@ -260,8 +279,8 @@ export const VitalsPane: React.FC<{
           time: "Initial",
           timestamp: Date.now(),
           glasses: propWater,
-          ml: propWater * 250
-        }
+          ml: propWater * 250,
+        },
       ];
     }
 
@@ -282,7 +301,7 @@ export const VitalsPane: React.FC<{
             time: "Sync",
             timestamp: Date.now(),
             glasses: delta,
-            ml: delta * 250
+            ml: delta * 250,
           };
           setEntries((prev) => [...prev, newEntry]);
         }
@@ -307,26 +326,39 @@ export const VitalsPane: React.FC<{
       } catch {}
     };
     window.addEventListener("nutriscan_water_updated", handleWaterEvent);
-    return () => window.removeEventListener("nutriscan_water_updated", handleWaterEvent);
+    return () =>
+      window.removeEventListener("nutriscan_water_updated", handleWaterEvent);
   }, []);
 
   // Persist whenever entries or targetGlasses change
   const totalGlasses = useMemo(() => {
-    return Math.max(0, entries.reduce((sum, e) => sum + e.glasses, 0));
+    return Math.max(
+      0,
+      entries.reduce((sum, e) => sum + e.glasses, 0),
+    );
   }, [entries]);
 
   const glassVolumeMl = 250;
-  const waterPercent = Math.min(Math.round((totalGlasses / targetGlasses) * 100), 100);
+  const waterPercent = Math.min(
+    Math.round((totalGlasses / targetGlasses) * 100),
+    100,
+  );
 
-  const saveState = (newEntries: WaterLogEntry[], newTarget: number = targetGlasses) => {
+  const saveState = (
+    newEntries: WaterLogEntry[],
+    newTarget: number = targetGlasses,
+  ) => {
     setEntries(newEntries);
     setTargetGlasses(newTarget);
-    const newTotal = Math.max(0, newEntries.reduce((sum, e) => sum + e.glasses, 0));
+    const newTotal = Math.max(
+      0,
+      newEntries.reduce((sum, e) => sum + e.glasses, 0),
+    );
 
     try {
       localStorage.setItem(
         getV2StorageKey(),
-        JSON.stringify({ entries: newEntries, targetGlasses: newTarget })
+        JSON.stringify({ entries: newEntries, targetGlasses: newTarget }),
       );
       localStorage.setItem(getLegacyStorageKey(), String(newTotal));
       window.dispatchEvent(new Event("nutriscan_water_updated"));
@@ -344,10 +376,13 @@ export const VitalsPane: React.FC<{
     const now = Date.now();
     const newEntry: WaterLogEntry = {
       id: `water-${now}-${Math.random().toString(36).slice(2, 6)}`,
-      time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date(now).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       timestamp: now,
       glasses: glassesCount,
-      ml: glassesCount * glassVolumeMl
+      ml: glassesCount * glassVolumeMl,
     };
     saveState([...entries, newEntry]);
   };
@@ -359,7 +394,7 @@ export const VitalsPane: React.FC<{
       const updated = entries.slice(0, -1).concat({
         ...last,
         glasses: last.glasses - 1,
-        ml: (last.glasses - 1) * glassVolumeMl
+        ml: (last.glasses - 1) * glassVolumeMl,
       });
       saveState(updated);
     } else {
@@ -374,10 +409,24 @@ export const VitalsPane: React.FC<{
     return formatSmartPrice(toman, usd, userProfile, 1) || "-";
   };
 
-  const currentSpend = userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;
-  const budgetCap = userProfile.currency === "IRT" ? userProfile.dailyBudgetToman : userProfile.dailyBudgetUSD;
-  const budgetPercent = Math.min(Math.round((currentSpend / (budgetCap || 1)) * 100), 100);
-  const calPercent = Math.min(Math.round((dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100), 100);
+  const currentSpend =
+    userProfile.currency === "IRT"
+      ? dailyTotals.costTomanTotal
+      : dailyTotals.costUSDTotal;
+  const budgetCap =
+    userProfile.currency === "IRT"
+      ? userProfile.dailyBudgetToman
+      : userProfile.dailyBudgetUSD;
+  const budgetPercent = Math.min(
+    Math.round((currentSpend / (budgetCap || 1)) * 100),
+    100,
+  );
+  const calPercent = Math.min(
+    Math.round(
+      (dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100,
+    ),
+    100,
+  );
 
   return (
     <aside
@@ -396,7 +445,9 @@ export const VitalsPane: React.FC<{
         </div>
 
         <div className="font-syne text-4xl font-extrabold text-[#ffffff] my-2 leading-tight">
-          {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
+          {isFa
+            ? dailyTotals.calories.toLocaleString("fa-IR")
+            : dailyTotals.calories}
           <span className="text-sm font-normal text-[#9ca3af] ml-1.5 rtl:mr-1.5 rtl:ml-0">
             {isFa ? "کالری" : "kcal"}
           </span>
@@ -404,7 +455,9 @@ export const VitalsPane: React.FC<{
 
         <div className="flex items-center justify-between text-xs text-[#d4d4d8] pt-2 border-t border-[#27272a]">
           <span>
-            {isFa ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")}` : `Goal: ${userProfile.calorieGoal}`}
+            {isFa
+              ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")}`
+              : `Goal: ${userProfile.calorieGoal}`}
           </span>
           <span className="text-[#ff3e00] font-medium">
             {isFa
@@ -416,19 +469,25 @@ export const VitalsPane: React.FC<{
         {/* MACRO SUMMARY BADGES */}
         <div className="mt-4 pt-3 border-t border-[#27272a] grid grid-cols-3 gap-2 text-center text-xs">
           <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">{isFa ? "پروتئین" : "Protein"}</span>
+            <span className="text-[#9ca3af] block text-[11px]">
+              {isFa ? "پروتئین" : "Protein"}
+            </span>
             <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
               {Math.round(dailyTotals.protein)} {isFa ? "گ" : "g"}
             </span>
           </div>
           <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">{isFa ? "کربوهیدرات" : "Carbs"}</span>
+            <span className="text-[#9ca3af] block text-[11px]">
+              {isFa ? "کربوهیدرات" : "Carbs"}
+            </span>
             <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
               {Math.round(dailyTotals.carbs)} {isFa ? "گ" : "g"}
             </span>
           </div>
           <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">{isFa ? "چربی" : "Fat"}</span>
+            <span className="text-[#9ca3af] block text-[11px]">
+              {isFa ? "چربی" : "Fat"}
+            </span>
             <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
               {Math.round(dailyTotals.fat)} {isFa ? "گ" : "g"}
             </span>
@@ -440,7 +499,10 @@ export const VitalsPane: React.FC<{
           <div className="flex justify-between items-center text-[#d4d4d8] mb-1.5">
             <span>{isFa ? "هزینه تخمینی وعده‌ها:" : "Est. Meal Spend:"}</span>
             <span className="text-[#ff3e00] font-bold text-sm">
-              {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
+              {formatPrice(
+                dailyTotals.costTomanTotal,
+                dailyTotals.costUSDTotal,
+              )}
             </span>
           </div>
           <div className="w-full bg-[#27272a] h-2 rounded-full overflow-hidden">
@@ -467,14 +529,15 @@ export const VitalsPane: React.FC<{
         <div className="flex justify-between items-center mb-2.5">
           <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
             <Droplets className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span>{isFa ? "آب مصرفی" : "Water Intake"}</span>
+            <span>{isFa ? "آب" : "water"}</span>
           </div>
           <div>
             <span className="font-syne font-extrabold text-base text-white font-mono tabular-nums">
               {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}
             </span>
             <span className="text-xs text-[#71717a] font-normal ml-1 rtl:mr-1 rtl:ml-0 font-mono">
-              / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses} {isFa ? "لیوان" : "gl"}
+              / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses}{" "}
+              {isFa ? "لیوان" : "gl"}
             </span>
           </div>
         </div>
@@ -500,9 +563,9 @@ export const VitalsPane: React.FC<{
             className="flex-1 py-2 bg-cyan-950/50 hover:bg-cyan-900/60 active:scale-95 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>{isFa ? "۱+" : "+1"}</span>
+            <span>{isFa ? "۱" : "1"}</span>
           </button>
-          
+
           <button
             type="button"
             onClick={handleDecrementLatest}

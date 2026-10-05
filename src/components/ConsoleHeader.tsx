@@ -14,35 +14,28 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
   userProfile,
   dailyTotals,
   onToggleLanguage,
-  onOpenDiary
+  onOpenDiary,
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   const calPercent = Math.min(
-    Math.round((dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100),
-    100
+    Math.round(
+      (dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100,
+    ),
+    100,
   );
 
   return (
     <header className="bg-[#111214] border-b border-[#27272a] px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 select-none shrink-0 z-30">
       {/* BRAND & APP IDENTITY */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
-        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#ff3e00]/15 border border-[#ff3e00]/50 flex items-center justify-center text-[#ff3e00] shrink-0">
-          <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
-        </div>
         <div className="flex flex-col">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-syne font-extrabold text-[#f4f4f5] text-sm sm:text-base tracking-tight whitespace-nowrap">
-              {isFa ? "نوتری‌اسکن" : "NutriScan"}
-            </span>
-            <span className="text-[10px] sm:text-[11px] font-mono text-[#ff3e00] font-semibold px-1.5 py-0.5 bg-[#ff3e00]/10 rounded whitespace-nowrap">
-              {isFa ? "هوشمند" : "AI"}
-            </span>
-          </div>
           <span className="hidden md:block text-xs text-[#9ca3af] leading-none mt-0.5 whitespace-nowrap">
-            {isFa ? "تحلیل هوشمند ارزش غذایی و کالری" : "Smart Nutrition & Calorie Tracking"}
+            {isFa
+              ? "تحلیل هوشمند ارزش غذایی و کالری"
+              : "Smart Nutrition & Calorie Tracking"}
           </span>
         </div>
       </div>
@@ -63,16 +56,23 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
           <BookOpen className="w-3.5 h-3.5 text-[#ff3e00] shrink-0" />
           <div className="flex items-center gap-1 sm:gap-1.5 text-xs whitespace-nowrap">
             <span className="text-[#ff3e00] font-bold">
-              {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
+              {isFa
+                ? dailyTotals.calories.toLocaleString("fa-IR")
+                : dailyTotals.calories}
             </span>
             <span className="text-[#9ca3af] text-[11px] sm:text-xs">
               {isFa ? "کالری" : "kcal"}
             </span>
             <span className="hidden sm:inline text-[#9ca3af]">
-              / {isFa ? `${userProfile.calorieGoal.toLocaleString("fa-IR")}` : `${userProfile.calorieGoal}`}
+              /{" "}
+              {isFa
+                ? `${userProfile.calorieGoal.toLocaleString("fa-IR")}`
+                : `${userProfile.calorieGoal}`}
             </span>
             <span className="hidden md:inline text-[11px] text-[#9ca3af] bg-[#27272a] px-1.5 py-0.5 rounded">
-              {isFa ? `${calPercent.toLocaleString("fa-IR")}٪` : `${calPercent}%`}
+              {isFa
+                ? `${calPercent.toLocaleString("fa-IR")}٪`
+                : `${calPercent}%`}
             </span>
           </div>
         </button>
