@@ -144,22 +144,22 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
   const hidePrices = Boolean(userProfile.hidePrices);
 
   return (
-    <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-4xl mx-auto w-full pb-24 sm:pb-28 lg:pb-8">
+    <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-4xl mx-auto w-full pb-6 sm:pb-8 lg:pb-6">
       {/* HEADER */}
-      <div className="border-b border-[#27272a] pb-4">
-        <span className="text-xs text-[#ff3e00] font-bold uppercase tracking-wide block">
-          {isFa ? "تنظیمات سلامت و اهداف" : "NUTRITION TARGETS & SMART BUDGET"}
+      <div className="border-b border-[#27272a] pb-3">
+        <span className="text-xs text-[#ff3e00] font-bold uppercase tracking-wider block">
+          {isFa ? "تنظیمات" : "Settings"}
         </span>
-        <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] mt-1">
-          {isFa ? "تنظیم اهداف کالری، ماکروها و بودجه هوشمند" : "Configure Goals & Smart Pricing"}
+        <h2 className="font-syne text-xl sm:text-2xl font-extrabold text-[#f4f4f5] mt-1">
+          {isFa ? "اهداف تغذیه و بودجه" : "Goals & Budget"}
         </h2>
       </div>
 
       {/* QUICK PRESET SELECTORS */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3.5">
+      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block">
-            {isFa ? "الگوهای رژیمی آماده" : "Quick Dietary Presets"}
+            {isFa ? "الگوهای رژیمی" : "Dietary Presets"}
           </h3>
           {activePresetConfig && (
             <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff3e00]">
@@ -173,7 +173,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           {PRESET_CONFIGS.map((preset) => {
             const isActive = isPresetActive(preset);
             return (
@@ -182,19 +182,19 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                 onClick={() => onApplyPreset(preset.id)}
                 type="button"
                 aria-pressed={isActive}
-                className={`min-h-[82px] p-3.5 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden ${
+                className={`min-h-[76px] p-3 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden min-w-0 ${
                   isActive
-                    ? "bg-[#ff3e00]/15 border-2 border-[#ff3e00] ring-2 ring-[#ff3e00]/40"
+                    ? "bg-[#ff3e00]/15 border-2 border-[#ff3e00] ring-1 ring-[#ff3e00]/40"
                     : "bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00]/60 hover:bg-[#1a1c22]"
                 }`}
               >
                 {isActive && (
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-[#ff3e00]" />
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-[#ff3e00]" />
                 )}
 
-                <div className="flex items-center justify-between gap-1 mb-1.5">
+                <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
                   <span
-                    className={`font-bold text-sm block ${
+                    className={`font-bold text-xs sm:text-sm block truncate ${
                       isActive
                         ? "text-[#ff3e00] font-extrabold"
                         : "text-[#f4f4f5] group-hover:text-[#ff3e00]"
@@ -203,28 +203,24 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                     {isFa ? preset.nameFa : preset.nameEn}
                   </span>
                   {isActive ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono font-extrabold text-black bg-[#ff3e00] px-2 py-0.5 rounded shrink-0">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                      <span>{isFa ? "فعال" : "ACTIVE"}</span>
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-mono font-extrabold text-black bg-[#ff3e00] px-1.5 py-0.2 rounded shrink-0">
+                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                      <span>{isFa ? "فعال" : "ON"}</span>
                     </span>
-                  ) : (
-                    <span className="text-[10px] font-mono text-[#71717a] group-hover:text-[#ff3e00] transition-colors shrink-0">
-                      {isFa ? "انتخاب" : "Apply"}
-                    </span>
-                  )}
+                  ) : null}
                 </div>
 
                 <span
-                  className={`text-xs block tabular-nums ${
-                    isActive ? "text-[#ffffff] font-bold" : "text-[#9ca3af]"
+                  className={`text-[11px] sm:text-xs block tabular-nums truncate ${
+                    isActive ? "text-[#ffffff] font-semibold" : "text-[#9ca3af]"
                   }`}
                 >
                   {isFa ? preset.subtitleFa : preset.subtitleEn}
                 </span>
 
                 <span
-                  className={`text-[11px] mt-1 block font-mono tabular-nums ${
-                    isActive ? "text-[#ff784e] font-semibold" : "text-[#71717a]"
+                  className={`text-[10px] sm:text-[11px] mt-0.5 block font-mono tabular-nums truncate ${
+                    isActive ? "text-[#ff784e] font-medium" : "text-[#71717a]"
                   }`}
                 >
                   {isFa ? preset.macroDetailFa : preset.macroDetailEn}
@@ -236,17 +232,17 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       </section>
 
       {/* LIVE DOLLAR RATE IN IRAN & CURRENCY BUDGET */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#18191d] border border-[#27272a] rounded-lg p-4">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#ff3e00]/15 text-[#ff3e00] rounded-lg border border-[#ff3e00]/30 shrink-0">
-              <DollarSign className="w-5 h-5" />
+      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 sm:p-4">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="p-2 bg-[#ff3e00]/15 text-[#ff3e00] rounded-lg border border-[#ff3e00]/30 shrink-0">
+              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <span className="text-xs text-[#9ca3af] font-medium block">
-                {isFa ? "نرخ لحظه‌ای دلار در ایران (همگام‌سازی خودکار)" : "Live Dollar Price in Iran (Auto-Synced)"}
+            <div className="min-w-0">
+              <span className="text-[11px] sm:text-xs text-[#9ca3af] font-medium block truncate">
+                {isFa ? "نرخ زنده دلار در ایران" : "Live Dollar Rate (Iran)"}
               </span>
-              <div className="font-syne text-xl sm:text-2xl font-extrabold text-[#f4f4f5] font-mono tabular-nums mt-0.5">
+              <div className="font-syne text-lg sm:text-2xl font-extrabold text-[#f4f4f5] font-mono tabular-nums mt-0.5 truncate">
                 {isFa
                   ? `۱ دلار = ${(userProfile.exchangeRateTomanPerUSD || 230000).toLocaleString("fa-IR")} تومان`
                   : `$1 USD = ${(userProfile.exchangeRateTomanPerUSD || 230000).toLocaleString("en-US")} Tomans`}
@@ -259,10 +255,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               type="button"
               onClick={onSyncExchangeRate}
               disabled={isSyncingRate}
-              className="px-3.5 py-2 bg-[#111214] hover:bg-[#27272a] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-2 shrink-0 whitespace-nowrap"
+              className="px-3 py-1.5 bg-[#111214] hover:bg-[#27272a] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-[#ff3e00] ${isSyncingRate ? "animate-spin" : ""}`} />
-              <span>{isFa ? "به‌روزرسانی نرخ" : "Update Live Rate"}</span>
+              <span>{isFa ? "به‌روزرسانی" : "Update"}</span>
             </button>
           )}
         </div>
@@ -362,7 +358,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       {/* MACRONUTRIENT & CALORIE TARGET ADJUSTERS */}
       <section className="bg-[#111214] border border-[#27272a] rounded-lg p-5">
         <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block mb-5">
-          {isFa ? "اهداف و حدود دریافت روزانه" : "Daily Nutritional Targets"}
+          {isFa ? "اهداف روزانه" : "Daily Targets"}
         </h3>
 
         <div className="space-y-6">
@@ -467,9 +463,6 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           </div>
         </div>
       </section>
-
-      {/* BOTTOM CLEARANCE SPACER FOR MOBILE NAV DOCK */}
-      <div className="h-12 lg:hidden shrink-0" aria-hidden="true" />
     </div>
   );
 };

@@ -628,23 +628,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       {/* HEADER STRIP & SQLITE DATABASE STATUS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#27272a] pb-5">
         <div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af] font-mono">
-            <span aria-hidden="true">·</span>
-            <span className="inline-flex items-center gap-1.5 text-[#d4d4d8]">
-              <Database className="w-3.5 h-3.5 text-[#22c55e]" />
-              <span>{dbStats.fileName}</span>
-            </span>
-            <span aria-hidden="true">·</span>
-            {isSyncingDb && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="text-[#ff3e00] inline-flex items-center gap-1">
-                  <RefreshCw className="w-3 h-3 animate-spin" />
-                  {isFa ? "در حال همگام‌سازی..." : "Syncing..."}
-                </span>
-              </>
-            )}
-          </div>
           <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] mt-1">
             {isFa
               ? " خاطرات غذایی و هیستوگرام کالری"

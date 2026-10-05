@@ -32,17 +32,12 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
         <div className="w-7 h-7 sm:w-8 sm:h-8 rounded bg-[#ff3e00]/15 border border-[#ff3e00]/50 flex items-center justify-center text-[#ff3e00] shrink-0">
           <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
         </div>
-        <div className="flex flex-col">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-syne font-extrabold text-[#f4f4f5] text-sm sm:text-base tracking-tight whitespace-nowrap">
-              {isFa ? "نوتری‌اسکن" : "NutriScan"}
-            </span>
-            <span className="text-[10px] sm:text-[11px] font-mono text-[#ff3e00] font-semibold px-1.5 py-0.5 bg-[#ff3e00]/10 rounded whitespace-nowrap">
-              {isFa ? "هوشمند" : "AI"}
-            </span>
-          </div>
-          <span className="hidden md:block text-xs text-[#9ca3af] leading-none mt-0.5 whitespace-nowrap">
-            {isFa ? "تحلیل هوشمند ارزش غذایی و کالری" : "Smart Nutrition & Calorie Tracking"}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="font-syne font-extrabold text-[#f4f4f5] text-sm sm:text-base tracking-tight whitespace-nowrap">
+            {isFa ? "نوتری‌اسکن" : "NutriScan"}
+          </span>
+          <span className="text-[10px] sm:text-[11px] font-mono text-[#ff3e00] font-semibold px-1.5 py-0.5 bg-[#ff3e00]/10 rounded whitespace-nowrap">
+            {isFa ? "هوشمند" : "AI"}
           </span>
         </div>
       </div>
