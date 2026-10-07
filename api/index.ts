@@ -9,7 +9,7 @@ import {
   seedSampleHistory,
   getDatabaseStats,
   resolveLiveOrIndexedExchangeRate
-} from "../server/sqliteDb";
+} from "../server/sqliteDb.ts";
 
 dotenv.config();
 
