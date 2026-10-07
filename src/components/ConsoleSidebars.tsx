@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import {
-  Flame,
-  Droplets,
-  Plus,
-  Minus,
-  Camera,
-  BookOpen,
-  Sliders,
-} from "lucide-react";
+import { Flame, Droplets, Plus, Minus, Camera, BookOpen, Sliders } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
 import { formatSmartPrice } from "../utils/dishLocalization";
 
@@ -32,8 +24,7 @@ export const playWaterDropChime = () => {
   try {
     const AudioCtx =
       window.AudioContext ||
-      (window as unknown as { webkitAudioContext: typeof AudioContext })
-        .webkitAudioContext;
+      (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtx) return;
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
@@ -97,142 +88,70 @@ export const NavPane: React.FC<{
   return (
     <aside
       aria-label={isFa ? "ناوبری اصلی" : "Main Navigation"}
-      className="hidden lg:flex w-60 xl:w-64 border-r border-[#27272a] rtl:border-r-0 rtl:border-l p-4 xl:p-5 bg-[#111214] flex-col justify-between shrink-0 select-none"
+      className="hidden lg:flex w-20 border-r border-[#2a2c31] rtl:border-r-0 rtl:border-l py-6 bg-[#111214] flex-col items-center justify-between shrink-0 select-none z-20"
     >
-      <div>
-        {/* BRAND BADGE */}
-        <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 mb-5 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-md bg-[#ff3e00] flex items-center justify-center text-black font-extrabold shadow-sm shrink-0">
-            <Flame className="w-5 h-5" />
-          </div>
-<<<<<<< HEAD
-          <div>
-            <p className="text-xs text-[#9ca3af] mt-0.5 font-medium">
-              {isFa ? "پایش هوشمند تغذیه" : "Smart Nutrition Tracker"}
-            </p>
-=======
-          <div className="min-w-0">
-            <h1 className="font-syne text-base font-extrabold text-[#f4f4f5] leading-tight truncate">
-              {isFa ? "نوتری‌اسکن" : "NutriScan"}
-            </h1>
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-          </div>
+      <div className="flex flex-col items-center gap-5 w-full">
+        {/* BRAND ICON */}
+        <div className="w-10 h-10 rounded-lg bg-[#ff3e00]/10 border border-[#ff3e00]/40 flex items-center justify-center text-[#ff3e00] mb-1">
+          <Flame className="w-5 h-5 fill-[#ff3e00]" />
         </div>
 
-        {/* ACCESSIBLE NAVIGATION BUTTONS */}
-        <nav className="flex flex-col gap-1.5" role="tablist">
+        {/* NAVIGATION TILES */}
+        <nav className="flex flex-col items-center gap-4 w-full" role="tablist">
+          {/* SCAN TAB */}
           <button
             onClick={() => setActiveTab("scan")}
             type="button"
             role="tab"
             aria-selected={activeTab === "scan"}
-            aria-label={isFa ? "اسکن غذا" : "Scan Meal"}
-            className={`w-full min-h-[44px] px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
+            title={isFa ? "اسکن با دوربین" : "Scan Meal"}
+            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
               activeTab === "scan"
-                ? "bg-[#ff3e00]/15 text-[#ffffff] border border-[#ff3e00]"
-                : "text-[#d4d4d8] hover:text-[#ffffff] hover:bg-[#18191d] border border-transparent"
+                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
+                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
             }`}
           >
-<<<<<<< HEAD
-            <div className="flex items-center gap-3">
-              <Camera
-                className={`w-5 h-5 ${activeTab === "scan" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
-              />
-=======
-            <div className="flex items-center gap-2.5">
-              <Camera className={`w-4 h-4 ${activeTab === "scan" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-              <span>{isFa ? "اسکن غذا" : "Scan Meal"}</span>
-            </div>
-            {activeTab === "scan" && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
-            )}
+            <Camera className="w-5 h-5 stroke-[2.2]" />
           </button>
 
+          {/* DIARY TAB */}
           <button
             onClick={() => setActiveTab("diary")}
             type="button"
             role="tab"
             aria-selected={activeTab === "diary"}
-            aria-label={isFa ? "یادداشت روزانه" : "Food Diary"}
-            className={`w-full min-h-[44px] px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
+            title={isFa ? "یادداشت روزانه" : "Food Diary"}
+            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
               activeTab === "diary"
-                ? "bg-[#ff3e00]/15 text-[#ffffff] border border-[#ff3e00]"
-                : "text-[#d4d4d8] hover:text-[#ffffff] hover:bg-[#18191d] border border-transparent"
+                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
+                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
             }`}
           >
-<<<<<<< HEAD
-            <div className="flex items-center gap-3">
-              <BookOpen
-                className={`w-5 h-5 ${activeTab === "diary" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
-              />
-=======
-            <div className="flex items-center gap-2.5">
-              <BookOpen className={`w-4 h-4 ${activeTab === "diary" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-              <span>{isFa ? "یادداشت روزانه" : "Food Diary"}</span>
-            </div>
-            {diaryCount > 0 ? (
-              <span className="text-xs px-2 py-0.2 rounded-full bg-[#ff3e00] text-black font-bold font-mono">
+            <BookOpen className="w-5 h-5 stroke-[2.2]" />
+            {diaryCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-[#ff3e00] text-black text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-full min-w-4 text-center shadow-sm">
                 {isFa ? diaryCount.toLocaleString("fa-IR") : diaryCount}
               </span>
-            ) : activeTab === "diary" ? (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
-            ) : null}
+            )}
           </button>
 
+          {/* GOALS TAB */}
           <button
             onClick={() => setActiveTab("profile")}
             type="button"
             role="tab"
             aria-selected={activeTab === "profile"}
-<<<<<<< HEAD
-            aria-label={
-              isFa ? "اهداف و تنظیمات بودجه" : "Goals and Budget Settings"
-            }
-            className={`w-full min-h-[48px] px-3.5 py-3 rounded-lg text-sm font-semibold flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
-=======
-            aria-label={isFa ? "اهداف و بودجه" : "Goals & Budget"}
-            className={`w-full min-h-[44px] px-3 py-2.5 rounded-lg text-sm font-semibold flex items-center justify-between transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
+            title={isFa ? "اهداف و بودجه" : "Goals & Budget"}
+            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
               activeTab === "profile"
-                ? "bg-[#ff3e00]/15 text-[#ffffff] border border-[#ff3e00]"
-                : "text-[#d4d4d8] hover:text-[#ffffff] hover:bg-[#18191d] border border-transparent"
+                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
+                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
             }`}
           >
-<<<<<<< HEAD
-            <div className="flex items-center gap-3">
-              <Sliders
-                className={`w-5 h-5 ${activeTab === "profile" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`}
-              />
-=======
-            <div className="flex items-center gap-2.5">
-              <Sliders className={`w-4 h-4 ${activeTab === "profile" ? "text-[#ff3e00]" : "text-[#9ca3af]"}`} />
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-              <span>{isFa ? "اهداف و بودجه" : "Goals & Budget"}</span>
-            </div>
-            {activeTab === "profile" && (
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
-            )}
+            <Sliders className="w-5 h-5 stroke-[2.2]" />
           </button>
         </nav>
       </div>
-<<<<<<< HEAD
-
-      {/* QUICK STATUS INFO */}
-      <div className="pt-4 border-t border-[#27272a] text-xs text-[#9ca3af]">
-        <div className="flex items-center gap-2 text-[#22c55e] font-medium mb-1">
-          <span className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
-          <span>{isFa ? "آماده تحلیل و اسکن هوشمند" : "System Ready"}</span>
-        </div>
-        <p className="text-[11px] text-[#71717a] leading-relaxed">
-          {isFa
-            ? "شناسایی کالری، ماکروها و تفکیک هزینه"
-            : "Calories, macros & cost parsing"}
-        </p>
-      </div>
-=======
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
     </aside>
   );
 };
@@ -262,10 +181,7 @@ export const VitalsPane: React.FC<{
       const raw = localStorage.getItem(getV2StorageKey());
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (
-          typeof parsed.targetGlasses === "number" &&
-          parsed.targetGlasses > 0
-        ) {
+        if (typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0) {
           return parsed.targetGlasses;
         }
       }
@@ -295,8 +211,8 @@ export const VitalsPane: React.FC<{
               time: "Earlier",
               timestamp: Date.now() - 3600000,
               glasses: count,
-              ml: count * 250,
-            },
+              ml: count * 250
+            }
           ];
         }
       }
@@ -309,8 +225,8 @@ export const VitalsPane: React.FC<{
           time: "Initial",
           timestamp: Date.now(),
           glasses: propWater,
-          ml: propWater * 250,
-        },
+          ml: propWater * 250
+        }
       ];
     }
 
@@ -331,7 +247,7 @@ export const VitalsPane: React.FC<{
             time: "Sync",
             timestamp: Date.now(),
             glasses: delta,
-            ml: delta * 250,
+            ml: delta * 250
           };
           setEntries((prev) => [...prev, newEntry]);
         }
@@ -356,39 +272,26 @@ export const VitalsPane: React.FC<{
       } catch {}
     };
     window.addEventListener("nutriscan_water_updated", handleWaterEvent);
-    return () =>
-      window.removeEventListener("nutriscan_water_updated", handleWaterEvent);
+    return () => window.removeEventListener("nutriscan_water_updated", handleWaterEvent);
   }, []);
 
   // Persist whenever entries or targetGlasses change
   const totalGlasses = useMemo(() => {
-    return Math.max(
-      0,
-      entries.reduce((sum, e) => sum + e.glasses, 0),
-    );
+    return Math.max(0, entries.reduce((sum, e) => sum + e.glasses, 0));
   }, [entries]);
 
   const glassVolumeMl = 250;
-  const waterPercent = Math.min(
-    Math.round((totalGlasses / targetGlasses) * 100),
-    100,
-  );
+  const waterPercent = Math.min(Math.round((totalGlasses / targetGlasses) * 100), 100);
 
-  const saveState = (
-    newEntries: WaterLogEntry[],
-    newTarget: number = targetGlasses,
-  ) => {
+  const saveState = (newEntries: WaterLogEntry[], newTarget: number = targetGlasses) => {
     setEntries(newEntries);
     setTargetGlasses(newTarget);
-    const newTotal = Math.max(
-      0,
-      newEntries.reduce((sum, e) => sum + e.glasses, 0),
-    );
+    const newTotal = Math.max(0, newEntries.reduce((sum, e) => sum + e.glasses, 0));
 
     try {
       localStorage.setItem(
         getV2StorageKey(),
-        JSON.stringify({ entries: newEntries, targetGlasses: newTarget }),
+        JSON.stringify({ entries: newEntries, targetGlasses: newTarget })
       );
       localStorage.setItem(getLegacyStorageKey(), String(newTotal));
       window.dispatchEvent(new Event("nutriscan_water_updated"));
@@ -406,13 +309,10 @@ export const VitalsPane: React.FC<{
     const now = Date.now();
     const newEntry: WaterLogEntry = {
       id: `water-${now}-${Math.random().toString(36).slice(2, 6)}`,
-      time: new Date(now).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       timestamp: now,
       glasses: glassesCount,
-      ml: glassesCount * glassVolumeMl,
+      ml: glassesCount * glassVolumeMl
     };
     saveState([...entries, newEntry]);
   };
@@ -424,7 +324,7 @@ export const VitalsPane: React.FC<{
       const updated = entries.slice(0, -1).concat({
         ...last,
         glasses: last.glasses - 1,
-        ml: (last.glasses - 1) * glassVolumeMl,
+        ml: (last.glasses - 1) * glassVolumeMl
       });
       saveState(updated);
     } else {
@@ -439,211 +339,175 @@ export const VitalsPane: React.FC<{
     return formatSmartPrice(toman, usd, userProfile, 1) || "-";
   };
 
-  const currentSpend =
-    userProfile.currency === "IRT"
-      ? dailyTotals.costTomanTotal
-      : dailyTotals.costUSDTotal;
-  const budgetCap =
-    userProfile.currency === "IRT"
-      ? userProfile.dailyBudgetToman
-      : userProfile.dailyBudgetUSD;
-  const budgetPercent = Math.min(
-    Math.round((currentSpend / (budgetCap || 1)) * 100),
-    100,
-  );
-  const calPercent = Math.min(
-    Math.round(
-      (dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100,
-    ),
-    100,
-  );
+  const currentSpend = userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;
+  const budgetCap = userProfile.currency === "IRT" ? userProfile.dailyBudgetToman : userProfile.dailyBudgetUSD;
+  const budgetPercent = Math.min(Math.round((currentSpend / (budgetCap || 1)) * 100), 100);
+  const calPercent = Math.min(Math.round((dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100), 100);
+
+  // SVG Donut calculation
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (calPercent / 100) * circumference;
 
   return (
     <aside
-      aria-label={isFa ? "خلاصه وضعیت دریافت روزانه" : "Daily Vitals Summary"}
-      className="w-full lg:w-72 xl:w-80 border-t lg:border-t-0 lg:border-l border-[#27272a] rtl:border-l-0 rtl:border-r p-5 pb-28 lg:pb-5 bg-[#111214] flex flex-col gap-5 shrink-0 select-none overflow-y-auto"
+      aria-label={isFa ? "ماتریس سلامت روزانه" : "Health Matrix Sidebar"}
+      className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-[#2a2c31] rtl:border-l-0 rtl:border-r p-5 pb-24 lg:pb-6 bg-[#0e1013] flex flex-col gap-5 shrink-0 select-none overflow-y-auto z-10"
     >
-      {/* DAILY CALORIE SUMMARY CARD */}
-      <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-4 sm:p-5">
-        <div className="flex justify-between items-center text-xs">
-          <span className="text-[#9ca3af] font-medium truncate">
-            {isFa ? "کالری روزانه" : "Daily Calories"}
-          </span>
-          <span className="text-[#ff3e00] font-bold text-xs sm:text-sm font-mono tabular-nums shrink-0 ml-1">
-            {isFa ? `${calPercent.toLocaleString("fa-IR")}٪` : `${calPercent}%`}
+      {/* SECTION 1: HEALTH MATRIX & DONUT STAT */}
+      <div>
+        <div className="flex items-center justify-between mb-2">
+          <span className="meta">{isFa ? "ماتریس_سلامت" : "Health_Matrix"}</span>
+          <span className="font-mono text-xs text-[#ff3e00] font-bold">
+            {calPercent}%
           </span>
         </div>
 
-<<<<<<< HEAD
-        <div className="font-syne text-4xl font-extrabold text-[#ffffff] my-2 leading-tight">
-          {isFa
-            ? dailyTotals.calories.toLocaleString("fa-IR")
-            : dailyTotals.calories}
-          <span className="text-sm font-normal text-[#9ca3af] ml-1.5 rtl:mr-1.5 rtl:ml-0">
-=======
-        <div className="font-syne text-3xl sm:text-4xl font-extrabold text-[#ffffff] my-2 leading-tight flex items-baseline gap-1 truncate">
-          <span>{isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}</span>
-          <span className="text-xs sm:text-sm font-normal text-[#9ca3af]">
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-            {isFa ? "کالری" : "kcal"}
-          </span>
-        </div>
-
-<<<<<<< HEAD
-        <div className="flex items-center justify-between text-xs text-[#d4d4d8] pt-2 border-t border-[#27272a]">
-          <span>
-            {isFa
-              ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")}`
-              : `Goal: ${userProfile.calorieGoal}`}
-=======
-        <div className="flex items-center justify-between text-[11px] sm:text-xs text-[#d4d4d8] pt-2 border-t border-[#27272a]">
-          <span className="truncate">
-            {isFa ? `هدف: ${userProfile.calorieGoal.toLocaleString("fa-IR")}` : `Goal: ${userProfile.calorieGoal}`}
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-          </span>
-          <span className="text-[#ff3e00] font-medium shrink-0 ml-1">
-            {isFa
-              ? `${Math.max(0, userProfile.calorieGoal - dailyTotals.calories).toLocaleString("fa-IR")} باقیمانده`
-              : `${Math.max(0, userProfile.calorieGoal - dailyTotals.calories)} left`}
-          </span>
-        </div>
-
-        {/* MACRO SUMMARY BADGES */}
-<<<<<<< HEAD
-        <div className="mt-4 pt-3 border-t border-[#27272a] grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">
-              {isFa ? "پروتئین" : "Protein"}
-            </span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
-              {Math.round(dailyTotals.protein)} {isFa ? "گ" : "g"}
-            </span>
-          </div>
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">
-              {isFa ? "کربوهیدرات" : "Carbs"}
-            </span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
-              {Math.round(dailyTotals.carbs)} {isFa ? "گ" : "g"}
-            </span>
-          </div>
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded">
-            <span className="text-[#9ca3af] block text-[11px]">
-              {isFa ? "چربی" : "Fat"}
-            </span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono tabular-nums">
-=======
-        <div className="mt-3 pt-3 border-t border-[#27272a] grid grid-cols-3 gap-1.5 sm:gap-2 text-center text-xs">
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded min-w-0">
-            <span className="text-[#9ca3af] block text-[10px] sm:text-[11px] truncate">{isFa ? "پروتئین" : "Protein"}</span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono text-xs tabular-nums truncate">
-              {Math.round(dailyTotals.protein)} {isFa ? "گ" : "g"}
-            </span>
-          </div>
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded min-w-0">
-            <span className="text-[#9ca3af] block text-[10px] sm:text-[11px] truncate">{isFa ? "کربوهیدرات" : "Carbs"}</span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono text-xs tabular-nums truncate">
-              {Math.round(dailyTotals.carbs)} {isFa ? "گ" : "g"}
-            </span>
-          </div>
-          <div className="bg-[#08090a] border border-[#27272a] p-2 rounded min-w-0">
-            <span className="text-[#9ca3af] block text-[10px] sm:text-[11px] truncate">{isFa ? "چربی" : "Fat"}</span>
-            <span className="text-[#f4f4f5] font-bold mt-0.5 block font-mono text-xs tabular-nums truncate">
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-              {Math.round(dailyTotals.fat)} {isFa ? "گ" : "g"}
-            </span>
-          </div>
-        </div>
-
-        {/* ESTIMATED FOOD SPEND */}
-<<<<<<< HEAD
-        <div className="mt-4 bg-[#08090a] border border-[#27272a] p-3 rounded-lg text-xs">
-          <div className="flex justify-between items-center text-[#d4d4d8] mb-1.5">
-            <span>{isFa ? "هزینه تخمینی وعده‌ها:" : "Est. Meal Spend:"}</span>
-            <span className="text-[#ff3e00] font-bold text-sm">
-              {formatPrice(
-                dailyTotals.costTomanTotal,
-                dailyTotals.costUSDTotal,
-              )}
-=======
-        <div className="mt-3.5 bg-[#08090a] border border-[#27272a] p-3 rounded-lg text-xs">
-          <div className="flex justify-between items-center text-[#d4d4d8] mb-1.5 min-w-0">
-            <span className="truncate">{isFa ? "هزینه تخمینی:" : "Meal Spend:"}</span>
-            <span className="text-[#ff3e00] font-bold text-xs sm:text-sm shrink-0 ml-1">
-              {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
->>>>>>> 6cbbf36a2b02593ff623a2e6891c6785bacb0f87
-            </span>
-          </div>
-          <div className="w-full bg-[#27272a] h-2 rounded-full overflow-hidden">
-            <div
-              className={`h-full ${budgetPercent > 90 ? "bg-amber-500" : "bg-[#ff3e00]"} transition-all`}
-              style={{ width: `${budgetPercent}%` }}
+        {/* DONUT STAT CIRCULAR GAUGE */}
+        <div className="w-[140px] h-[140px] mx-auto my-3 relative flex items-center justify-center">
+          <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 128 128">
+            <circle
+              cx="64"
+              cy="64"
+              r={radius}
+              stroke="#1f2126"
+              strokeWidth="9"
+              fill="transparent"
             />
-          </div>
-          <div className="flex justify-between text-[11px] text-[#9ca3af] mt-1.5 min-w-0">
-            <span className="truncate">
-              {isFa ? "بودجه: " : "Budget: "}
-              {userProfile.currency === "IRT"
-                ? `${userProfile.dailyBudgetToman.toLocaleString("fa-IR")} تومان`
-                : `$${userProfile.dailyBudgetUSD}`}
+            <circle
+              cx="64"
+              cy="64"
+              r={radius}
+              stroke="#ff3e00"
+              strokeWidth="9"
+              fill="transparent"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="transition-all duration-500 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span className="font-mono font-extrabold text-2xl text-[#e0e0e0] tabular-nums leading-none">
+              {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
             </span>
-            <span className="font-mono tabular-nums shrink-0 ml-1">{budgetPercent}%</span>
+            <span className="meta text-[9px] text-[#707070] mt-1">
+              {isFa ? "کالری_ثبت_شده" : "KCAL_LOGGED"}
+            </span>
+          </div>
+        </div>
+
+        {/* METRIC ROWS */}
+        <div className="flex flex-col gap-2 mt-3">
+          {/* PROTEIN ROW */}
+          <div className="row-item">
+            <span className="text-[#707070] text-xs flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
+              <span>{isFa ? "پروتئین" : "Protein"}</span>
+            </span>
+            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
+              {Math.round(dailyTotals.protein)}g / {userProfile.proteinGoal || 80}g
+            </span>
+          </div>
+
+          {/* CARBS ROW */}
+          <div className="row-item">
+            <span className="text-[#707070] text-xs flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#eab308]" />
+              <span>{isFa ? "کربوهیدرات" : "Carbs"}</span>
+            </span>
+            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
+              {Math.round(dailyTotals.carbs)}g / {userProfile.carbsGoal || 250}g
+            </span>
+          </div>
+
+          {/* FAT ROW */}
+          <div className="row-item">
+            <span className="text-[#707070] text-xs flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#f43f5e]" />
+              <span>{isFa ? "چربی" : "Fat"}</span>
+            </span>
+            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
+              {Math.round(dailyTotals.fat)}g / {userProfile.fatGoal || 65}g
+            </span>
+          </div>
+
+          {/* REMAINING BUDGET ROW */}
+          <div className="row-item">
+            <span className="text-[#707070] text-xs flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#ff3e00]" />
+              <span>{isFa ? "هزینه وعده‌ها" : "Meal Spend"}</span>
+            </span>
+            <span className="font-mono text-xs text-[#ff3e00] font-bold tabular-nums">
+              {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
+            </span>
           </div>
         </div>
       </div>
 
-      {/* DAILY WATER INTAKE - SUPER MINIMAL */}
-      <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-4">
-        {/* HEADER: Title & Counter */}
-        <div className="flex justify-between items-center mb-2.5">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-cyan-400">
-            <Droplets className="w-4 h-4 text-cyan-400 shrink-0" />
-            <span>{isFa ? "آب" : "water"}</span>
-          </div>
-          <div>
-            <span className="font-syne font-extrabold text-base text-white font-mono tabular-nums">
-              {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}
-            </span>
-            <span className="text-xs text-[#71717a] font-normal ml-1 rtl:mr-1 rtl:ml-0 font-mono">
-              / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses}{" "}
-              {isFa ? "لیوان" : "gl"}
-            </span>
-          </div>
+      {/* SECTION 2: WATER INTAKE */}
+      <div className="mt-1 pt-4 border-t border-[#2a2c31]">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="meta">{isFa ? "مصرف_آب" : "Water_Intake"}</span>
+          <span className="font-mono text-xs text-[#60a5fa] font-bold tabular-nums">
+            {waterPercent}%
+          </span>
         </div>
 
-        {/* PROGRESS BAR */}
-        <div className="w-full bg-[#27272a] h-2 rounded-full overflow-hidden mb-3">
+        <div className="flex justify-between items-baseline my-1.5">
+          <span className="font-mono text-2xl font-extrabold text-[#e0e0e0] tabular-nums">
+            {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}{" "}
+            <small className="text-xs font-normal text-[#707070] font-sans">
+              / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses} {isFa ? "لیوان" : "gl"}
+            </small>
+          </span>
+          <span className="font-mono text-xs text-[#707070] tabular-nums">
+            {totalGlasses * 250} ml
+          </span>
+        </div>
+
+        {/* 4px Progress Bar */}
+        <div className="h-1 bg-[#1f2126] rounded-full overflow-hidden my-2.5">
           <div
-            className={`h-full transition-all duration-300 ${
-              waterPercent >= 100
-                ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
-                : "bg-cyan-400"
-            }`}
+            className="h-full bg-gradient-to-r from-[#3b82f6] to-[#60a5fa] transition-all duration-300"
             style={{ width: `${Math.min(waterPercent, 100)}%` }}
           />
         </div>
 
-        {/* + AND - BUTTONS */}
-        <div className="flex items-center gap-2">
+        {/* Water Action Buttons */}
+        <div className="flex items-center gap-2 mt-2">
           <button
             type="button"
             onClick={() => handleLogGlasses(1)}
-            aria-label={isFa ? "افزودن ۱ لیوان آب" : "Add 1 glass of water"}
-            className="flex-1 py-2 bg-cyan-950/50 hover:bg-cyan-900/60 active:scale-95 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+            aria-label={isFa ? "نوشیدن ۱ لیوان آب" : "Drink 1 glass of water"}
+            className="water-btn flex-1 flex items-center justify-center gap-1.5 !mt-0 font-mono text-xs uppercase tracking-wider"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
-            <span>{isFa ? "۱" : "1"}</span>
+            <Droplets className="w-3.5 h-3.5 text-[#60a5fa]" />
+            <span>{isFa ? "نوشیدن ۱+ لیوان" : "DRINK +1 GLASS"}</span>
           </button>
 
           <button
             type="button"
             onClick={handleDecrementLatest}
             disabled={totalGlasses === 0}
-            aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass of water"}
-            className="py-2 px-4 bg-[#08090a] hover:bg-[#18191d] active:scale-95 text-[#d4d4d8] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed border border-[#27272a] rounded-md font-bold text-sm flex items-center justify-center transition-all cursor-pointer"
+            aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass"}
+            className="p-2.5 bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-colors cursor-pointer"
           >
-            <Minus className="w-4 h-4 stroke-[3]" />
+            <Minus className="w-3.5 h-3.5" />
           </button>
+        </div>
+      </div>
+
+      {/* SECTION 3: HISTORY LOG SNIPPET */}
+      <div className="mt-1 pt-3 border-t border-[#2a2c31]">
+        <div className="bg-[#111214] border border-dashed border-[#2a2c31] rounded-xl p-3.5">
+          <span className="meta">{isFa ? "تاریخچه_اسکن" : "History_Log"}</span>
+          <div className="mt-1.5 text-xs text-[#e0e0e0] font-semibold truncate">
+            {isFa ? "مقلوبه بادمجان و گوشت" : "Eggplant & Beef Makloubeh"}
+          </div>
+          <div className="font-mono text-xs text-[#ff3e00] font-bold mt-0.5">
+            580 KCAL
+          </div>
         </div>
       </div>
     </aside>

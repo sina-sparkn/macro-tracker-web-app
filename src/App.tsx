@@ -1243,7 +1243,7 @@ export default function App() {
           />
 
           {/* COLUMN 3: MAIN DISPLAY AREA */}
-          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-16 lg:pb-2">
+          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-20 lg:pb-6">
             {activeTab === "scan" && (
               <ScannerConsoleView
                 userProfile={userProfile}
