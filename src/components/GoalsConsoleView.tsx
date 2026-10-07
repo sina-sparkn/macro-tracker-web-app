@@ -8,7 +8,7 @@ import {
   Sparkles,
   EyeOff,
   Eye,
-  Utensils
+  Utensils,
 } from "lucide-react";
 import { UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
@@ -17,7 +17,9 @@ interface GoalsConsoleViewProps {
   userProfile: UserProfile;
   isSyncingRate?: boolean;
   onSaveProfile: (profile: UserProfile) => void;
-  onApplyPreset: (preset: "weight-loss" | "muscle" | "keto" | "balanced") => void;
+  onApplyPreset: (
+    preset: "weight-loss" | "muscle" | "keto" | "balanced",
+  ) => void;
   onSyncExchangeRate?: () => void;
 }
 
@@ -26,13 +28,16 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
   isSyncingRate = false,
   onSaveProfile,
   onApplyPreset,
-  onSyncExchangeRate
+  onSyncExchangeRate,
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
-  const handleUpdate = <K extends keyof UserProfile>(field: K, value: UserProfile[K]) => {
+  const handleUpdate = <K extends keyof UserProfile>(
+    field: K,
+    value: UserProfile[K],
+  ) => {
     const isGoalField =
       field === "calorieGoal" ||
       field === "proteinGoal" ||
@@ -41,7 +46,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
     onSaveProfile({
       ...userProfile,
       [field]: value,
-      ...(isGoalField ? { activePreset: undefined } : {})
+      ...(isGoalField ? { activePreset: undefined } : {}),
     });
   };
 
@@ -54,10 +59,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       protein: 80,
       carbs: 250,
       fat: 65,
-      subtitleFa: "۲۰۰۰ کالری · ۸۰ گرم پروتئین",
+      subtitleFa: "۲۰۰۰ کالری · ۰ گرم پروتئین",
       subtitleEn: "2000 kcal · 80g P",
       macroDetailFa: "کربو ۲۵۰g · چربی ۶۵g",
-      macroDetailEn: "250g C · 65g F"
+      macroDetailEn: "250g C · 65g F",
     },
     {
       id: "weight-loss" as const,
@@ -70,7 +75,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       subtitleFa: "۱۶۰۰ کالری · ۹۰ گرم پروتئین",
       subtitleEn: "1600 kcal · 90g P",
       macroDetailFa: "کربو ۱۸۰g · چربی ۵۰g",
-      macroDetailEn: "180g C · 50g F"
+      macroDetailEn: "180g C · 50g F",
     },
     {
       id: "muscle" as const,
@@ -83,7 +88,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       subtitleFa: "۲۵۰۰ کالری · ۱۴۰ گرم پروتئین",
       subtitleEn: "2500 kcal · 140g P",
       macroDetailFa: "کربو ۳۰۰g · چربی ۷۵g",
-      macroDetailEn: "300g C · 75g F"
+      macroDetailEn: "300g C · 75g F",
     },
     {
       id: "keto" as const,
@@ -96,8 +101,8 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       subtitleFa: "۱۸۰۰ کالری · ۳۰ گرم کربوهیدرات",
       subtitleEn: "1800 kcal · 30g C",
       macroDetailFa: "پروتئین ۱۰۰g · چربی ۱۳۰g",
-      macroDetailEn: "100g P · 130g F"
-    }
+      macroDetailEn: "100g P · 130g F",
+    },
   ];
 
   const PRICING_TIERS = [
@@ -107,7 +112,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       nameEn: "Home-Cooked / Economy",
       descFa: "محاسبه بر مبنای خرید مواد اولیه خام خانگی (۲۰٪ اقتصادی‌تر)",
       descEn: "Raw grocery ingredient cost baseline (-20%)",
-      badge: "0.8×"
+      badge: "0.8×",
     },
     {
       id: "market" as const,
@@ -115,7 +120,7 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       nameEn: "Standard Market Index",
       descFa: "برآورد استاندارد بر پایه میانگین قیمت روز بازار داخلی ایران",
       descEn: "Standard domestic market average benchmark (Default)",
-      badge: "1.0×"
+      badge: "1.0×",
     },
     {
       id: "restaurant" as const,
@@ -123,8 +128,8 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
       nameEn: "Restaurant / Dining Out",
       descFa: "محاسبه بر اساس میانگین قیمت منوی رستوران‌ها و کترینگ (+۳۵٪)",
       descEn: "Prepared restaurant & catering menu pricing (+35%)",
-      badge: "1.35×"
-    }
+      badge: "1.35×",
+    },
   ];
 
   const isPresetActive = (preset: (typeof PRESET_CONFIGS)[number]) => {
@@ -257,7 +262,9 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               disabled={isSyncingRate}
               className="px-3 py-1.5 bg-[#111214] hover:bg-[#27272a] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#ff3e00] ${isSyncingRate ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`w-3.5 h-3.5 text-[#ff3e00] ${isSyncingRate ? "animate-spin" : ""}`}
+              />
               <span>{isFa ? "به‌روزرسانی" : "Update"}</span>
             </button>
           )}
@@ -272,7 +279,11 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={() => {
-                  onSaveProfile({ ...userProfile, currency: "IRT", hidePrices: false });
+                  onSaveProfile({
+                    ...userProfile,
+                    currency: "IRT",
+                    hidePrices: false,
+                  });
                 }}
                 type="button"
                 aria-pressed={userProfile.currency === "IRT"}
@@ -288,7 +299,11 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
 
               <button
                 onClick={() => {
-                  onSaveProfile({ ...userProfile, currency: "USD", hidePrices: false });
+                  onSaveProfile({
+                    ...userProfile,
+                    currency: "USD",
+                    hidePrices: false,
+                  });
                 }}
                 type="button"
                 aria-pressed={userProfile.currency === "USD"}
@@ -332,9 +347,13 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                 min="400000"
                 max="6000000"
                 step="100000"
-                aria-label={isFa ? "سقف بودجه روزانه به تومان" : "Daily budget in Toman"}
+                aria-label={
+                  isFa ? "سقف بودجه روزانه به تومان" : "Daily budget in Toman"
+                }
                 value={userProfile.dailyBudgetToman ?? 1800000}
-                onChange={(e) => handleUpdate("dailyBudgetToman", Number(e.target.value))}
+                onChange={(e) =>
+                  handleUpdate("dailyBudgetToman", Number(e.target.value))
+                }
                 className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
               />
             ) : (
@@ -345,9 +364,13 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
                 min="2"
                 max="35"
                 step="1"
-                aria-label={isFa ? "سقف بودجه روزانه به دلار" : "Daily budget in USD"}
+                aria-label={
+                  isFa ? "سقف بودجه روزانه به دلار" : "Daily budget in USD"
+                }
                 value={userProfile.dailyBudgetUSD ?? 7.8}
-                onChange={(e) => handleUpdate("dailyBudgetUSD", Number(e.target.value))}
+                onChange={(e) =>
+                  handleUpdate("dailyBudgetUSD", Number(e.target.value))
+                }
                 className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
               />
             )}
@@ -365,7 +388,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Calorie Goal */}
           <div>
             <div className="flex justify-between text-xs mb-2">
-              <label htmlFor="cal-slider" className="text-[#f4f4f5] font-medium">
+              <label
+                htmlFor="cal-slider"
+                className="text-[#f4f4f5] font-medium"
+              >
                 {isFa ? "هدف کالری روزانه" : "Daily Calorie Target"}
               </label>
               <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
@@ -382,7 +408,9 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               step="50"
               aria-label={isFa ? "هدف کالری روزانه" : "Daily calorie target"}
               value={userProfile.calorieGoal ?? 2000}
-              onChange={(e) => handleUpdate("calorieGoal", Number(e.target.value))}
+              onChange={(e) =>
+                handleUpdate("calorieGoal", Number(e.target.value))
+              }
               className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
             />
           </div>
@@ -390,7 +418,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Protein Goal */}
           <div>
             <div className="flex justify-between text-xs mb-2">
-              <label htmlFor="protein-slider" className="text-[#f4f4f5] font-medium">
+              <label
+                htmlFor="protein-slider"
+                className="text-[#f4f4f5] font-medium"
+              >
                 {isFa ? "هدف پروتئین روزانه" : "Daily Protein Target"}
               </label>
               <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
@@ -407,7 +438,9 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               step="5"
               aria-label={isFa ? "هدف پروتئین روزانه" : "Daily protein target"}
               value={userProfile.proteinGoal ?? 80}
-              onChange={(e) => handleUpdate("proteinGoal", Number(e.target.value))}
+              onChange={(e) =>
+                handleUpdate("proteinGoal", Number(e.target.value))
+              }
               className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
             />
           </div>
@@ -415,7 +448,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Carbs Goal */}
           <div>
             <div className="flex justify-between text-xs mb-2">
-              <label htmlFor="carbs-slider" className="text-[#f4f4f5] font-medium">
+              <label
+                htmlFor="carbs-slider"
+                className="text-[#f4f4f5] font-medium"
+              >
                 {isFa ? "هدف کربوهیدرات روزانه" : "Daily Carbs Target"}
               </label>
               <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
@@ -432,7 +468,9 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               step="5"
               aria-label={isFa ? "هدف کربوهیدرات روزانه" : "Daily carbs target"}
               value={userProfile.carbsGoal ?? 250}
-              onChange={(e) => handleUpdate("carbsGoal", Number(e.target.value))}
+              onChange={(e) =>
+                handleUpdate("carbsGoal", Number(e.target.value))
+              }
               className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
             />
           </div>
@@ -440,7 +478,10 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
           {/* Fat Goal */}
           <div>
             <div className="flex justify-between text-xs mb-2">
-              <label htmlFor="fat-slider" className="text-[#f4f4f5] font-medium">
+              <label
+                htmlFor="fat-slider"
+                className="text-[#f4f4f5] font-medium"
+              >
                 {isFa ? "هدف چربی سالم روزانه" : "Daily Fat Target"}
               </label>
               <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
