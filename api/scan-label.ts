@@ -223,6 +223,15 @@ const FALLBACK_FOODS_FA = [
   }
 ];
 
+export const maxDuration = 60;
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: "10mb",
+    },
+  },
+};
+
 export default async function handler(req: any, res: any) {
   // Set CORS headers
   res.setHeader("Access-Control-Allow-Credentials", "true");
@@ -314,14 +323,18 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
       },
     });
 
-    const candidateModels = ["gemini-2.5-flash", "gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
+    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
     let responseText = "";
     let lastError: any = null;
 
     for (const modelCandidate of candidateModels) {
       if (responseText) break;
       try {
-        const response = await aiClient.models.generateContent({
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after 18s waiting for model ${modelCandidate}`)), 18000)
+        );
+
+        const generatePromise = aiClient.models.generateContent({
           model: modelCandidate,
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
@@ -408,6 +421,8 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
             },
           },
         });
+
+        const response = await Promise.race([generatePromise, timeoutPromise]);
         responseText = response.text || "";
         break;
       } catch (err: any) {
