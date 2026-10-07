@@ -107,26 +107,26 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   });
 
   return (
-    <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-5xl mx-auto w-full pb-6 sm:pb-8 lg:pb-6">
-      {/* SCAN ACTION BAR */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-5xl mx-auto w-full pb-20 lg:pb-8 relative z-10">
+      {/* SCAN ACTION BAR (CYBER DATA CONSOLE) */}
+      <section>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <button
             onClick={onStartCamera}
             type="button"
             aria-label={isFa ? "اسکن با دوربین" : "Scan with Camera"}
-            className="btn-cmd cursor-pointer py-3.5 px-4 text-sm font-bold flex items-center justify-center gap-2.5 rounded-lg shadow-sm"
+            className="flex items-center justify-center gap-2.5 py-3.5 px-5 rounded-lg text-sm font-bold bg-[#ff3e00] hover:bg-[#ff5722] text-black border border-[#ff3e00] transition-colors cursor-pointer shadow-md"
           >
-            <Camera className="w-5 h-5" />
-            <span>{isFa ? "اسکن با دوربین" : "Scan with Camera"}</span>
+            <Camera className="w-5 h-5 stroke-[2.4]" />
+            <span className="font-mono tracking-wide">{isFa ? "اسکن با دوربین" : "SCAN WITH CAMERA"}</span>
           </button>
 
           <label
             aria-label={isFa ? "بارگذاری عکس" : "Upload Photo"}
-            className="btn-cmd-dim cursor-pointer py-3.5 px-4 text-sm font-semibold flex items-center justify-center gap-2.5 rounded-lg border-[#3f3f46] hover:border-[#ff3e00]"
+            className="flex items-center justify-center gap-2.5 py-3.5 px-5 rounded-lg text-sm font-bold bg-[#18191d] hover:bg-[#23252a] text-[#e0e0e0] border border-[#2a2c31] hover:border-[#ff3e00] transition-colors cursor-pointer shadow-md"
           >
-            <Upload className="w-5 h-5 text-[#ff3e00]" />
-            <span>{isFa ? "بارگذاری عکس" : "Upload Photo"}</span>
+            <Upload className="w-5 h-5 stroke-[2.4] text-[#ff3e00]" />
+            <span className="font-mono tracking-wide">{isFa ? "بارگذاری عکس" : "UPLOAD FOOD PHOTO"}</span>
             <input
               type="file"
               accept="image/*"
@@ -138,7 +138,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
         {/* LIVE CAMERA FEED AREA */}
         {useRealCamera && (
-          <div className="mt-5 border-2 border-[#ff3e00] bg-black rounded-lg relative aspect-[4/3] max-w-xl mx-auto overflow-hidden shadow-2xl">
+          <div className="mt-5 border-2 border-[#ff3e00] bg-black rounded-xl relative aspect-[4/3] max-w-xl mx-auto overflow-hidden shadow-2xl">
             <video
               ref={videoRef}
               autoPlay
@@ -160,16 +160,16 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                 disabled={isScanning}
                 type="button"
                 aria-label={isFa ? "ثبت تصویر غذا" : "Capture photo"}
-                className="btn-cmd cursor-pointer px-6 py-3 flex items-center gap-2 text-sm font-bold shadow-lg"
+                className="bg-[#ff3e00] hover:bg-[#ff5722] text-black cursor-pointer px-6 py-3 flex items-center gap-2 text-sm font-bold rounded-lg shadow-lg font-mono"
               >
                 <Camera className="w-5 h-5" />
-                <span>{isFa ? "ثبت تصویر" : "Capture Photo"}</span>
+                <span>{isFa ? "ثبت تصویر" : "CAPTURE PHOTO"}</span>
               </button>
               <button
                 onClick={onStopCamera}
                 type="button"
                 aria-label={isFa ? "بستن دوربین" : "Close camera"}
-                className="btn-cmd-dim cursor-pointer px-4 py-3 flex items-center gap-2 text-sm"
+                className="bg-[#18191d] hover:bg-[#27272a] text-[#e0e0e0] border border-[#2a2c31] cursor-pointer px-4 py-3 flex items-center gap-2 text-sm rounded-lg"
               >
                 <X className="w-4 h-4" />
                 <span>{isFa ? "بستن" : "Close"}</span>
@@ -182,94 +182,107 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
         {scanError && (
           <div
             role="alert"
-            className="mt-3 p-3.5 bg-red-950/60 border border-red-700 text-red-200 text-xs sm:text-sm flex items-center gap-2.5 rounded-lg"
+            className="mt-3 p-3.5 bg-red-950/60 border border-red-700/80 text-red-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg"
           >
-            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-            <span>{scanError}</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              <span className="leading-snug">{scanError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={handleOpenRecommendedDetails}
+              className="shrink-0 px-3 py-1.5 bg-red-900/60 hover:bg-red-800 border border-red-600/70 text-white rounded-md text-xs font-medium cursor-pointer transition-colors"
+            >
+              {isFa ? "مشاهده تحلیل نمونه" : "View Sample Analysis"}
+            </button>
           </div>
         )}
       </section>
 
-      {/* TODAY'S RECOMMENDATION */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5">
-        <div>
-          {/* HEADER & CONTROLS */}
-          <div className="flex items-center justify-between gap-2 mb-2.5">
-            <span className="text-xs font-semibold text-[#ff3e00] uppercase tracking-wider">
-              {isFa ? "پیشنهاد امروز" : "Featured Meal"}
-            </span>
+      {/* FEATURED MEAL CARD (CYBER CONSOLE ARCHITECTURE) */}
+      <section className="bg-[#111214] border border-[#2a2c31] rounded-xl p-5 sm:p-6 relative overflow-hidden">
+        {/* Subtle decorative watermark */}
+        <div className="absolute top-3 left-4 font-mono text-4xl sm:text-5xl font-black text-white/[0.02] pointer-events-none select-none">
+          REC_TODAY
+        </div>
 
-            <button
-              onClick={() => setDailyDishOffset((prev) => prev + 1)}
-              type="button"
-              aria-label={isFa ? "پیشنهاد بعدی" : "Next dish"}
-              className="px-2.5 py-1 text-xs text-[#9ca3af] hover:text-[#f4f4f5] bg-[#18191d] hover:bg-[#27272a] border border-[#27272a] rounded flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <RefreshCw className="w-3 h-3 text-[#ff3e00]" />
-              <span className="font-mono text-xs">{isFa ? "بعدی" : "Next"}</span>
-            </button>
+        <div className="relative z-10">
+          {/* HEADER & CALORIE BADGE */}
+          <div className="flex justify-between items-start gap-4 mb-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="meta text-[#ff3e00]">{isFa ? "پیشنهاد_امروز" : "PICKS OF THE DAY"}</span>
+                <button
+                  onClick={() => setDailyDishOffset((prev) => prev + 1)}
+                  type="button"
+                  aria-label={isFa ? "پیشنهاد بعدی" : "Next dish"}
+                  className="px-2.5 py-1 text-xs text-[#707070] hover:text-[#e0e0e0] bg-[#18191d] hover:bg-[#23252a] border border-[#2a2c31] hover:border-[#ff3e00] rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="w-3 h-3 text-[#ff3e00]" />
+                  <span className="font-mono text-xs">{isFa ? "بعدی" : "Next"}</span>
+                </button>
+              </div>
+
+              <h3 className="font-black text-xl sm:text-2xl text-[#e0e0e0] my-1.5 leading-snug break-words">
+                {isFa ? todayRecommendedDish.nameFa : todayRecommendedDish.nameEn}
+              </h3>
+              <p className="text-[#707070] text-xs sm:text-sm font-sans">
+                {isFa ? todayRecommendedDish.originFa : todayRecommendedDish.originEn}
+              </p>
+            </div>
+
+            {/* CALORIE BOX */}
+            <div className="text-center bg-[#0e1013] px-3.5 py-2.5 rounded-lg border border-[#2a2c31] shrink-0">
+              <div className="meta text-[9px]">{isFa ? "کالری" : "Calories"}</div>
+              <div className="text-xl sm:text-2xl font-extrabold text-[#ff3e00] font-mono mt-0.5 tabular-nums">
+                {isFa ? todayRecommendedDish.calories.toLocaleString("fa-IR") : todayRecommendedDish.calories}
+              </div>
+            </div>
           </div>
 
-          {/* TITLE & ORIGIN */}
-          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
-            <h3 className="font-syne sm:font-vazirmatn text-base sm:text-lg font-bold text-[#ffffff] break-words">
-              {isFa ? todayRecommendedDish.nameFa : todayRecommendedDish.nameEn}
-            </h3>
-            <span className="text-xs font-mono text-[#9ca3af]">
-              {isFa ? todayRecommendedDish.originFa : todayRecommendedDish.originEn}
-            </span>
-          </div>
-
-          {/* NUTRITION METRICS GRID */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4 font-mono text-xs">
-            <div className="bg-[#08090a] border border-[#27272a] p-2 rounded text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] block truncate">{isFa ? "کالری" : "Calories"}</span>
-              <span className="text-sm font-bold text-[#ff3e00] mt-0.5 block truncate">
-                {isFa ? `${todayRecommendedDish.calories.toLocaleString("fa-IR")}` : `${todayRecommendedDish.calories} kcal`}
+          {/* MACRO INDICATOR BARS */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 my-4 font-mono text-xs">
+            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#3b82f6] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+              <span className="meta text-[9px] block text-[#707070]">{isFa ? "پروتئین" : "Protein"}</span>
+              <span className="font-bold text-sm sm:text-base text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
+                {todayRecommendedDish.protein}g
               </span>
             </div>
 
-            <div className="bg-[#08090a] border border-[#27272a] p-2 rounded text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] block truncate">{isFa ? "پروتئین" : "Protein"}</span>
-              <span className="text-sm font-bold text-sky-400 mt-0.5 block truncate">
-                {isFa ? `${todayRecommendedDish.protein.toLocaleString("fa-IR")}g` : `${todayRecommendedDish.protein}g`}
+            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#eab308] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+              <span className="meta text-[9px] block text-[#707070]">{isFa ? "کربوهیدرات" : "Carbs"}</span>
+              <span className="font-bold text-sm sm:text-base text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
+                {todayRecommendedDish.carbs}g
               </span>
             </div>
 
-            <div className="bg-[#08090a] border border-[#27272a] p-2 rounded text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] block truncate">{isFa ? "کربوهیدرات" : "Carbs"}</span>
-              <span className="text-sm font-bold text-amber-400 mt-0.5 block truncate">
-                {isFa ? `${todayRecommendedDish.carbs.toLocaleString("fa-IR")}g` : `${todayRecommendedDish.carbs}g`}
-              </span>
-            </div>
-
-            <div className="bg-[#08090a] border border-[#27272a] p-2 rounded text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] block truncate">{isFa ? "هزینه" : "Cost"}</span>
-              <span className="text-sm font-bold text-[#f4f4f5] mt-0.5 block truncate">
+            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#707070] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+              <span className="meta text-[9px] block text-[#707070]">{isFa ? "هزینه" : "Price"}</span>
+              <span className="font-bold text-xs sm:text-sm text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
                 {formatPrice(todayRecommendedDish.priceToman, todayRecommendedDish.priceUSD)}
               </span>
             </div>
           </div>
 
           {/* ACTION BUTTONS */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5 mt-5">
             <button
               onClick={handleLogRecommended}
               type="button"
               aria-label={isFa ? "ثبت این غذا در یادداشت روزانه" : "Add this meal to daily log"}
-              className={`btn-cmd cursor-pointer px-4 py-2 text-xs font-bold flex items-center gap-1.5 transition-all ${
-                justLogged ? "bg-emerald-500 border-emerald-500 text-black" : ""
+              className={`bg-[#ff3e00] hover:bg-[#ff5722] text-black cursor-pointer px-5 py-2.5 text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-all flex-1 ${
+                justLogged ? "!bg-emerald-500 !text-black" : ""
               }`}
             >
               {justLogged ? (
                 <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>{isFa ? "ثبت شد ✓" : "Added ✓"}</span>
+                  <Check className="w-4 h-4 stroke-[3]" />
+                  <span>{isFa ? "ثبت شد ✓" : "Logged ✓"}</span>
                 </>
               ) : (
                 <>
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>{isFa ? "افزودن به دفترچه" : "Add to Diary"}</span>
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>{isFa ? "ثبت در یادداشت" : "Log to Diary"}</span>
                 </>
               )}
             </button>
@@ -278,115 +291,21 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
               onClick={handleOpenRecommendedDetails}
               type="button"
               aria-label={isFa ? "مشاهده جزئیات" : "View details"}
-              className="btn-cmd-dim cursor-pointer px-3.5 py-2 text-xs font-medium flex items-center gap-1.5"
+              className="bg-[#18191d] hover:bg-[#23252a] border border-[#2a2c31] hover:border-[#ff3e00] text-[#e0e0e0] cursor-pointer px-4 py-2.5 text-xs font-semibold rounded-lg flex items-center gap-2 transition-colors"
             >
-              <Utensils className="w-3.5 h-3.5 text-[#ff3e00]" />
+              <Utensils className="w-4 h-4 text-[#ff3e00]" />
               <span>{isFa ? "جزئیات" : "Details"}</span>
             </button>
           </div>
         </div>
       </section>
 
-      {/* LAST SCAN (ONLY RENDER IF SCANS EXIST) */}
-      {recentScans.length > 0 && (
-        <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <History className="w-3.5 h-3.5 text-[#ff3e00]" />
-              <h3 className="font-bold text-xs uppercase tracking-wider text-[#f4f4f5]">
-                {isFa ? "آخرین اسکن" : "Last Scan"}
-              </h3>
-            </div>
-
-            <button
-              onClick={onClearRecentScans}
-              type="button"
-              aria-label={isFa ? "پاک کردن آخرین اسکن" : "Clear last scan"}
-              className="text-xs text-[#9ca3af] hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Trash2 className="w-3 h-3" />
-              <span>{isFa ? "پاک کردن" : "Clear"}</span>
-            </button>
-          </div>
-
-          <div className="max-w-xl">
-            {recentScans.slice(0, 1).map((rawItem, idx) => {
-              const item = normalizeScannedLabel(rawItem, isFa ? "fa" : "en", currentRate);
-              const itemToman = item.estimatedPrice?.amountToman;
-              const itemUSD = item.estimatedPrice?.amountUSD;
-              const itemId = item.id || `${item.productName}-${idx}`;
-              const isItemLogged = loggedRecentId === itemId || loggedRecentId === item.productName;
-
-              return (
-                <div
-                  key={itemId}
-                  className="bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00]/60 rounded-lg p-3.5 transition-all"
-                >
-                  <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
-                    <h4 className="font-bold text-sm sm:text-base text-[#f4f4f5] truncate">
-                      {item.productName}
-                    </h4>
-                    <span className="text-[#ff3e00] font-bold text-sm font-mono shrink-0 ml-1">
-                      {isFa ? `${item.calories.toLocaleString("fa-IR")} کالری` : `${item.calories} kcal`}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-2 text-xs text-[#9ca3af] font-mono mb-3">
-                    <span>P: {Math.round(item.protein)}g</span>
-                    <span>·</span>
-                    <span>C: {Math.round(item.totalCarbohydrate)}g</span>
-                    <span>·</span>
-                    <span>F: {Math.round(item.totalFat)}g</span>
-                    <span>·</span>
-                    <span>{formatPrice(itemToman, itemUSD)}</span>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleQuickLogRecent(item)}
-                      type="button"
-                      aria-label={isFa ? `ثبت مجدد ${item.productName}` : `Re-log ${item.productName}`}
-                      className={`py-1.5 px-3 rounded text-xs font-bold transition-all cursor-pointer flex items-center gap-1 ${
-                        isItemLogged
-                          ? "bg-emerald-500 text-black"
-                          : "bg-[#ff3e00] hover:bg-[#ff5722] text-black"
-                      }`}
-                    >
-                      {isItemLogged ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          <span>{isFa ? "ثبت شد" : "Logged"}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>{isFa ? "ثبت مجدد" : "Re-log"}</span>
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => onSelectRecentScan(item)}
-                      type="button"
-                      aria-label={isFa ? `جزئیات ${item.productName}` : `Details ${item.productName}`}
-                      className="py-1.5 px-3 bg-[#111214] hover:bg-[#27272a] text-[#d4d4d8] hover:text-white rounded text-xs font-medium transition-colors cursor-pointer border border-[#27272a]"
-                    >
-                      {isFa ? "جزئیات" : "Details"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* QUICK LOG MEALS CATALOG */}
-      <section className="mt-1">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-          <h3 className="text-xs font-bold text-[#f4f4f5] uppercase tracking-wider">
-            {isFa ? "غذاهای پیشنهادی" : "Quick Log Meals"}
-          </h3>
+      {/* SUGGESTED FOODS CATALOG (CYBER CONSOLE ARCHITECTURE) */}
+      <section className="mt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+          <h2 className="meta text-xs sm:text-sm text-[#707070]">
+            {isFa ? "غذاهای_پیشنهادی" : "Suggested_Foods"}
+          </h2>
 
           {/* CATEGORY SELECTOR CHIPS */}
           <div className="flex flex-wrap gap-1 text-xs">
@@ -403,10 +322,10 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                 onClick={() => setWorldCategory(cat.id)}
                 type="button"
                 aria-pressed={worldCategory === cat.id}
-                className={`px-2.5 py-1 rounded transition-colors cursor-pointer border text-xs font-medium ${
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer border text-xs font-medium font-mono ${
                   worldCategory === cat.id
                     ? "bg-[#ff3e00] text-black border-[#ff3e00] font-bold"
-                    : "bg-[#18191d] text-[#d4d4d8] border-[#27272a] hover:border-[#ff3e00]"
+                    : "bg-[#111214] text-[#707070] border-[#2a2c31] hover:border-[#ff3e00] hover:text-[#e0e0e0]"
                 }`}
               >
                 {isFa ? cat.labelFa : cat.labelEn}
@@ -415,7 +334,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredFoods.map((rawFood) => {
             const food = getLocalizedWorldFood(rawFood, currentLang);
             return (
@@ -431,24 +350,26 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
                   }
                 }}
                 aria-label={isFa ? `انتخاب ${food.name}` : `Select ${food.name}`}
-                className="bg-[#111214] border border-[#27272a] hover:border-[#ff3e00] rounded-lg p-3 transition-all cursor-pointer group flex flex-col justify-between focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
+                className="bg-[#111214] border border-[#2a2c31] hover:border-[#ff3e00] rounded-xl p-4 transition-all cursor-pointer group flex flex-col justify-between focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none"
               >
                 <div>
-                  <div className="flex justify-between items-center text-[11px] font-mono text-[#9ca3af] mb-1">
-                    <span>{food.origin}</span>
-                    <span className="text-[#ff3e00] font-bold">{food.healthRatingLabel}</span>
+                  <div className="flex justify-between items-center text-[10px] font-mono mb-1.5">
+                    <span className="text-[#22c55e] font-bold tracking-wider">
+                      {food.healthRatingLabel || "A - EXCELLENT"}
+                    </span>
+                    <span className="meta text-[9px]">{food.origin}</span>
                   </div>
 
-                  <h4 className="font-syne sm:font-vazirmatn text-sm font-bold text-[#f4f4f5] group-hover:text-[#ff3e00] transition-colors line-clamp-1 mb-2">
+                  <h4 className="font-bold text-sm text-[#e0e0e0] group-hover:text-[#ff3e00] transition-colors line-clamp-1 mb-2">
                     {food.name}
                   </h4>
                 </div>
 
-                <div className="pt-2 border-t border-[#27272a] flex justify-between items-center font-mono text-xs">
+                <div className="pt-2.5 border-t border-[#2a2c31] flex justify-between items-center font-mono text-xs">
                   <span className="text-[#ff3e00] font-bold">
-                    {isFa ? `${food.calories.toLocaleString("fa-IR")} کالری` : `${food.calories} kcal`}
+                    {isFa ? `${food.calories.toLocaleString("fa-IR")} کالری` : `${food.calories} KCAL`}
                   </span>
-                  <span className="text-[#9ca3af]">{formatPrice(food.priceToman, food.priceUSD)}</span>
+                  <span className="text-[#707070]">{formatPrice(food.priceToman, food.priceUSD)}</span>
                 </div>
               </div>
             );

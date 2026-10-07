@@ -9,7 +9,7 @@ import {
   seedSampleHistory,
   getDatabaseStats,
   resolveLiveOrIndexedExchangeRate
-} from "../server/sqliteDb";
+} from "../server/sqliteDb.ts";
 
 dotenv.config();
 
@@ -488,7 +488,7 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
     let responseText = "";
     let attempts = 0;
     let lastError: any = null;
-    const candidateModels = ["gemini-3.5-flash", "gemini-flash-latest", "gemini-3.8-flash"];
+    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
 
     for (const modelCandidate of candidateModels) {
       if (responseText) break;

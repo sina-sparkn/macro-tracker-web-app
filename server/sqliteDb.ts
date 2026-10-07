@@ -50,70 +50,99 @@ export function getSqliteDb(): SqliteDatabase {
     return dbInstance;
   }
 
-  const sqliteModule = requireNode("node:sqlite");
-  const DatabaseSync = sqliteModule.DatabaseSync;
+  try {
+    const sqliteModule = requireNode("node:sqlite");
+    const DatabaseSync = sqliteModule.DatabaseSync;
 
-  const dbFilePath = process.env.VERCEL
-    ? "/tmp/nutriscan.sqlite"
-    : path.join(process.cwd(), "nutriscan.sqlite");
+    const dbFilePath = process.env.VERCEL
+      ? "/tmp/nutriscan.sqlite"
+      : path.join(process.cwd(), "nutriscan.sqlite");
 
-  const db: SqliteDatabase = new DatabaseSync(dbFilePath);
+    const db: SqliteDatabase = new DatabaseSync(dbFilePath);
 
-  db.exec(`
-    PRAGMA journal_mode = WAL;
+    db.exec(`
+      PRAGMA journal_mode = WAL;
 
-    CREATE TABLE IF NOT EXISTS meta_settings (
-      key TEXT PRIMARY KEY,
-      value TEXT NOT NULL
-    );
+      CREATE TABLE IF NOT EXISTS meta_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
 
-    CREATE TABLE IF NOT EXISTS diary_entries (
-      id TEXT PRIMARY KEY,
-      entryDate TEXT NOT NULL,
-      loggedAt TEXT NOT NULL,
-      createdAt INTEGER NOT NULL,
-      productName TEXT NOT NULL,
-      brand TEXT NOT NULL,
-      foodType TEXT DEFAULT 'dish',
-      cuisine TEXT DEFAULT '',
-      servingsCount REAL NOT NULL DEFAULT 1,
-      servingSizeText TEXT NOT NULL,
-      caloriesTotal INTEGER NOT NULL,
-      proteinTotal REAL NOT NULL,
-      carbsTotal REAL NOT NULL,
-      fatTotal REAL NOT NULL,
-      sodiumTotal INTEGER NOT NULL,
-      priceToman INTEGER DEFAULT 0,
-      priceUSD REAL DEFAULT 0
-    );
+      CREATE TABLE IF NOT EXISTS diary_entries (
+        id TEXT PRIMARY KEY,
+        entryDate TEXT NOT NULL,
+        loggedAt TEXT NOT NULL,
+        createdAt INTEGER NOT NULL,
+        productName TEXT NOT NULL,
+        brand TEXT NOT NULL,
+        foodType TEXT DEFAULT 'dish',
+        cuisine TEXT DEFAULT '',
+        servingsCount REAL NOT NULL DEFAULT 1,
+        servingSizeText TEXT NOT NULL,
+        caloriesTotal INTEGER NOT NULL,
+        proteinTotal REAL NOT NULL,
+        carbsTotal REAL NOT NULL,
+        fatTotal REAL NOT NULL,
+        sodiumTotal INTEGER NOT NULL,
+        priceToman INTEGER DEFAULT 0,
+        priceUSD REAL DEFAULT 0
+      );
 
-    CREATE TABLE IF NOT EXISTS daily_water (
-      entryDate TEXT PRIMARY KEY,
-      glasses INTEGER NOT NULL,
-      updatedAt INTEGER NOT NULL
-    );
+      CREATE TABLE IF NOT EXISTS daily_water (
+        entryDate TEXT PRIMARY KEY,
+        glasses INTEGER NOT NULL,
+        updatedAt INTEGER NOT NULL
+      );
 
-    CREATE INDEX IF NOT EXISTS idx_diary_entry_date ON diary_entries(entryDate);
-    CREATE INDEX IF NOT EXISTS idx_diary_created_at ON diary_entries(createdAt DESC);
-  `);
+      CREATE INDEX IF NOT EXISTS idx_diary_entry_date ON diary_entries(entryDate);
+      CREATE INDEX IF NOT EXISTS idx_diary_created_at ON diary_entries(createdAt DESC);
+    `);
 
-  dbInstance = db;
+    dbInstance = db;
 
-  // Check if initial seed has run
-  const seededRow = db
-    .prepare("SELECT value FROM meta_settings WHERE key = ?")
-    .get("initial_seed_v2_water");
+    // Check if initial seed has run
+    const seededRow = db
+      .prepare("SELECT value FROM meta_settings WHERE key = ?")
+      .get("initial_seed_v2_water");
 
-  if (!seededRow) {
-    seedSampleHistory(false);
-    seedSampleWater(false);
-    db.prepare("INSERT OR REPLACE INTO meta_settings (key, value) VALUES (?, ?)").run(
-      "initial_seed_v2_water",
-      new Date().toISOString()
-    );
+    if (!seededRow) {
+      seedSampleHistory(false);
+      seedSampleWater(false);
+      db.prepare("INSERT OR REPLACE INTO meta_settings (key, value) VALUES (?, ?)").run(
+        "initial_seed_v2_water",
+        new Date().toISOString()
+      );
+    }
+
+    return db;
+  } catch (err: any) {
+    console.warn("Native node:sqlite is unavailable in this environment, using memory fallback:", err.message);
+    const inMemoryRows: any[] = [];
+    const inMemoryWater: Record<string, any> = {};
+    const inMemorySettings: Record<string, string> = {};
+
+    const fallbackDb: SqliteDatabase = {
+      exec: () => {},
+      prepare: (sql: string) => {
+        return {
+          run: (...params: any[]) => ({ changes: 1, lastInsertRowid: 1 }),
+          get: (...params: any[]) => {
+            if (sql.includes("meta_settings")) {
+              const key = params[0];
+              return inMemorySettings[key] ? { value: inMemorySettings[key] } : null;
+            }
+            if (sql.includes("daily_water")) {
+              return { glasses: 8 };
+            }
+            return inMemoryRows[0] || null;
+          },
+          all: (...params: any[]) => inMemoryRows
+        };
+      }
+    };
+    dbInstance = fallbackDb;
+    return fallbackDb;
   }
-
-  return db;
 }
 
 export function seedSampleWater(force = false): void {

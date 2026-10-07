@@ -180,40 +180,58 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
 
 export const CYBER_RECOMMENDED_DISH = getDailyRecommendedDish();
 
-// Helper function to compress and downscale images client-side
-const compressImage = (base64Str: string, mimeType: string, maxDim = 1200, quality = 0.8): Promise<string> => {
+// Helper function to compress and downscale images client-side for rapid transmission & Vercel serverless safety
+const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDim = 960, quality = 0.72): Promise<string> => {
   return new Promise((resolve) => {
+    if (!base64Str || !base64Str.startsWith("data:")) {
+      return resolve(base64Str);
+    }
+
     const img = new Image();
-    img.src = base64Str;
     img.onload = () => {
-      let width = img.width;
-      let height = img.height;
-      let qualityTarget = quality;
+      try {
+        let width = img.width;
+        let height = img.height;
 
-      if (width > maxDim || height > maxDim) {
-        if (width > height) {
-          height = Math.round((height * maxDim) / width);
-          width = maxDim;
-        } else {
-          width = Math.round((width * maxDim) / height);
-          height = maxDim;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
         }
-      }
 
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", qualityTarget));
-      } else {
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, width);
+        canvas.height = Math.max(1, height);
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL("image/jpeg", quality);
+          // If still over 1.2MB, downscale one more pass
+          if (compressed.length > 1.2 * 1024 * 1024) {
+            const smallCanvas = document.createElement("canvas");
+            smallCanvas.width = Math.round(width * 0.75);
+            smallCanvas.height = Math.round(height * 0.75);
+            const sCtx = smallCanvas.getContext("2d");
+            if (sCtx) {
+              sCtx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
+              return resolve(smallCanvas.toDataURL("image/jpeg", 0.65));
+            }
+          }
+          return resolve(compressed);
+        }
+        resolve(base64Str);
+      } catch (err) {
         resolve(base64Str);
       }
     };
     img.onerror = () => {
       resolve(base64Str);
     };
+    img.src = base64Str;
   });
 };
 
@@ -312,6 +330,7 @@ export default function App() {
 
   // Active translation selector
   const currentLang = userProfile.language || "en";
+  const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   // Synchronize document language and direction
@@ -632,40 +651,49 @@ export default function App() {
   // Trigger Scanner Execution
   const triggerScan = async (base64Image?: string, mime?: string) => {
     if (!base64Image) {
-      setScanError("Please upload an image or start the live camera to capture a nutrition label.");
+      setScanError(isFa ? "لطفاً یک تصویر بارگذاری کنید یا دوربین را فعال نمایید." : "Please upload an image or start the live camera to capture a nutrition label.");
       return;
     }
 
     setIsScanning(true);
     setScanError(null);
 
-    const sizeInMB = base64Image.length / (1024 * 1024);
-    console.log("%c[NutriScan] Starting scanning request...", "color: #4A5D4E; font-weight: bold; font-size: 13px;");
-    console.log(`- Image Payload Size: ${(base64Image.length / 1024).toFixed(2)} KB (${sizeInMB.toFixed(2)} MB)`);
+    // Auto-compress safety check if payload is still large
+    let finalBase64 = base64Image;
+    if (finalBase64.length > 1.5 * 1024 * 1024) {
+      try {
+        finalBase64 = await compressImage(finalBase64, mime || "image/jpeg", 800, 0.65);
+      } catch (e) {
+        // keep as is
+      }
+    }
+
+    const sizeInMB = finalBase64.length / (1024 * 1024);
+    console.log("%c[NutriScan] Starting scanning request...", "color: #ff3e00; font-weight: bold; font-size: 13px;");
+    console.log(`- Image Payload Size: ${(finalBase64.length / 1024).toFixed(2)} KB (${sizeInMB.toFixed(2)} MB)`);
     console.log(`- MIME Type: ${mime || "image/jpeg"}`);
 
-    if (sizeInMB > 4.0) {
-      console.warn(
-        `%c[NutriScan Warning] Large payload size of ${sizeInMB.toFixed(2)}MB detected. ` +
-        `Vercel serverless functions have a strict 4.5MB payload limit. ` +
-        `If this request fails with a 500 or 413 error, try uploading a smaller image or compression might have failed.`,
-        "color: orange; font-weight: bold;"
-      );
-    }
+    const abortController = new AbortController();
+    const abortTimeout = setTimeout(() => {
+      abortController.abort();
+    }, 45000);
 
     try {
       const response = await fetch("/api/scan-label", {
         method: "POST",
+        signal: abortController.signal,
         headers: {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          imageBase64: base64Image,
+          imageBase64: finalBase64,
           mimeType: mime || "image/jpeg",
           language: currentLang,
           exchangeRateTomanPerUSD: userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
         })
       });
+
+      clearTimeout(abortTimeout);
 
       console.log(`%c[NutriScan] Server responded with status: ${response.status} ${response.statusText}`, 
         response.ok ? "color: green; font-weight: bold;" : "color: red; font-weight: bold;"
@@ -673,32 +701,25 @@ export default function App() {
 
       const rawText = await response.text();
       console.log(`- Response Content Length: ${rawText.length} bytes`);
-      if (rawText.length > 0) {
-        console.log(`- Response Sample (first 300 chars):`, rawText.substring(0, 300));
-      }
 
       if (!response.ok) {
-        let serverErrorDetails = "";
         let errMsg = "Failed to scan label";
         try {
           const errJson = JSON.parse(rawText);
           errMsg = errJson.error || errMsg;
-          serverErrorDetails = errJson.details || JSON.stringify(errJson, null, 2);
         } catch (e) {
-          errMsg = `Server Error (${response.status}): ${response.statusText || "Internal Server Error"}`;
-          serverErrorDetails = rawText;
+          if (response.status === 504) {
+            errMsg = isFa
+              ? "زمان پردازش سرور به پایان رسید (Vercel Timeout). تصویر فشرده شد؛ لطفاً مجدداً امتحان کنید."
+              : "Server analysis timed out (Vercel 504 Timeout). The image was compressed; please try again.";
+          } else if (response.status === 413) {
+            errMsg = isFa
+              ? "حجم تصویر برای سرور ورسل بیش از حد بزرگ است (413 Payload Too Large)."
+              : "Image size exceeds Vercel upload limit (413 Payload Too Large).";
+          } else {
+            errMsg = `Server Error (${response.status}): ${response.statusText || "Internal Server Error"}`;
+          }
         }
-
-        console.error(
-          `%c[NutriScan Scanner Error Detail]\n` +
-          `----------------------------------------\n` +
-          `HTTP Status: ${response.status}\n` +
-          `Status Text: ${response.statusText}\n` +
-          `Error Message: ${errMsg}\n` +
-          `Raw Server Output:\n${serverErrorDetails}\n` +
-          `----------------------------------------`,
-          "color: #ff3333; font-weight: bold;"
-        );
 
         throw new Error(errMsg);
       }
@@ -707,14 +728,11 @@ export default function App() {
       try {
         data = JSON.parse(rawText);
       } catch (jsonErr: any) {
-        console.error("%c[NutriScan] JSON Parsing Error on client side! Response was not valid JSON.", "color: red; font-weight: bold;");
-        console.error("Parse Error message:", jsonErr.message);
-        console.error("Invalid raw content that failed parsing:", rawText);
-        throw new Error("Invalid response received from the server. Please see developer console for raw details.");
+        console.error("%c[NutriScan] JSON Parsing Error on client side!", "color: red; font-weight: bold;");
+        throw new Error(isFa ? "پاسخ نامعتبر از سرور دریافت شد." : "Invalid response received from the server.");
       }
 
       console.log("%c[NutriScan] Successfully analyzed food label!", "color: green; font-weight: bold;");
-      console.log("Extracted Label Data:", data);
 
       if (data.isDemoFallback && (data as any).originalScanError) {
         console.warn(
@@ -740,16 +758,14 @@ export default function App() {
       setPortionServings(1);
       setShowResultDetail(true);
     } catch (err: any) {
-      console.error(
-        `%c[NutriScan Execution Exception]\n` +
-        `----------------------------------------\n` +
-        `Exception Name: ${err.name || "Error"}\n` +
-        `Exception Message: ${err.message || String(err)}\n` +
-        `Stack Trace:\n${err.stack || "N/A"}\n` +
-        `----------------------------------------`,
-        "color: #ff3333; font-weight: bold;"
-      );
-      setScanError(err.message || "An error occurred while analyzing the label.");
+      clearTimeout(abortTimeout);
+      let message = err.message || "An error occurred while analyzing the label.";
+      if (err.name === "AbortError") {
+        message = isFa
+          ? "درخواست به دلیل طولانی شدن زمان پاسخ سرور متوقف شد (Timeout). لطفاً اتصال یا کلید API را بررسی و مجدداً تلاش کنید."
+          : "The scan request timed out. Please check your network or Vercel serverless configuration and try again.";
+      }
+      setScanError(message);
     } finally {
       setIsScanning(false);
     }
@@ -869,20 +885,29 @@ export default function App() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Reset input value so user can upload the same file again if desired
+    event.target.value = "";
+
     const reader = new FileReader();
     reader.onload = async () => {
       const base64 = reader.result as string;
       setIsScanning(true);
       setScanError(null);
       try {
-        const compressed = await compressImage(base64, file.type);
+        const compressed = await compressImage(base64, file.type, 960, 0.72);
         triggerScan(compressed, "image/jpeg");
       } catch (err) {
-        triggerScan(base64, file.type);
+        // Fallback to second pass compression
+        try {
+          const fallbackCompressed = await compressImage(base64, "image/jpeg", 720, 0.65);
+          triggerScan(fallbackCompressed, "image/jpeg");
+        } catch (e) {
+          triggerScan(base64, file.type);
+        }
       }
     };
     reader.onerror = () => {
-      setScanError("Error reading uploaded file.");
+      setScanError(isFa ? "خطا در خواندن فایل بارگذاری‌شده." : "Error reading uploaded file.");
     };
     reader.readAsDataURL(file);
   };
@@ -1243,7 +1268,7 @@ export default function App() {
           />
 
           {/* COLUMN 3: MAIN DISPLAY AREA */}
-          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-16 lg:pb-2">
+          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-20 lg:pb-6">
             {activeTab === "scan" && (
               <ScannerConsoleView
                 userProfile={userProfile}
