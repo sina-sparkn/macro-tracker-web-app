@@ -53,6 +53,7 @@ import {
   formatSmartPrice,
   getPricingTierMultiplier
 } from "./utils/dishLocalization";
+import { INITIAL_SAMPLE_SCANS } from "./utils/sampleScans";
 
 export const TOMAN_PER_USD = 230000;
 
@@ -525,9 +526,21 @@ export default function App() {
       try {
         const parsed = JSON.parse(savedRecentScans);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const norm = normalizeScannedLabel(parsed[0], currentLang, 230000);
-          setRecentScans([norm]);
+          const normList = parsed.map((item) => normalizeScannedLabel(item, currentLang, 230000));
+          setRecentScans(normList);
+        } else {
+          const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, 230000));
+          setRecentScans(sampleList);
+          localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
         }
+      } catch (e) {
+        console.error(e);
+      }
+    } else {
+      const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, 230000));
+      setRecentScans(sampleList);
+      try {
+        localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
       } catch (e) {
         console.error(e);
       }
@@ -582,15 +595,13 @@ export default function App() {
   const saveProfile = (newProfile: UserProfile) => {
     setUserProfile(newProfile);
     localStorage.setItem("nutriscan_profile", JSON.stringify(newProfile));
-    // If language changed, normalize current recent scans to match new language
+    // If language changed, normalize all current recent scans to match new language
     if (recentScans.length > 0) {
-      const updatedRecent = [
-        normalizeScannedLabel(
-          recentScans[0],
-          newProfile.language === "fa" ? "fa" : "en",
-          newProfile.exchangeRateTomanPerUSD || 230000
-        )
-      ];
+      const targetLang = newProfile.language === "fa" ? "fa" : "en";
+      const targetRate = newProfile.exchangeRateTomanPerUSD || 230000;
+      const updatedRecent = recentScans.map((scan) =>
+        normalizeScannedLabel(scan, targetLang, targetRate)
+      );
       setRecentScans(updatedRecent);
       try {
         localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updatedRecent));
@@ -600,26 +611,61 @@ export default function App() {
     }
   };
 
-  // Recent scan persistence helper (stores ONLY the single last scan from camera/upload)
+  // Recent scan persistence helper (stores up to 30 past scans in history log)
   const addRecentScan = (scanned: ScannedLabel) => {
+    const rate = userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD;
     const normalized = normalizeScannedLabel(
       scanned,
       currentLang,
-      userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
+      rate
     );
-    const updated = [normalized];
-    setRecentScans(updated);
-    try {
-      localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updated));
-    } catch (e) {
-      console.error("Error saving recent scan to localStorage:", e);
-    }
+    const itemWithMeta: ScannedLabel = {
+      ...normalized,
+      id: scanned.id || `scan-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      scannedAt: scanned.scannedAt || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setRecentScans((prev) => {
+      const filtered = prev.filter(
+        (item) => (item.id !== itemWithMeta.id) && (item.productName.toLowerCase() !== itemWithMeta.productName.toLowerCase())
+      );
+      const updated = [itemWithMeta, ...filtered].slice(0, 30);
+      try {
+        localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updated));
+      } catch (e) {
+        console.error("Error saving recent scan to localStorage:", e);
+      }
+      return updated;
+    });
   };
 
   const handleClearRecentScans = () => {
     setRecentScans([]);
     try {
       localStorage.removeItem("nutriscan_recent_scans");
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRemoveRecentScan = (idOrName: string) => {
+    setRecentScans((prev) => {
+      const updated = prev.filter((item) => (item.id || item.productName) !== idOrName);
+      try {
+        localStorage.setItem("nutriscan_recent_scans", JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+      return updated;
+    });
+  };
+
+  const handleLoadSampleScans = () => {
+    const rate = userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD;
+    const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, rate));
+    setRecentScans(sampleList);
+    try {
+      localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
     } catch (e) {
       console.error(e);
     }
@@ -636,7 +682,7 @@ export default function App() {
     setShowResultDetail(true);
   };
 
-  const handleQuickLogRecentScan = (scanned: ScannedLabel) => {
+  const handleQuickLogRecentScan = (scanned: ScannedLabel, targetDate?: string, servings = 1) => {
     const rate = (userProfile.exchangeRateTomanPerUSD && userProfile.exchangeRateTomanPerUSD > 0)
       ? userProfile.exchangeRateTomanPerUSD
       : TOMAN_PER_USD;
@@ -647,24 +693,26 @@ export default function App() {
     if (!costToman && costUSD) costToman = Math.round(costUSD * rate);
     if (!costUSD && costToman) costUSD = Number((costToman / rate).toFixed(2));
 
+    const effectiveDate = targetDate || (selectedDiaryDate !== "all" ? selectedDiaryDate : getTodayIsoDate());
+
     const newItem: FoodLogItem = {
-      id: Math.random().toString(36).substr(2, 9),
-      entryDate: getTodayIsoDate(),
+      id: `scan-log-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      entryDate: effectiveDate,
       createdAt: Date.now(),
       productName: normalized.productName,
-      brand: normalized.brand,
+      brand: normalized.brand || (currentLang === "fa" ? "سوابق اسکنر نوتری‌اسکن" : "NutriScan Scan History"),
       foodType: normalized.foodType || "dish",
       cuisine: normalized.cuisine,
       loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      servingsCount: 1,
-      servingSizeText: normalized.servingSize,
-      caloriesTotal: Math.round(normalized.calories),
-      proteinTotal: Number(normalized.protein.toFixed(1)),
-      carbsTotal: Number(normalized.totalCarbohydrate.toFixed(1)),
-      fatTotal: Number(normalized.totalFat.toFixed(1)),
-      sodiumTotal: Math.round(normalized.sodium),
-      priceToman: costToman,
-      priceUSD: costUSD
+      servingsCount: servings,
+      servingSizeText: normalized.servingSize || "1 serving",
+      caloriesTotal: Math.round(normalized.calories * servings),
+      proteinTotal: Number((normalized.protein * servings).toFixed(1)),
+      carbsTotal: Number((normalized.totalCarbohydrate * servings).toFixed(1)),
+      fatTotal: Number((normalized.totalFat * servings).toFixed(1)),
+      sodiumTotal: Math.round((normalized.sodium || 0) * servings),
+      priceToman: costToman ? Math.round(costToman * servings) : undefined,
+      priceUSD: costUSD ? Number((costUSD * servings).toFixed(2)) : undefined
     };
 
     persistSingleEntryToSqlite(newItem);
@@ -1350,6 +1398,8 @@ export default function App() {
                 onSelectRecentScan={handleSelectRecentScan}
                 onQuickLogRecentScan={handleQuickLogRecentScan}
                 onClearRecentScans={handleClearRecentScans}
+                onRemoveRecentScan={handleRemoveRecentScan}
+                onLoadSampleScans={handleLoadSampleScans}
               />
             )}
 
@@ -1357,6 +1407,11 @@ export default function App() {
               <DiaryConsoleView
                 diaryItems={selectedDiaryItems}
                 allHistoryItems={diaryItems}
+                recentScans={recentScans}
+                onQuickLogRecentScan={handleQuickLogRecentScan}
+                onSelectRecentScan={handleSelectRecentScan}
+                onRemoveRecentScan={handleRemoveRecentScan}
+                onLoadSampleScans={handleLoadSampleScans}
                 selectedDate={selectedDiaryDate}
                 onSelectDate={setSelectedDiaryDate}
                 dailyTotals={selectedDiaryTotals}

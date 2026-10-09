@@ -1,5 +1,23 @@
 import React, { useState } from "react";
-import { Camera, Upload, Sparkles, AlertTriangle, X, ChevronRight, Utensils, Check, Plus, Info, History, Clock, Trash2, RefreshCw, Calendar } from "lucide-react";
+import {
+  Camera,
+  Upload,
+  Sparkles,
+  AlertTriangle,
+  X,
+  ChevronRight,
+  Utensils,
+  Check,
+  Plus,
+  Info,
+  History,
+  Clock,
+  Trash2,
+  RefreshCw,
+  Calendar,
+  Search,
+  Flame
+} from "lucide-react";
 import { ScannedLabel, UserProfile } from "../types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "../worldFoods";
 import { TRANSLATIONS } from "../translations";
@@ -24,6 +42,8 @@ interface ScannerConsoleViewProps {
   onSelectRecentScan: (item: ScannedLabel) => void;
   onQuickLogRecentScan: (item: ScannedLabel) => void;
   onClearRecentScans: () => void;
+  onRemoveRecentScan?: (idOrName: string) => void;
+  onLoadSampleScans?: () => void;
 }
 
 export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
@@ -42,7 +62,9 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   onLogRecommendedDish,
   onSelectRecentScan,
   onQuickLogRecentScan,
-  onClearRecentScans
+  onClearRecentScans,
+  onRemoveRecentScan,
+  onLoadSampleScans
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
@@ -50,6 +72,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   const [worldCategory, setWorldCategory] = useState<string>("all");
   const [justLogged, setJustLogged] = useState<boolean>(false);
   const [loggedRecentId, setLoggedRecentId] = useState<string | null>(null);
+  const [historySearch, setHistorySearch] = useState<string>("");
   const [dailyDishOffset, setDailyDishOffset] = useState<number>(0);
 
   const todayRecommendedDish = getDailyRecommendedDish(new Date(), dailyDishOffset);
@@ -71,6 +94,16 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
       setLoggedRecentId((curr) => (curr === id ? null : curr));
     }, 2500);
   };
+
+  const filteredRecentScans = recentScans.filter((item) => {
+    if (!historySearch.trim()) return true;
+    const q = historySearch.toLowerCase();
+    return (
+      item.productName.toLowerCase().includes(q) ||
+      (item.brand && item.brand.toLowerCase().includes(q)) ||
+      (item.cuisine && item.cuisine.toLowerCase().includes(q))
+    );
+  });
 
   const handleLogRecommended = () => {
     if (onLogRecommendedDish) {
@@ -198,6 +231,166 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </div>
         )}
       </section>
+
+      {/* SCAN HISTORY LOG (PREVIOUSLY SCANNED FOODS) */}
+      {recentScans.length > 0 && (
+        <section className="bg-[#111214] border border-[#2a2c31] rounded-xl p-4 sm:p-6 relative overflow-hidden transition-all">
+          {/* SECTION HEADER */}
+          <div className="flex items-center justify-between gap-3 mb-4 border-b border-[#2a2c31] pb-3.5">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-[#ff3e00]/15 border border-[#ff3e00]/40 flex items-center justify-center text-[#ff3e00] shrink-0">
+                <History className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              <div className="flex items-center gap-2">
+                <h2 className="font-syne text-base sm:text-lg font-extrabold text-[#e0e0e0] leading-snug">
+                  {t.scanHistory}
+                </h2>
+                <span className="bg-[#ff3e00]/20 text-[#ff3e00] border border-[#ff3e00]/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full">
+                  {isFa ? `${recentScans.length.toLocaleString("fa-IR")} مورد` : `${recentScans.length} Scans`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        {/* SEARCH BAR IF >= 3 ITEMS */}
+        {recentScans.length >= 3 && (
+          <div className="mb-4 relative">
+            <Search className="w-4 h-4 text-[#707070] absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              value={historySearch}
+              onChange={(e) => setHistorySearch(e.target.value)}
+              placeholder={t.searchScanHistory}
+              className="w-full bg-[#18191d] border border-[#2a2c31] rounded-lg pl-9 pr-9 rtl:pl-9 rtl:pr-9 py-2 text-xs text-[#e0e0e0] placeholder-[#707070] focus:border-[#ff3e00] focus:outline-none transition-colors"
+            />
+            {historySearch && (
+              <button
+                type="button"
+                onClick={() => setHistorySearch("")}
+                className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 text-[#707070] hover:text-[#e0e0e0] p-1 cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* SCAN HISTORY CARDS */}
+        {filteredRecentScans.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {filteredRecentScans.map((item) => {
+              const id = item.id || item.productName;
+              const isJustLogged = loggedRecentId === id;
+              return (
+                <div
+                  key={id}
+                  className="bg-[#18191d] border border-[#2a2c31] hover:border-[#ff3e00]/60 rounded-xl p-4 flex flex-col justify-between transition-all group relative overflow-hidden"
+                >
+                  <div>
+                    {/* TOP META ROW */}
+                    <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-[#707070] mb-1.5">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Clock className="w-3 h-3 text-[#ff3e00] shrink-0" />
+                        <span className="truncate">{item.scannedAt || (isFa ? "ثبت‌شده" : "Scanned")}</span>
+                      </div>
+                      {item.cuisine && (
+                        <span className="px-1.5 py-0.5 rounded bg-[#2a2c31]/60 text-[#a1a1aa] text-[9px] shrink-0">
+                          {item.cuisine}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* PRODUCT NAME & BRAND */}
+                    <h3 className="font-bold text-sm text-[#e0e0e0] group-hover:text-[#ff3e00] transition-colors line-clamp-1 mb-1">
+                      {item.productName}
+                    </h3>
+                    <p className="text-xs text-[#707070] truncate mb-3">
+                      {item.brand || (item.foodType === "beverage" ? (isFa ? "نوشیدنی" : "Beverage") : (isFa ? "وعده غذایی" : "Meal Dish"))}
+                    </p>
+
+                    {/* NUTRITION & PRICE METRICS */}
+                    <div className="grid grid-cols-3 gap-2 bg-[#111214] p-2.5 rounded-lg border border-[#2a2c31] mb-3 font-mono text-center">
+                      <div className="min-w-0">
+                        <span className="text-[9px] text-[#707070] block">{isFa ? "کالری" : "Calories"}</span>
+                        <span className="font-bold text-xs text-[#ff3e00] tabular-nums block truncate">
+                          {isFa ? item.calories.toLocaleString("fa-IR") : item.calories}
+                        </span>
+                      </div>
+                      <div className="min-w-0 border-x border-[#2a2c31]">
+                        <span className="text-[9px] text-[#707070] block">{isFa ? "پروتئین" : "Protein"}</span>
+                        <span className="font-bold text-xs text-[#38bdf8] tabular-nums block truncate">
+                          {item.protein}g
+                        </span>
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[9px] text-[#707070] block">{isFa ? "قیمت" : "Price"}</span>
+                        <span className="font-bold text-[11px] text-[#22c55e] tabular-nums block truncate">
+                          {formatPrice(item.estimatedPrice?.amountToman, item.estimatedPrice?.amountUSD)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ACTION BUTTONS: ADD TO DIARY & DETAILS */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#2a2c31]">
+                    <button
+                      onClick={() => handleQuickLogRecent(item)}
+                      type="button"
+                      aria-label={`${t.addToDiary}: ${item.productName}`}
+                      className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-mono flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                        isJustLogged
+                          ? "!bg-emerald-500 !text-black border !border-emerald-400"
+                          : "bg-[#ff3e00] hover:bg-[#ff5722] text-black border border-[#ff3e00]"
+                      }`}
+                    >
+                      {isJustLogged ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>{t.addedToDiary}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                          <span>{t.addToDiary}</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => onSelectRecentScan(item)}
+                      type="button"
+                      aria-label={`${t.viewDetails}: ${item.productName}`}
+                      title={t.viewDetails}
+                      className="p-2 rounded-lg bg-[#23252a] hover:bg-[#2e3138] text-[#e0e0e0] border border-[#2a2c31] hover:border-[#ff3e00] transition-colors cursor-pointer"
+                    >
+                      <Utensils className="w-3.5 h-3.5 text-[#ff3e00]" />
+                    </button>
+
+                    {onRemoveRecentScan && (
+                      <button
+                        onClick={() => onRemoveRecentScan(id)}
+                        type="button"
+                        aria-label={`${t.removeFromHistory}: ${item.productName}`}
+                        title={t.removeFromHistory}
+                        className="p-2 rounded-lg bg-[#23252a] hover:bg-red-950/40 text-[#707070] hover:text-red-400 border border-[#2a2c31] hover:border-red-600/40 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-6 px-4 bg-[#18191d] border border-dashed border-[#2a2c31] rounded-xl">
+            <h4 className="text-xs text-[#707070]">
+              {t.noRecentScans}
+            </h4>
+          </div>
+        )}
+      </section>
+      )}
 
       {/* FEATURED MEAL CARD (CYBER CONSOLE ARCHITECTURE) */}
       <section className="bg-[#111214] border border-[#2a2c31] rounded-xl p-5 sm:p-6 relative overflow-hidden">

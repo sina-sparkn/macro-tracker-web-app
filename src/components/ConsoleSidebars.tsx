@@ -499,19 +499,6 @@ export const VitalsPane: React.FC<{
           </button>
         </div>
       </div>
-
-      {/* SECTION 3: HISTORY LOG SNIPPET */}
-      <div className="mt-1 pt-3 border-t border-[#2a2c31]">
-        <div className="bg-[#111214] border border-dashed border-[#2a2c31] rounded-xl p-3.5">
-          <span className="meta">{isFa ? "تاریخچه_اسکن" : "History_Log"}</span>
-          <div className="mt-1.5 text-xs text-[#e0e0e0] font-semibold truncate">
-            {isFa ? "مقلوبه بادمجان و گوشت" : "Eggplant & Beef Makloubeh"}
-          </div>
-          <div className="font-mono text-xs text-[#ff3e00] font-bold mt-0.5">
-            580 KCAL
-          </div>
-        </div>
-      </div>
     </aside>
   );
 };

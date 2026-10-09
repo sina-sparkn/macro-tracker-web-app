@@ -16,8 +16,10 @@ import {
   Droplets,
   GlassWater,
   Flame,
+  History,
+  Utensils,
 } from "lucide-react";
-import { FoodLogItem, DailyTotals, UserProfile } from "../types";
+import { FoodLogItem, DailyTotals, UserProfile, ScannedLabel } from "../types";
 import { TRANSLATIONS } from "../translations";
 import { formatSmartPrice } from "../utils/dishLocalization";
 
@@ -31,6 +33,11 @@ export interface SqliteDbStats {
 interface DiaryConsoleViewProps {
   diaryItems: FoodLogItem[];
   allHistoryItems: FoodLogItem[];
+  recentScans?: ScannedLabel[];
+  onQuickLogRecentScan?: (item: ScannedLabel, targetDate?: string, servings?: number) => void;
+  onSelectRecentScan?: (item: ScannedLabel) => void;
+  onRemoveRecentScan?: (idOrName: string) => void;
+  onLoadSampleScans?: () => void;
   selectedDate: string; // YYYY-MM-DD or "all"
   onSelectDate: (date: string) => void;
   dailyTotals: DailyTotals;
@@ -91,6 +98,11 @@ function formatWeekdayShort(isoDate: string, isFa: boolean): string {
 export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   diaryItems,
   allHistoryItems,
+  recentScans = [],
+  onQuickLogRecentScan,
+  onSelectRecentScan,
+  onRemoveRecentScan,
+  onLoadSampleScans,
   selectedDate,
   onSelectDate,
   dailyTotals,
@@ -112,6 +124,38 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     userProfile.exchangeRateTomanPerUSD > 0
       ? userProfile.exchangeRateTomanPerUSD
       : 230000;
+
+  // Scan History Quick-Add Modal State
+  const [showScanHistoryModal, setShowScanHistoryModal] = useState(false);
+  const [scanHistoryTargetDate, setScanHistoryTargetDate] = useState(() =>
+    selectedDate === "all" ? getLocalIsoDate(0) : selectedDate,
+  );
+  const [scanHistorySearch, setScanHistorySearch] = useState("");
+  const [loggedScanHistoryId, setLoggedScanHistoryId] = useState<string | null>(null);
+  const [scanHistoryServings, setScanHistoryServings] = useState<Record<string, number>>({});
+
+  const handleAddScanToDiary = (item: ScannedLabel, servings = 1) => {
+    if (onQuickLogRecentScan) {
+      const targetDate = scanHistoryTargetDate || (selectedDate !== "all" ? selectedDate : getLocalIsoDate(0));
+      onQuickLogRecentScan(item, targetDate, servings);
+      const id = item.id || item.productName;
+      setLoggedScanHistoryId(id);
+      setTimeout(() => {
+        setLoggedScanHistoryId((curr) => (curr === id ? null : curr));
+      }, 2500);
+    }
+  };
+
+  const filteredScanHistoryItems = useMemo(() => {
+    if (!scanHistorySearch.trim()) return recentScans;
+    const q = scanHistorySearch.toLowerCase();
+    return recentScans.filter(
+      (item) =>
+        item.productName.toLowerCase().includes(q) ||
+        (item.brand && item.brand.toLowerCase().includes(q)) ||
+        (item.cuisine && item.cuisine.toLowerCase().includes(q))
+    );
+  }, [recentScans, scanHistorySearch]);
 
   // Histogram view controls
   const [histogramMode, setHistogramMode] = useState<
@@ -636,6 +680,24 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          {recentScans && recentScans.length > 0 && (
+            <button
+              onClick={() => {
+                setScanHistoryTargetDate(selectedDate === "all" ? getLocalIsoDate(0) : selectedDate);
+                setShowScanHistoryModal(true);
+              }}
+              type="button"
+              className="px-3.5 py-2 bg-[#18191d] hover:bg-[#23252a] text-[#e0e0e0] border border-[#2a2c31] hover:border-[#ff3e00] font-bold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+              title={t.addFromScanHistory}
+            >
+              <History className="w-4 h-4 text-[#ff3e00]" />
+              <span>{t.addFromScanHistory}</span>
+              <span className="bg-[#ff3e00] text-black text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-full min-w-4 text-center">
+                {isFa ? recentScans.length.toLocaleString("fa-IR") : recentScans.length}
+              </span>
+            </button>
+          )}
+
           <button
             onClick={() => {
               setManualDate(
@@ -682,6 +744,265 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         </div>
       </div>
 
+      {/* SCAN HISTORY QUICK-ADD MODAL */}
+      {showScanHistoryModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in"
+        >
+          <div
+            className="bg-[#111214] border border-[#2a2c31] rounded-2xl max-w-3xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* MODAL HEADER */}
+            <div className="p-4 sm:p-5 border-b border-[#2a2c31] flex items-center justify-between gap-3 bg-[#18191d]">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-[#ff3e00]/15 border border-[#ff3e00]/40 flex items-center justify-center text-[#ff3e00] shrink-0">
+                  <History className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-syne text-base sm:text-lg font-bold text-[#f4f4f5] truncate">
+                      {t.addFromScanHistory}
+                    </h3>
+                    <span className="bg-[#ff3e00]/20 text-[#ff3e00] border border-[#ff3e00]/40 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full shrink-0">
+                      {isFa ? `${recentScans.length.toLocaleString("fa-IR")} مورد` : `${recentScans.length} Scans`}
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#9ca3af] mt-0.5 truncate">
+                    {t.scanHistorySubtitle}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowScanHistoryModal(false)}
+                type="button"
+                className="p-2 text-[#9ca3af] hover:text-white rounded-lg hover:bg-[#27272a] transition-colors cursor-pointer shrink-0"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* CONTROLS: TARGET DATE & SEARCH */}
+            <div className="p-4 border-b border-[#2a2c31] bg-[#18191d] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[#9ca3af] whitespace-nowrap font-medium">
+                  {isFa ? "ثبت در تاریخ:" : "Add to date:"}
+                </span>
+                <input
+                  type="date"
+                  value={scanHistoryTargetDate}
+                  onChange={(e) => setScanHistoryTargetDate(e.target.value)}
+                  className="bg-[#18191d] border border-[#2a2c31] rounded-lg px-2.5 py-1.5 text-xs text-[#e0e0e0] font-mono focus:border-[#ff3e00] focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => setScanHistoryTargetDate(getLocalIsoDate(0))}
+                  className={`px-2 py-1 text-[11px] rounded font-mono border cursor-pointer ${
+                    scanHistoryTargetDate === getLocalIsoDate(0)
+                      ? "bg-[#ff3e00] text-black border-[#ff3e00] font-bold"
+                      : "bg-[#18191d] text-[#9ca3af] border-[#2a2c31] hover:text-white"
+                  }`}
+                >
+                  {isFa ? "امروز" : "Today"}
+                </button>
+              </div>
+
+              <div className="relative flex-1 sm:max-w-xs">
+                <Search className="w-3.5 h-3.5 text-[#707070] absolute left-2.5 rtl:left-auto rtl:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  value={scanHistorySearch}
+                  onChange={(e) => setScanHistorySearch(e.target.value)}
+                  placeholder={t.searchScanHistory}
+                  className="w-full bg-[#18191d] border border-[#2a2c31] rounded-lg pl-8 pr-7 rtl:pl-7 rtl:pr-8 py-1.5 text-xs text-[#e0e0e0] placeholder-[#707070] focus:border-[#ff3e00] focus:outline-none"
+                />
+                {scanHistorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setScanHistorySearch("")}
+                    className="absolute right-2 rtl:right-auto rtl:left-2 top-1/2 -translate-y-1/2 text-[#707070] hover:text-white"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* SCANNED ITEMS LIST */}
+            <div className="p-4 sm:p-5 overflow-y-auto max-h-[58vh] space-y-3">
+              {filteredScanHistoryItems.length > 0 ? (
+                filteredScanHistoryItems.map((item) => {
+                  const id = item.id || item.productName;
+                  const isJustLogged = loggedScanHistoryId === id;
+                  const servings = scanHistoryServings[id] || 1;
+
+                  return (
+                    <div
+                      key={id}
+                      className="bg-[#18191d] border border-[#2a2c31] hover:border-[#ff3e00]/50 rounded-xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 text-[10px] font-mono text-[#707070] mb-1">
+                          <Clock className="w-3 h-3 text-[#ff3e00] shrink-0" />
+                          <span>{item.scannedAt || (isFa ? "ثبت‌شده" : "Scanned")}</span>
+                          {item.cuisine && (
+                            <span className="px-1.5 py-0.2 rounded bg-[#2a2c31] text-[#a1a1aa] text-[9px]">
+                              {item.cuisine}
+                            </span>
+                          )}
+                        </div>
+                        <h4 className="font-bold text-sm text-[#f4f4f5] leading-snug truncate">
+                          {item.productName}
+                        </h4>
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-mono mt-1 text-[#9ca3af]">
+                          <span className="text-[#ff3e00] font-bold">
+                            {Math.round(item.calories * servings)} kcal
+                          </span>
+                          <span>•</span>
+                          <span className="text-[#38bdf8]">
+                            P: {(item.protein * servings).toFixed(1)}g
+                          </span>
+                          <span>•</span>
+                          <span className="text-amber-400">
+                            C: {(item.totalCarbohydrate * servings).toFixed(1)}g
+                          </span>
+                          <span>•</span>
+                          <span className="text-rose-400">
+                            F: {(item.totalFat * servings).toFixed(1)}g
+                          </span>
+                          {item.estimatedPrice && (
+                            <>
+                              <span>•</span>
+                              <span className="text-emerald-400 font-bold">
+                                {formatSmartPrice(
+                                  item.estimatedPrice.amountToman ? item.estimatedPrice.amountToman * servings : undefined,
+                                  item.estimatedPrice.amountUSD ? Number((item.estimatedPrice.amountUSD * servings).toFixed(2)) : undefined,
+                                  userProfile,
+                                  1
+                                )}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* SERVING & ACTION BUTTONS */}
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <div className="flex items-center bg-[#111214] border border-[#2a2c31] rounded-lg">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setScanHistoryServings((prev) => ({
+                                ...prev,
+                                [id]: Math.max(0.5, (prev[id] || 1) - 0.5),
+                              }))
+                            }
+                            className="px-2 py-1 text-xs text-[#9ca3af] hover:text-white"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="px-1.5 text-xs font-mono text-[#e0e0e0] font-bold min-w-6 text-center">
+                            {servings}x
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setScanHistoryServings((prev) => ({
+                                ...prev,
+                                [id]: (prev[id] || 1) + 0.5,
+                              }))
+                            }
+                            className="px-2 py-1 text-xs text-[#9ca3af] hover:text-white"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <button
+                          onClick={() => handleAddScanToDiary(item, servings)}
+                          type="button"
+                          className={`px-4 py-2 rounded-lg text-xs font-bold font-mono flex items-center gap-1.5 transition-all cursor-pointer shadow-sm ${
+                            isJustLogged
+                              ? "!bg-emerald-500 !text-black border !border-emerald-400"
+                              : "bg-[#ff3e00] hover:bg-[#ff5722] text-black border border-[#ff3e00]"
+                          }`}
+                        >
+                          {isJustLogged ? (
+                            <>
+                              <Check className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>{t.addedToDiary}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                              <span>{t.addToDiary}</span>
+                            </>
+                          )}
+                        </button>
+
+                        {onSelectRecentScan && (
+                          <button
+                            onClick={() => {
+                              onSelectRecentScan(item);
+                              setShowScanHistoryModal(false);
+                            }}
+                            type="button"
+                            title={t.viewDetails}
+                            className="p-2 rounded-lg bg-[#23252a] hover:bg-[#2e3138] text-[#e0e0e0] border border-[#2a2c31] hover:border-[#ff3e00] transition-colors cursor-pointer"
+                          >
+                            <Utensils className="w-3.5 h-3.5 text-[#ff3e00]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="text-center py-10 px-4">
+                  <History className="w-10 h-10 text-[#707070] mx-auto mb-2 opacity-60" />
+                  <p className="text-sm font-semibold text-[#f4f4f5] mb-1">
+                    {t.noRecentScans}
+                  </p>
+                  <p className="text-xs text-[#9ca3af] max-w-sm mx-auto mb-4">
+                    {isFa
+                      ? "می‌توانید با دوربین غذا اسکن کنید یا نمونه‌های آماده را بارگذاری نمایید."
+                      : "Scan foods with your camera or load sample scans to use this feature."}
+                  </p>
+                  {onLoadSampleScans && (
+                    <button
+                      onClick={onLoadSampleScans}
+                      type="button"
+                      className="px-4 py-2 bg-[#ff3e00] text-black text-xs font-bold rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>{t.loadSampleScans}</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* MODAL FOOTER */}
+            <div className="p-3.5 sm:p-4 border-t border-[#2a2c31] bg-[#18191d] flex items-center justify-between">
+              <span className="text-[11px] text-[#707070] font-mono">
+                {isFa
+                  ? `افزودن به تاریخ: ${scanHistoryTargetDate}`
+                  : `Target Date: ${scanHistoryTargetDate}`}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowScanHistoryModal(false)}
+                className="px-4 py-1.5 bg-[#27272a] hover:bg-[#3f3f46] text-[#e0e0e0] text-xs font-medium rounded-lg cursor-pointer transition-colors"
+              >
+                {t.cancel}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* INLINE FORM: RECORD PAST OR CUSTOM ENTRY INTO SQLITE */}
       {showAddPastModal && (
         <form
@@ -710,6 +1031,19 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <span className="text-[#9ca3af]">
               {isFa ? "پر کردن سریع:" : "Quick-fill preset:"}
             </span>
+            {recentScans && recentScans.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowScanHistoryModal(true);
+                  setShowAddPastModal(false);
+                }}
+                className="px-2.5 py-1 bg-[#18191d] hover:bg-[#23252a] text-[#ff3e00] border border-[#ff3e00]/50 rounded text-xs font-medium cursor-pointer inline-flex items-center gap-1 shadow-sm"
+              >
+                <History className="w-3.5 h-3.5" />
+                <span>{isFa ? `انتخاب از سوابق اسکن (${recentScans.length})` : `Pick from Scan History (${recentScans.length})`}</span>
+              </button>
+            )}
             {[
               {
                 nameEn: "Ghormeh Sabzi & Rice",
@@ -1856,6 +2190,23 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 : "Scan a meal with your camera, record a past meal entry manually, or load the 7-day sample history into the database."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
+              {recentScans && recentScans.length > 0 && (
+                <button
+                  onClick={() => {
+                    setScanHistoryTargetDate(selectedDate === "all" ? getLocalIsoDate(0) : selectedDate);
+                    setShowScanHistoryModal(true);
+                  }}
+                  type="button"
+                  className="px-5 py-2.5 bg-[#ff3e00] hover:bg-[#ff5722] text-black rounded-lg cursor-pointer text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
+                >
+                  <History className="w-4 h-4 stroke-[2.5]" />
+                  <span>
+                    {isFa
+                      ? `افزودن از سوابق اسکن (${recentScans.length})`
+                      : `Add from Scan History (${recentScans.length})`}
+                  </span>
+                </button>
+              )}
               <button
                 onClick={onGoToScanner}
                 type="button"

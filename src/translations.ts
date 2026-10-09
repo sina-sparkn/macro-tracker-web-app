@@ -135,6 +135,17 @@ export interface AppTranslations {
   themeSystem: string;
   themeAutoSynced: string;
   themeToggleAria: string;
+  scanHistory: string;
+  scanHistorySubtitle: string;
+  addToDiary: string;
+  addedToDiary: string;
+  clearHistory: string;
+  noRecentScans: string;
+  loadSampleScans: string;
+  addFromScanHistory: string;
+  selectServing: string;
+  searchScanHistory: string;
+  removeFromHistory: string;
 }
 
 export const TRANSLATIONS: Record<string, AppTranslations> = {
@@ -275,6 +286,17 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     themeSystem: "System (Device)",
     themeAutoSynced: "Synced with device",
     themeToggleAria: "Toggle light and dark theme",
+    scanHistory: "Scan History Log",
+    scanHistorySubtitle: "Re-add previously scanned meals & foods to your diary with 1 click",
+    addToDiary: "Add to Diary",
+    addedToDiary: "Added to Diary ✓",
+    clearHistory: "Clear History",
+    noRecentScans: "No previously scanned foods in history yet",
+    loadSampleScans: "Load Sample Scans",
+    addFromScanHistory: "Add from Scan History",
+    selectServing: "Serving",
+    searchScanHistory: "Search scan history...",
+    removeFromHistory: "Remove from history",
   },
   fa: {
     scanner: "اسکنر",
@@ -413,5 +435,16 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     themeSystem: "دستگاه (خودکار)",
     themeAutoSynced: "همگام با پوسته دستگاه",
     themeToggleAria: "تغییر حالت تیره و روشن",
+    scanHistory: "سوابق و تاریخچه اسکن‌ها",
+    scanHistorySubtitle: "افزودن سریع غذاهای اسکن‌شده قبلی به یادداشت روزانه با یک کلیک",
+    addToDiary: "ثبت در یادداشت",
+    addedToDiary: "در یادداشت ثبت شد ✓",
+    clearHistory: "پاک کردن تاریخچه",
+    noRecentScans: "هنوز غذایی در تاریخچه اسکن‌های شما ثبت نشده است",
+    loadSampleScans: "بارگذاری نمونه اسکن‌ها",
+    addFromScanHistory: "افزودن از سوابق اسکن",
+    selectServing: "سهم",
+    searchScanHistory: "جستجو در سوابق اسکن...",
+    removeFromHistory: "حذف از تاریخچه",
   }
 };
