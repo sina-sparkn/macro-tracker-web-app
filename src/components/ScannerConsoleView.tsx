@@ -202,26 +202,13 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
       {/* FEATURED MEAL CARD (CYBER CONSOLE ARCHITECTURE) */}
       <section className="bg-[#111214] border border-[#2a2c31] rounded-xl p-5 sm:p-6 relative overflow-hidden">
         {/* Subtle decorative watermark */}
-        <div className="absolute top-3 left-4 font-mono text-4xl sm:text-5xl font-black text-white/[0.02] pointer-events-none select-none">
-          REC_TODAY
-        </div>
+
 
         <div className="relative z-10">
           {/* HEADER & CALORIE BADGE */}
           <div className="flex justify-between items-start gap-4 mb-4">
             <div className="min-w-0 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <span className="meta text-[#ff3e00]">{isFa ? "پیشنهاد_امروز" : "PICKS OF THE DAY"}</span>
-                <button
-                  onClick={() => setDailyDishOffset((prev) => prev + 1)}
-                  type="button"
-                  aria-label={isFa ? "پیشنهاد بعدی" : "Next dish"}
-                  className="px-2.5 py-1 text-xs text-[#707070] hover:text-[#e0e0e0] bg-[#18191d] hover:bg-[#23252a] border border-[#2a2c31] hover:border-[#ff3e00] rounded-md flex items-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <RefreshCw className="w-3 h-3 text-[#ff3e00]" />
-                  <span className="font-mono text-xs">{isFa ? "بعدی" : "Next"}</span>
-                </button>
-              </div>
+
 
               <h3 className="font-black text-xl sm:text-2xl text-[#e0e0e0] my-1.5 leading-snug break-words">
                 {isFa ? todayRecommendedDish.nameFa : todayRecommendedDish.nameEn}
@@ -242,21 +229,21 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
 
           {/* MACRO INDICATOR BARS */}
           <div className="grid grid-cols-3 gap-2 sm:gap-4 my-4 font-mono text-xs">
-            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#3b82f6] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+            <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-[#3b82f6] pl-2.5 rtl:pl-0 rtl:pr-2.5 min-w-0">
               <span className="meta text-[9px] block text-[#707070]">{isFa ? "پروتئین" : "Protein"}</span>
               <span className="font-bold text-sm sm:text-base text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
                 {todayRecommendedDish.protein}g
               </span>
             </div>
 
-            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#eab308] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+            <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-[#3b82f6] pl-2.5 rtl:pl-0 rtl:pr-2.5 min-w-0">
               <span className="meta text-[9px] block text-[#707070]">{isFa ? "کربوهیدرات" : "Carbs"}</span>
               <span className="font-bold text-sm sm:text-base text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
                 {todayRecommendedDish.carbs}g
               </span>
             </div>
 
-            <div className="border-r-2 rtl:border-r-0 rtl:border-l-2 border-[#707070] pr-2.5 rtl:pr-0 rtl:pl-2.5 min-w-0">
+            <div className="border-l-2 rtl:border-l-0 rtl:border-r-2 border-[#3b82f6] pl-2.5 rtl:pl-0 rtl:pr-2.5 min-w-0">
               <span className="meta text-[9px] block text-[#707070]">{isFa ? "هزینه" : "Price"}</span>
               <span className="font-bold text-xs sm:text-sm text-[#e0e0e0] mt-0.5 block truncate tabular-nums">
                 {formatPrice(todayRecommendedDish.priceToman, todayRecommendedDish.priceUSD)}

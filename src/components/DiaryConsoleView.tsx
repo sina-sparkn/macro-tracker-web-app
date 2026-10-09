@@ -1395,8 +1395,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       aria-label={`${bucket.shortLabel}: ${bucket.glasses} glasses (${bucket.ml} ml)`}
                       className={`group flex-1 h-full flex flex-col items-center justify-end cursor-pointer rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
                         isSelected
-                          ? "bg-cyan-950/40 ring-1 ring-cyan-400"
-                          : "hover:bg-[#18191d]/70"
+                          ? "ring-1 ring-cyan-400"
+                          : ""
                       }`}
                     >
                       {/* WATER GLASSES TOP LABEL */}
@@ -1450,7 +1450,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             {/* QUICK WATER LOG / ADJUST FOR SELECTED DATE */}
             <div className="mt-4 p-3.5 bg-[#08090a] border border-cyan-500/25 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-cyan-950/60 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0">
+                <div className="w-9 h-9 rounded-full border border-cyan-500/40 flex items-center justify-center text-cyan-400 shrink-0">
                   <GlassWater className="w-4 h-4 stroke-[2.5]" />
                 </div>
                 <div>
@@ -1461,7 +1461,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                         : `Water Logged for ${formatShortDateLabel(effectiveSelectedDate, false)}`}
                     </span>
                     {effectiveSelectedDate === getLocalIsoDate(0) && (
-                      <span className="px-1.5 py-0.5 text-[10px] rounded bg-cyan-950 text-cyan-300 border border-cyan-500/30 font-mono">
+                      <span className="px-1.5 py-0.5 text-[10px] rounded  text-cyan-300 border border-cyan-500/30 font-mono">
                         {isFa ? "امروز" : "Today"}
                       </span>
                     )}
@@ -1523,7 +1523,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass"}
                   className="px-3 py-1.5 bg-[#18191d] hover:bg-[#27272a] disabled:opacity-30 disabled:cursor-not-allowed text-[#d4d4d8] hover:text-white border border-[#27272a] rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                 >
-                  <Minus className="w-3.5 h-3.5" />
                   <span>{isFa ? "۱-" : "-1"}</span>
                 </button>
                 <button
@@ -1536,10 +1535,10 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     )
                   }
                   aria-label={isFa ? "افزودن ۱ لیوان آب" : "Add 1 glass"}
-                  className="px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900/70 text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                  className="px-3 py-1.5  text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{isFa ? "۱ لیوان" : "1 Glass"}</span>
+                  <span>{isFa ? "۱" : "1"}</span>
                 </button>
               </div>
             </div>
@@ -1567,20 +1566,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 </span>
               </div>
 
-              {dailyWaterBuckets.filter((b) => b.glasses > 0).length < 3 && (
-                <button
-                  type="button"
-                  onClick={handleSeedSampleWater}
-                  className="text-xs text-cyan-400 hover:text-cyan-300 hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>
-                    {isFa
-                      ? `بارگذاری نمونه مصرف آب ${histogramRangeDays.toLocaleString("fa-IR")} روز گذشته`
-                      : `Load ${histogramRangeDays}-Day Sample Hydration`}
-                  </span>
-                </button>
-              )}
+
             </div>
           </div>
         ) : (

@@ -44,7 +44,7 @@ import ScannerConsoleView from "./components/ScannerConsoleView";
 import DiaryConsoleView, { SqliteDbStats } from "./components/DiaryConsoleView";
 import GoalsConsoleView from "./components/GoalsConsoleView";
 import NutritionModal from "./components/NutritionModal";
-import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile } from "./types";
+import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile, ThemeMode, EffectiveTheme } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
 import { RecommendedDish, getDailyRecommendedDish } from "./recommendedDishes";
@@ -238,7 +238,7 @@ const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDi
 export default function App() {
   // Navigation: 'scan' | 'diary' | 'profile'
   const [activeTab, setActiveTab] = useState<"scan" | "diary" | "profile">("scan");
-  
+
   // App State
   const [scannedResult, setScannedResult] = useState<ScannedLabel | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -246,7 +246,7 @@ export default function App() {
   const [scanError, setScanError] = useState<string | null>(null);
   const [portionServings, setPortionServings] = useState<number>(1);
   const [showResultDetail, setShowResultDetail] = useState(false);
-  
+
   // Real Camera State
   const [useRealCamera, setUseRealCamera] = useState(false);
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
@@ -324,6 +324,64 @@ export default function App() {
   };
 
   const [userProfile, setUserProfile] = useState<UserProfile>(DEFAULT_USER_PROFILE);
+
+  // Theme state: defaults to 'system' so it dynamically mirrors the user's device theme
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    if (typeof window !== "undefined") {
+      const savedTheme = localStorage.getItem("nutriscan_theme");
+      if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+        return savedTheme as ThemeMode;
+      }
+    }
+    return "system";
+  });
+
+  const [devicePrefersDark, setDevicePrefersDark] = useState<boolean>(() => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    return true;
+  });
+
+  // Calculate active effective theme
+  const effectiveTheme: EffectiveTheme =
+    themeMode === "system" ? (devicePrefersDark ? "dark" : "light") : themeMode;
+
+  // Listen to device / operating system theme changes
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      setDevicePrefersDark(e.matches);
+    };
+
+    setDevicePrefersDark(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // Synchronize document classes & data-theme attribute
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.remove("dark", "light");
+    root.classList.add(effectiveTheme);
+    root.setAttribute("data-theme", effectiveTheme);
+  }, [effectiveTheme]);
+
+  const handleSelectTheme = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    try {
+      localStorage.setItem("nutriscan_theme", mode);
+    } catch (e) {
+      console.error(e);
+    }
+    setUserProfile((prev) => ({
+      ...prev,
+      themePreference: mode
+    }));
+  };
 
   // Recent Scans List (Persisted in localStorage)
   const [recentScans, setRecentScans] = useState<ScannedLabel[]>([]);
@@ -453,6 +511,7 @@ export default function App() {
             exchangeRateTomanPerUSD: typeof parsed.exchangeRateTomanPerUSD === "number" ? parsed.exchangeRateTomanPerUSD : DEFAULT_USER_PROFILE.exchangeRateTomanPerUSD,
             currency: parsed.currency || DEFAULT_USER_PROFILE.currency,
             language: parsed.language || DEFAULT_USER_PROFILE.language,
+            themePreference: parsed.themePreference || undefined,
             activePreset: parsed.activePreset || undefined
           }));
         }
@@ -695,7 +754,7 @@ export default function App() {
 
       clearTimeout(abortTimeout);
 
-      console.log(`%c[NutriScan] Server responded with status: ${response.status} ${response.statusText}`, 
+      console.log(`%c[NutriScan] Server responded with status: ${response.status} ${response.statusText}`,
         response.ok ? "color: green; font-weight: bold;" : "color: red; font-weight: bold;"
       );
 
@@ -867,7 +926,7 @@ export default function App() {
       }
       canvas.width = width;
       canvas.height = height;
-      
+
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -943,7 +1002,7 @@ export default function App() {
 
     persistSingleEntryToSqlite(newItem);
     setSelectedDiaryDate(todayIso);
-    
+
     // Smooth navigation to diary with feedback
     setShowResultDetail(false);
     setActiveTab("diary");
@@ -1202,11 +1261,15 @@ export default function App() {
 
   return (
     <AndroidFrame dir={currentLang === "fa" ? "rtl" : "ltr"}>
-      <div className="min-h-screen w-full flex flex-col bg-[#08090a] text-[#e0e0e0] console-grid-bg relative select-none" dir={currentLang === "fa" ? "rtl" : "ltr"}>
+      <div className="min-h-screen w-full flex flex-col bg-[#08090a] text-[#e0e0e0]  relative select-none" dir={currentLang === "fa" ? "rtl" : "ltr"}>
         {/* TOP CONSOLE TELEMETRY STRIP */}
         <ConsoleHeader
           userProfile={userProfile}
           dailyTotals={dailyTotals}
+          themeMode={themeMode}
+          effectiveTheme={effectiveTheme}
+          devicePrefersDark={devicePrefersDark}
+          onSelectTheme={handleSelectTheme}
           onToggleLanguage={() => saveProfile({ ...userProfile, language: currentLang === "en" ? "fa" : "en" })}
           onOpenDiary={() => setActiveTab("diary")}
         />
@@ -1268,7 +1331,7 @@ export default function App() {
           />
 
           {/* COLUMN 3: MAIN DISPLAY AREA */}
-          <main className="flex-1 overflow-y-auto bg-[#08090a]/90 flex flex-col min-h-0 pb-20 lg:pb-6">
+          <main className="flex-1 overflow-y-auto bg-transparent flex flex-col min-h-0 pb-20 lg:pb-6">
             {activeTab === "scan" && (
               <ScannerConsoleView
                 userProfile={userProfile}

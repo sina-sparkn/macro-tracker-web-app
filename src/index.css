@@ -7,18 +7,37 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-:root {
+:root,
+html.dark,
+html[data-theme="dark"] {
   --bg: #08090a;
   --surface: #111214;
   --ink: #e0e0e0;
   --accent: #ff3e00;
   --border: #2a2c31;
   --ink-dim: #707070;
+  color-scheme: dark;
+}
+
+html.light,
+html[data-theme="light"] {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --ink: #0f172a;
+  --accent: #ff3e00;
+  --border: #e2e8f0;
+  --ink-dim: #64748b;
+  color-scheme: light;
 }
 
 ::selection {
   background: #ff3e00;
   color: #08090a;
+}
+
+html.light ::selection {
+  background: #ff3e00;
+  color: #ffffff;
 }
 
 /* Base typography: Inter & Vazirmatn for Persian, JetBrains Mono for telemetry */
@@ -30,6 +49,13 @@ body,
   font-family: "Inter", "Vazirmatn", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html.light,
+html.light body,
+html.light #root {
+  background-color: #f8fafc;
+  color: #0f172a;
 }
 
 /* Form controls and button font inheritance */
@@ -258,4 +284,378 @@ textarea {
 .animate-loading-progress {
   animation: loading-progress 1.5s ease-in-out infinite;
 }
+
+/* ==========================================================================
+   COMPREHENSIVE LIGHT THEME DESIGN SYSTEM & HIGH-CONTRAST OVERRIDES
+   ========================================================================== */
+
+/* 1. Global Light Background & Console Grid */
+html.light,
+html[data-theme="light"] {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  color-scheme: light;
+}
+
+html.light body,
+html.light #root,
+html.light .console-grid-bg,
+html.light .dot-bg {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  background-image: 
+    linear-gradient(#e2e8f0 1px, transparent 1px),
+    linear-gradient(90deg, #e2e8f0 1px, transparent 1px) !important;
+}
+
+/* 2. All Core Surfaces & Backgrounds */
+/* Main page level dark surfaces -> light slate */
+html.light .bg-\[\#08090a\],
+html.light [class*="bg-[#08090a]"]:not(.fixed):not([role="dialog"]):not([role="dialog"] *) {
+  background-color: #f8fafc !important;
+}
+
+/* Primary cards, containers, sidebars, headers, mobile dock -> crisp white */
+html.light .bg-\[\#111214\],
+html.light [class*="bg-[#111214]"],
+html.light .bg-\[\#0e1013\],
+html.light [class*="bg-[#0e1013]"],
+html.light .bg-zinc-900,
+html.light .bg-zinc-950 {
+  background-color: #ffffff !important;
+}
+
+/* Secondary cards, inset panels, chips, metric badges -> subtle light slate */
+html.light .bg-\[\#18191d\],
+html.light [class*="bg-[#18191d]"],
+html.light .bg-\[\#1a1c22\],
+html.light [class*="bg-[#1a1c22]"],
+html.light .bg-zinc-800 {
+  background-color: #f1f5f9 !important;
+}
+
+/* Progress tracks, separators, tertiary controls -> clean slate border-shade */
+html.light .bg-\[\#1a1b1e\],
+html.light [class*="bg-[#1a1b1e]"],
+html.light .bg-\[\#1f2126\],
+html.light [class*="bg-[#1f2126]"],
+html.light .bg-\[\#23252a\],
+html.light [class*="bg-[#23252a]"],
+html.light .bg-\[\#27272a\],
+html.light [class*="bg-[#27272a]"] {
+  background-color: #e2e8f0 !important;
+}
+
+html.light .bg-\[\#3f3f46\],
+html.light [class*="bg-[#3f3f46]"] {
+  background-color: #cbd5e1 !important;
+}
+
+/* 3. Text & Typography - High Contrast Slate Palette */
+html.light .text-\[\#e0e0e0\],
+html.light [class*="text-[#e0e0e0]"],
+html.light .text-\[\#f4f4f5\],
+html.light [class*="text-[#f4f4f5]"],
+html.light .text-zinc-100,
+html.light .text-zinc-200 {
+  color: #0f172a !important;
+}
+
+/* Explicit white text that was hardcoded in headers/stats */
+html.light .text-\[\#ffffff\],
+html.light [class*="text-[#ffffff]"] {
+  color: #0f172a !important;
+}
+
+/* Secondary values & labels */
+html.light .text-\[\#d4d4d8\],
+html.light [class*="text-[#d4d4d8]"],
+html.light .text-zinc-300 {
+  color: #1e293b !important;
+}
+
+/* Metadata, descriptions, icon captions */
+html.light .text-\[\#9ca3af\],
+html.light [class*="text-[#9ca3af]"],
+html.light .text-\[\#a1a1aa\],
+html.light [class*="text-[#a1a1aa]"],
+html.light .text-zinc-400 {
+  color: #475569 !important;
+}
+
+html.light .text-\[\#707070\],
+html.light [class*="text-[#707070]"],
+html.light .text-\[\#71717a\],
+html.light [class*="text-[#71717a]"],
+html.light .text-zinc-500,
+html.light .meta {
+  color: #64748b !important;
+}
+
+html.light .text-\[\#52525b\],
+html.light [class*="text-[#52525b]"],
+html.light .text-\[\#3f3f46\],
+html.light [class*="text-[#3f3f46]"] {
+  color: #94a3b8 !important;
+}
+
+/* Ensure headings in light mode are always bold slate-900 */
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0f172a !important;
+}
+
+/* High contrast on primary colored buttons and badges */
+html.light button.btn-cmd,
+html.light .btn-cmd,
+html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]):not([class*="ring"]) {
+  color: #000000 !important;
+}
+html.light .btn-cmd span,
+html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]) span,
+html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]) strong {
+  color: #000000 !important;
+}
+html.light .bg-red-600,
+html.light .bg-red-500 {
+  color: #ffffff !important;
+}
+html.light .bg-red-600 *,
+html.light .bg-red-500 * {
+  color: #ffffff !important;
+}
+html.light .bg-emerald-500,
+html.light .bg-emerald-400 {
+  color: #064e3b !important;
+}
+html.light .bg-cyan-500,
+html.light .bg-cyan-400 {
+  color: #082f49 !important;
+}
+
+/* High contrast colored metrics in light mode */
+html.light .text-sky-400 {
+  color: #0284c7 !important;
+}
+html.light .text-amber-400 {
+  color: #d97706 !important;
+}
+html.light .text-rose-400 {
+  color: #e11d48 !important;
+}
+html.light .text-emerald-400 {
+  color: #059669 !important;
+}
+html.light .text-cyan-400 {
+  color: #0284c7 !important;
+}
+html.light .text-cyan-300 {
+  color: #0369a1 !important;
+}
+
+/* 4. Borders & Dividers */
+html.light .border-\[\#2a2c31\],
+html.light [class*="border-[#2a2c31]"],
+html.light .border-\[\#27272a\],
+html.light [class*="border-[#27272a]"],
+html.light .border-\[\#1f2024\],
+html.light [class*="border-[#1f2024]"],
+html.light .border-zinc-800,
+html.light .border-zinc-700 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-\[\#3f3f46\],
+html.light [class*="border-[#3f3f46]"],
+html.light .border-\[\#707070\],
+html.light [class*="border-[#707070]"] {
+  border-color: #cbd5e1 !important;
+}
+
+html.light .divide-\[\#2a2c31\] > * + *,
+html.light .divide-\[\#27272a\] > * + * {
+  border-color: #e2e8f0 !important;
+}
+
+/* 5. Hover & Interactive States */
+html.light .hover\:bg-\[\#18191d\]:hover {
+  background-color: #f1f5f9 !important;
+}
+html.light .hover\:bg-\[\#23252a\]:hover {
+  background-color: #e2e8f0 !important;
+}
+html.light .hover\:bg-\[\#27272a\]:hover {
+  background-color: #e2e8f0 !important;
+}
+html.light .hover\:bg-\[\#3f3f46\]:hover {
+  background-color: #cbd5e1 !important;
+}
+html.light .hover\:text-\[\#e0e0e0\]:hover,
+html.light .hover\:text-\[\#f4f4f5\]:hover,
+html.light .hover\:text-white:hover {
+  color: #0f172a !important;
+}
+
+/* 6. Form Controls & Sliders */
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+html.light select,
+html.light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+html.light select:focus,
+html.light textarea:focus {
+  border-color: #ff3e00 !important;
+  box-shadow: 0 0 0 2px rgba(255, 62, 0, 0.15) !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+html.light input[type="range"] {
+  background-color: #e2e8f0 !important;
+  accent-color: #ff3e00 !important;
+}
+
+/* 7. Components & Cards Specifics */
+html.light .featured-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+html.light .action-btn {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+html.light .action-btn:hover {
+  background: #f8fafc !important;
+  border-color: #ff3e00 !important;
+}
+
+html.light .row-item {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+html.light .btn-cmd-dim {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+html.light .btn-cmd-dim:hover {
+  background: #e2e8f0 !important;
+  color: #000000 !important;
+}
+
+html.light .water-btn {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+  font-weight: 700 !important;
+}
+
+html.light .water-btn:hover {
+  background: #dbeafe !important;
+  border-color: #93c5fd !important;
+  color: #1e40af !important;
+}
+
+/* 8. Modals, Dialogs & Backdrop Overlays */
+html.light [role="dialog"],
+html.light [aria-modal="true"],
+html.light .fixed.inset-0.z-50 {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+html.light [role="dialog"] > div,
+html.light [aria-modal="true"] > div {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+html.light [role="dialog"] .bg-\[\#18191d\],
+html.light [aria-modal="true"] .bg-\[\#18191d\] {
+  background-color: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+html.light [role="dialog"] .bg-\[\#111214\],
+html.light [aria-modal="true"] .bg-\[\#111214\] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+/* 9. Processing Overlay */
+html.light .fixed.inset-0.bg-\[\#08090a\]\/95 {
+  background-color: rgba(248, 250, 252, 0.95) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* 10. Mobile Bottom Dock */
+html.light nav.fixed.bottom-0 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* 11. SVG Graphics & Charts */
+html.light circle[stroke="#1f2126"] {
+  stroke: #e2e8f0 !important;
+}
+
+/* 12. Water & Calorie Histogram Charts in Light Mode */
+html.light .h-60.bg-\[\#08090a\],
+html.light .h-64.bg-\[\#08090a\],
+html.light .h-72.bg-\[\#08090a\],
+html.light [class*="h-60"][class*="bg-[#08090a]"],
+html.light [class*="h-64"][class*="bg-[#08090a]"],
+html.light [class*="h-72"][class*="bg-[#08090a]"] {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Goal indicator tags on charts */
+html.light span[class*="bg-[#08090a]/9"] {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* 13. Subtle Watermarks in Light Mode */
+html.light [class*="text-white/[0.02]"],
+html.light [class*="text-white/[0.03]"] {
+  color: rgba(15, 23, 42, 0.04) !important;
+}
+
+/* 14. Light Mode Scrollbars */
+html.light ::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #ff3e00;
+}
+
+
 

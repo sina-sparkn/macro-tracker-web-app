@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Flame, Droplets, Plus, Minus, Camera, BookOpen, Sliders } from "lucide-react";
+import { Flame, Droplets, Plus, Minus, Camera, BookOpen, Sliders, PlusIcon } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
 import { formatSmartPrice } from "../utils/dishLocalization";
 
@@ -447,8 +447,11 @@ export const VitalsPane: React.FC<{
 
       {/* SECTION 2: WATER INTAKE */}
       <div className="mt-1 pt-4 border-t border-[#2a2c31]">
-        <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center justify-between mb-1.5 text-blue-500">
+<div className="flex items-center gap-1">
           <span className="meta">{isFa ? "مصرف_آب" : "Water_Intake"}</span>
+          <Droplets className="w-4 h-4 text-[#60a5fa]" />
+</div>
           <span className="font-mono text-xs text-[#60a5fa] font-bold tabular-nums">
             {waterPercent}%
           </span>
@@ -480,10 +483,9 @@ export const VitalsPane: React.FC<{
             type="button"
             onClick={() => handleLogGlasses(1)}
             aria-label={isFa ? "نوشیدن ۱ لیوان آب" : "Drink 1 glass of water"}
-            className="water-btn flex-1 flex items-center justify-center gap-1.5 !mt-0 font-mono text-xs uppercase tracking-wider"
+            className="p-2.5 w-1/2 flex items-center justify-center bg-blue-400/10 text-blue-300 hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-blue-300 rounded-lg transition-colors cursor-pointer"
           >
-            <Droplets className="w-3.5 h-3.5 text-[#60a5fa]" />
-            <span>{isFa ? "نوشیدن ۱+ لیوان" : "DRINK +1 GLASS"}</span>
+            <Plus className="w-3.5 h-3.5 text-blue-500" />
           </button>
 
           <button
@@ -491,7 +493,7 @@ export const VitalsPane: React.FC<{
             onClick={handleDecrementLatest}
             disabled={totalGlasses === 0}
             aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass"}
-            className="p-2.5 bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-colors cursor-pointer"
+            className="p-2.5 w-1/2 flex items-center justify-center bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-colors cursor-pointer"
           >
             <Minus className="w-3.5 h-3.5" />
           </button>

@@ -10,7 +10,7 @@ export default function AndroidFrame({ children, dir = "ltr" }: AndroidFrameProp
     <div
       dir={dir}
       lang={dir === "rtl" ? "fa" : "en"}
-      className="min-h-screen w-full bg-[#08090a] text-[#e0e0e0] console-grid-bg flex flex-col font-sans selection:bg-[#ff3e00] selection:text-[#08090a]"
+      className="min-h-screen w-full bg-[#08090a] text-[#e0e0e0] console-grid-bg flex flex-col font-sans selection:bg-[#ff3e00] selection:text-white dark:selection:text-[#08090a] transition-colors"
     >
       {children}
     </div>
