@@ -129,6 +129,12 @@ export interface AppTranslations {
   unknownBrand: string;
   oneContainer: string;
   dailyValueAbbr: string;
+  theme: string;
+  themeLight: string;
+  themeDark: string;
+  themeSystem: string;
+  themeAutoSynced: string;
+  themeToggleAria: string;
 }
 
 export const TRANSLATIONS: Record<string, AppTranslations> = {
@@ -263,6 +269,12 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     unknownBrand: "Unknown",
     oneContainer: "1 container / serving",
     dailyValueAbbr: "DV",
+    theme: "Theme",
+    themeLight: "Light",
+    themeDark: "Dark",
+    themeSystem: "System (Device)",
+    themeAutoSynced: "Synced with device",
+    themeToggleAria: "Toggle light and dark theme",
   },
   fa: {
     scanner: "اسکنر",
@@ -395,5 +407,11 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     unknownBrand: "نامشخص",
     oneContainer: "۱ سهم / ظرف",
     dailyValueAbbr: "نیاز روزانه",
+    theme: "پوسته",
+    themeLight: "روشن",
+    themeDark: "تیره",
+    themeSystem: "دستگاه (خودکار)",
+    themeAutoSynced: "همگام با پوسته دستگاه",
+    themeToggleAria: "تغییر حالت تیره و روشن",
   }
 };

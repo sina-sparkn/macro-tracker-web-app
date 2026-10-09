@@ -82,6 +82,9 @@ export interface DailyTotals {
   costUSDTotal: number;
 }
 
+export type ThemeMode = "system" | "light" | "dark";
+export type EffectiveTheme = "light" | "dark";
+
 export interface UserProfile {
   name: string;
   calorieGoal: number;
@@ -91,6 +94,7 @@ export interface UserProfile {
   sodiumGoal: number; // in mg
   language?: string; // 'en' | 'fa' | 'es'
   currency?: "IRT" | "USD"; // Toman or USD
+  themePreference?: ThemeMode; // 'system' | 'light' | 'dark'
   dailyBudgetToman?: number;
   dailyBudgetUSD?: number;
   exchangeRateTomanPerUSD?: number; // Auto-synced USD to Toman rate
