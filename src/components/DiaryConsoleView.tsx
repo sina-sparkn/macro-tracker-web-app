@@ -37,7 +37,6 @@ interface DiaryConsoleViewProps {
   onQuickLogRecentScan?: (item: ScannedLabel, targetDate?: string, servings?: number) => void;
   onSelectRecentScan?: (item: ScannedLabel) => void;
   onRemoveRecentScan?: (idOrName: string) => void;
-  onLoadSampleScans?: () => void;
   selectedDate: string; // YYYY-MM-DD or "all"
   onSelectDate: (date: string) => void;
   dailyTotals: DailyTotals;
@@ -47,7 +46,6 @@ interface DiaryConsoleViewProps {
   onDeleteLogItem: (id: string) => void;
   onClearLogs: (dateFilter?: string) => void;
   onAddManualEntry: (entry: Partial<FoodLogItem>) => Promise<void> | void;
-  onSeedSampleHistory: () => Promise<void> | void;
   onGoToScanner: () => void;
 }
 
@@ -102,7 +100,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   onQuickLogRecentScan,
   onSelectRecentScan,
   onRemoveRecentScan,
-  onLoadSampleScans,
   selectedDate,
   onSelectDate,
   dailyTotals,
@@ -112,7 +109,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   onDeleteLogItem,
   onClearLogs,
   onAddManualEntry,
-  onSeedSampleHistory,
   onGoToScanner,
 }) => {
   const currentLang = userProfile.language || "en";
@@ -654,19 +650,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     return getStoredWaterForDate(effectiveSelectedDate);
   }, [effectiveSelectedDate, waterDataVersion]);
 
-  // Seed sample water history if past days are empty
-  const handleSeedSampleWater = () => {
-    const samples = [8, 9, 7, 8, 10, 7, 8, 9, 8, 7, 9, 8, 8, 10];
-    for (let i = 0; i < histogramRangeDays; i++) {
-      const iso = getLocalIsoDate(i);
-      const existing = getStoredWaterForDate(iso);
-      if (existing.glasses === 0) {
-        const sampleGlasses = samples[i % samples.length];
-        updateWaterForDate(iso, sampleGlasses, 8);
-      }
-    }
-  };
-
   return (
     <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-6xl mx-auto w-full pb-24 sm:pb-28 lg:pb-10">
       {/* HEADER STRIP & SQLITE DATABASE STATUS */}
@@ -965,21 +948,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   <p className="text-sm font-semibold text-[#f4f4f5] mb-1">
                     {t.noRecentScans}
                   </p>
-                  <p className="text-xs text-[#9ca3af] max-w-sm mx-auto mb-4">
+                  <p className="text-xs text-[#9ca3af] max-w-sm mx-auto">
                     {isFa
-                      ? "می‌توانید با دوربین غذا اسکن کنید یا نمونه‌های آماده را بارگذاری نمایید."
-                      : "Scan foods with your camera or load sample scans to use this feature."}
+                      ? "غذاهایی که با دوربین اسکن می‌کنید در اینجا نمایش داده می‌شوند و می‌توانید آن‌ها را دوباره به دفترچه اضافه کنید."
+                      : "Foods you scan with the camera will appear here so you can re-add them to your diary anytime."}
                   </p>
-                  {onLoadSampleScans && (
-                    <button
-                      onClick={onLoadSampleScans}
-                      type="button"
-                      className="px-4 py-2 bg-[#ff3e00] text-black text-xs font-bold rounded-lg cursor-pointer inline-flex items-center gap-1.5 shadow-sm"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5" />
-                      <span>{t.loadSampleScans}</span>
-                    </button>
-                  )}
                 </div>
               )}
             </div>
@@ -1657,21 +1630,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   </span>
                 </span>
               </div>
-
-              {allHistoryItems.length < 4 && (
-                <button
-                  type="button"
-                  onClick={onSeedSampleHistory}
-                  className="text-xs text-[#ff3e00] hover:underline font-medium cursor-pointer inline-flex items-center gap-1"
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>
-                    {isFa
-                      ? "بارگذاری داده‌های نمونه ۷ روز گذشته در پایگاه داده"
-                      : "Load 7-Day Sample History into database"}
-                  </span>
-                </button>
-              )}
             </div>
           </div>
         ) : histogramMode === "water" ? (
@@ -2186,8 +2144,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             </h4>
             <p className="text-sm text-[#9ca3af] max-w-md mx-auto mb-5">
               {isFa
-                ? "می‌توانید یک وعده غذایی جدید با دوربین اسکن کنید، وعده‌های گذشته را دستی ثبت نمایید یا داده‌های نمونه ۷ روزه را بارگذاری کنید."
-                : "Scan a meal with your camera, record a past meal entry manually, or load the 7-day sample history into the database."}
+                ? "می‌توانید یک وعده غذایی جدید با دوربین اسکن کنید یا وعده‌های گذشته را به صورت دستی ثبت نمایید."
+                : "Scan a meal with your camera or record a past meal entry manually."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
               {recentScans && recentScans.length > 0 && (
@@ -2223,17 +2181,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? "ثبت دستی وعده در این تاریخ"
                   : "Record Entry for This Date"}
               </button>
-              {allHistoryItems.length === 0 && (
-                <button
-                  onClick={onSeedSampleHistory}
-                  type="button"
-                  className="btn-cmd-dim px-4 py-2.5 cursor-pointer text-xs font-semibold text-[#ff3e00]"
-                >
-                  {isFa
-                    ? "بارگذاری تاریخچه نمونه ۷ روزه"
-                    : "Seed 7-Day Sample Data"}
-                </button>
-              )}
             </div>
           </div>
         ) : (

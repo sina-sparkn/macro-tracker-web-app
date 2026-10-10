@@ -43,7 +43,6 @@ interface ScannerConsoleViewProps {
   onQuickLogRecentScan: (item: ScannedLabel) => void;
   onClearRecentScans: () => void;
   onRemoveRecentScan?: (idOrName: string) => void;
-  onLoadSampleScans?: () => void;
 }
 
 export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
@@ -63,8 +62,7 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   onSelectRecentScan,
   onQuickLogRecentScan,
   onClearRecentScans,
-  onRemoveRecentScan,
-  onLoadSampleScans
+  onRemoveRecentScan
 }) => {
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
@@ -215,19 +213,10 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
         {scanError && (
           <div
             role="alert"
-            className="mt-3 p-3.5 bg-red-950/60 border border-red-700/80 text-red-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-lg"
+            className="mt-3 p-3.5 bg-red-950/60 border border-red-700/80 text-red-200 text-xs sm:text-sm flex items-center gap-2.5 rounded-lg"
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-              <span className="leading-snug">{scanError}</span>
-            </div>
-            <button
-              type="button"
-              onClick={handleOpenRecommendedDetails}
-              className="shrink-0 px-3 py-1.5 bg-red-900/60 hover:bg-red-800 border border-red-600/70 text-white rounded-md text-xs font-medium cursor-pointer transition-colors"
-            >
-              {isFa ? "مشاهده تحلیل نمونه" : "View Sample Analysis"}
-            </button>
+            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+            <span className="leading-snug">{scanError}</span>
           </div>
         )}
       </section>

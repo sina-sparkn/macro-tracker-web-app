@@ -53,7 +53,6 @@ import {
   formatSmartPrice,
   getPricingTierMultiplier
 } from "./utils/dishLocalization";
-import { INITIAL_SAMPLE_SCANS } from "./utils/sampleScans";
 
 export const TOMAN_PER_USD = 230000;
 
@@ -255,44 +254,7 @@ export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
 
   // Food Diary State (backed by SQLite database via /api/diary)
-  const [diaryItems, setDiaryItems] = useState<FoodLogItem[]>([
-    {
-      id: "pre-1",
-      entryDate: getTodayIsoDate(),
-      productName: "Ghormeh Sabzi with Saffron Rice",
-      brand: "Authentic Persian Plate",
-      foodType: "dish",
-      cuisine: "Persian / ایرانی",
-      loggedAt: new Date(Date.now() - 3600000 * 4).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      servingsCount: 1,
-      servingSizeText: "1 plate (350g)",
-      caloriesTotal: 420,
-      proteinTotal: 28,
-      carbsTotal: 38,
-      fatTotal: 16,
-      sodiumTotal: 480,
-      priceToman: 950000,
-      priceUSD: 4.13
-    },
-    {
-      id: "pre-2",
-      entryDate: getTodayIsoDate(),
-      productName: "Almond Milk (Unsweetened)",
-      brand: "Earth's Own",
-      foodType: "beverage",
-      cuisine: "International",
-      loggedAt: new Date(Date.now() - 3600000 * 2).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      servingsCount: 1,
-      servingSizeText: "1 cup (240ml)",
-      caloriesTotal: 35,
-      proteinTotal: 1,
-      carbsTotal: 1,
-      fatTotal: 3,
-      sodiumTotal: 160,
-      priceToman: 280000,
-      priceUSD: 1.22
-    }
-  ]);
+  const [diaryItems, setDiaryItems] = useState<FoodLogItem[]>([]);
 
   const [selectedDiaryDate, setSelectedDiaryDate] = useState<string>(() => getTodayIsoDate());
   const [isSyncingDb, setIsSyncingDb] = useState<boolean>(false);
@@ -300,8 +262,8 @@ export default function App() {
   const [sqliteStats, setSqliteStats] = useState<SqliteDbStats>({
     engine: "SQLite 3 (WAL)",
     fileName: "nutriscan.sqlite",
-    totalEntries: 2,
-    activeDays: 1
+    totalEntries: 0,
+    activeDays: 0
   });
 
   // User Goals/Profile (Default)
@@ -438,8 +400,9 @@ export default function App() {
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data.entries)) {
-            setDiaryItems(data.entries);
-            localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
+            const cleanEntries = data.entries.filter((entry: FoodLogItem) => !entry.id?.startsWith("pre-") && !entry.id?.startsWith("sql-seed-"));
+            setDiaryItems(cleanEntries);
+            localStorage.setItem("nutriscan_diary", JSON.stringify(cleanEntries));
           }
           if (data.stats) {
             setSqliteStats(data.stats);
@@ -457,7 +420,9 @@ export default function App() {
         try {
           const parsed = JSON.parse(savedDiary);
           if (Array.isArray(parsed)) {
-            setDiaryItems(parsed);
+            const cleanParsed = parsed.filter((entry: FoodLogItem) => !entry.id?.startsWith("pre-") && !entry.id?.startsWith("sql-seed-"));
+            setDiaryItems(cleanParsed);
+            localStorage.setItem("nutriscan_diary", JSON.stringify(cleanParsed));
           }
         } catch (e) {
           console.error(e);
@@ -526,21 +491,22 @@ export default function App() {
       try {
         const parsed = JSON.parse(savedRecentScans);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          const normList = parsed.map((item) => normalizeScannedLabel(item, currentLang, 230000));
+          const userScans = parsed.filter((item: any) => !item.id?.startsWith("scan-sample-"));
+          const normList = userScans.map((item) => normalizeScannedLabel(item, currentLang, 230000));
           setRecentScans(normList);
+          localStorage.setItem("nutriscan_recent_scans", JSON.stringify(normList));
         } else {
-          const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, 230000));
-          setRecentScans(sampleList);
-          localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
+          setRecentScans([]);
+          localStorage.setItem("nutriscan_recent_scans", JSON.stringify([]));
         }
       } catch (e) {
         console.error(e);
+        setRecentScans([]);
       }
     } else {
-      const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, 230000));
-      setRecentScans(sampleList);
+      setRecentScans([]);
       try {
-        localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
+        localStorage.setItem("nutriscan_recent_scans", JSON.stringify([]));
       } catch (e) {
         console.error(e);
       }
@@ -658,17 +624,6 @@ export default function App() {
       }
       return updated;
     });
-  };
-
-  const handleLoadSampleScans = () => {
-    const rate = userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD;
-    const sampleList = INITIAL_SAMPLE_SCANS.map((item) => normalizeScannedLabel(item, currentLang, rate));
-    setRecentScans(sampleList);
-    try {
-      localStorage.setItem("nutriscan_recent_scans", JSON.stringify(sampleList));
-    } catch (e) {
-      console.error(e);
-    }
   };
 
   const handleSelectRecentScan = (item: ScannedLabel) => {
@@ -1080,28 +1035,6 @@ export default function App() {
     await persistSingleEntryToSqlite(newItem);
   };
 
-  // Seed 7-day sample history in SQLite
-  const handleSeedSampleHistory = async () => {
-    setIsSyncingDb(true);
-    try {
-      const res = await fetch("/api/diary/seed", { method: "POST" });
-      if (res.ok) {
-        const data = await res.json();
-        if (Array.isArray(data.entries)) {
-          setDiaryItems(data.entries);
-          localStorage.setItem("nutriscan_diary", JSON.stringify(data.entries));
-        }
-        if (data.stats) {
-          setSqliteStats(data.stats);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to seed SQLite sample history:", err);
-    } finally {
-      setIsSyncingDb(false);
-    }
-  };
-
   // Delete logged item from SQLite
   const handleDeleteLogItem = async (id: string) => {
     const updated = diaryItems.filter(item => item.id !== id);
@@ -1399,7 +1332,6 @@ export default function App() {
                 onQuickLogRecentScan={handleQuickLogRecentScan}
                 onClearRecentScans={handleClearRecentScans}
                 onRemoveRecentScan={handleRemoveRecentScan}
-                onLoadSampleScans={handleLoadSampleScans}
               />
             )}
 
@@ -1411,7 +1343,6 @@ export default function App() {
                 onQuickLogRecentScan={handleQuickLogRecentScan}
                 onSelectRecentScan={handleSelectRecentScan}
                 onRemoveRecentScan={handleRemoveRecentScan}
-                onLoadSampleScans={handleLoadSampleScans}
                 selectedDate={selectedDiaryDate}
                 onSelectDate={setSelectedDiaryDate}
                 dailyTotals={selectedDiaryTotals}
@@ -1421,7 +1352,6 @@ export default function App() {
                 onDeleteLogItem={handleDeleteLogItem}
                 onClearLogs={handleClearLogs}
                 onAddManualEntry={handleAddManualEntry}
-                onSeedSampleHistory={handleSeedSampleHistory}
                 onGoToScanner={() => setActiveTab("scan")}
               />
             )}
