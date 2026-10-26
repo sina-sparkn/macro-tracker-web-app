@@ -657,8 +657,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         <div>
           <h2 className="font-syne text-2xl sm:text-3xl font-extrabold text-[#f4f4f5] mt-1">
             {isFa
-              ? " خاطرات غذایی و هیستوگرام کالری"
-              : "Dietary Journal & Calorie Intake Histogram"}
+              ? "خاطرات غذایی"
+              : "Food Diary"}
           </h2>
         </div>
 
@@ -1262,29 +1262,29 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <span>
                 {histogramMode === "water"
                   ? isFa
-                    ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه ۸ لیوان`
-                    : `${histogramRangeDays}-day hydration trend vs daily 8-glass target`
+                    ? `${histogramRangeDays} روز اخیر · هدف ۸ لیوان`
+                    : `Last ${histogramRangeDays} days · 8-glass target`
                   : histogramMode === "daily"
                     ? isFa
-                      ? `روند ${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر در برابر هدف روزانه`
-                      : `${histogramRangeDays}-day daily calorie intake vs target cap`
+                      ? `${histogramRangeDays} روز اخیر · هدف روزانه`
+                      : `Last ${histogramRangeDays} days · daily target`
                     : isFa
-                      ? "توزیع فراوانی وعده‌ها بر اساس بازه‌های کالری"
-                      : "Meal frequency distribution across calorie brackets"}
+                      ? "توزیع وعده‌ها بر اساس کالری"
+                      : "Meals by calorie range"}
               </span>
             </div>
             <p className="text-xs text-[#9ca3af] mt-1">
               {histogramMode === "water"
                 ? isFa
-                  ? "روی ستون هر روز کلیک کنید تا مصرف آب آن تاریخ را مشاهده و با دکمه‌های + و - به سادگی تنظیم کنید."
-                  : "Click any day bar to inspect water intake or quickly log/adjust glasses with + and -."
+                  ? "روی هر ستون کلیک کنید تا مصرف آب آن روز را تنظیم کنید."
+                  : "Click a bar to view or adjust water intake for that day."
                 : histogramMode === "daily"
                   ? isFa
-                    ? "روی ستون هر روز کلیک کنید تا وعده‌های ثبت‌شده آن تاریخ را در لیست پایین مشاهده یا ویرایش کنید."
-                    : "Click any day bar to inspect or manage the recorded food entries for that specific date."
+                    ? "روی هر ستون هر روز کلیک کنید تا وعده‌های آن تاریخ را ببینید."
+                    : "Click a bar to view meals logged for that day."
                   : isFa
-                    ? "تحلیل آماری تمام وعده‌های ذخیره‌شده بر اساس حجم کالری هر وعده."
-                    : "Statistical breakdown of all recorded meals grouped by per-meal calorie brackets."}
+                    ? "توزیع آماری وعده‌ها بر اساس کالری."
+                    : "Meal frequency by calorie bracket."}
             </p>
           </div>
 
@@ -2097,11 +2097,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
             <h3 className="text-sm font-bold text-[#f4f4f5] uppercase tracking-wide">
               {selectedDate === "all"
                 ? isFa
-                  ? `تمامی وعده‌های ثبت‌شده در پایگاه داده (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
-                  : `All Database Recorded Meals (${filteredDiaryItems.length})`
+                  ? `همه وعده‌ها (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
+                  : `All Meals (${filteredDiaryItems.length})`
                 : isFa
-                  ? `وعده‌های ثبت‌شده — ${formatShortDateLabel(selectedDate, true)} (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
-                  : `Recorded Meals — ${formatShortDateLabel(selectedDate, false)} (${filteredDiaryItems.length})`}
+                  ? `وعده‌ها — ${formatShortDateLabel(selectedDate, true)} (${filteredDiaryItems.length.toLocaleString("fa-IR")})`
+                  : `Meals — ${formatShortDateLabel(selectedDate, false)} (${filteredDiaryItems.length})`}
             </h3>
           </div>
 
@@ -2202,7 +2202,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-[#9ca3af] mt-1 font-mono tabular-nums">
                         <span className="text-[#d4d4d8] font-sans font-medium">
-                          {formatShortDateLabel(itemDate, isFa)} ({itemDate})
+                          {formatShortDateLabel(itemDate, isFa)}
                         </span>
                         <span aria-hidden="true">·</span>
                         <span className="inline-flex items-center gap-1">

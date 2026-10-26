@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Globe, Flame, Sun, Moon, Laptop, ChevronDown, Check } from "lucide-react";
+import { Globe, Sun, Moon, Laptop, ChevronDown, Check } from "lucide-react";
 import { UserProfile, DailyTotals, ThemeMode, EffectiveTheme } from "../types";
 import { TRANSLATIONS } from "../translations";
 
@@ -76,8 +76,12 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
     <header className="bg-[#111214] border-b border-[#2a2c31] px-3 sm:px-6 h-16 flex items-center justify-between gap-2 sm:gap-3 select-none shrink-0 z-30 transition-colors">
       {/* BRAND & APP IDENTITY */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-[#ff3e00]/10 border border-[#ff3e00]/40 flex items-center justify-center text-[#ff3e00] shrink-0">
-          <Flame className="w-5 h-5 fill-[#ff3e00]" />
+        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#ff3e00]/10 border border-[#ff3e00]/40 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-sm">
+          <img
+            src="/apple-scan-logo.png"
+            alt="NutriScan Logo"
+            className="w-full h-full object-contain filter drop-shadow-sm"
+          />
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2">
           <h1 className="font-extrabold text-[#e0e0e0] text-sm sm:text-lg tracking-tight uppercase truncate">

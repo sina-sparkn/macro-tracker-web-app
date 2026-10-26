@@ -9,7 +9,6 @@ import {
   Upload,
   Plus,
   Trash2,
-  Flame,
   Apple,
   Sparkles,
   CheckCircle2,

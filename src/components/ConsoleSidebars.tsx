@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Flame, Droplets, Plus, Minus, Camera, BookOpen, Sliders, PlusIcon } from "lucide-react";
+import { Droplets, Plus, Minus, Camera, BookOpen, Sliders, PlusIcon } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
 import { formatSmartPrice } from "../utils/dishLocalization";
 
@@ -91,10 +91,7 @@ export const NavPane: React.FC<{
       className="hidden lg:flex w-20 border-r border-[#2a2c31] rtl:border-r-0 rtl:border-l py-6 bg-[#111214] flex-col items-center justify-between shrink-0 select-none z-20"
     >
       <div className="flex flex-col items-center gap-5 w-full">
-        {/* BRAND ICON */}
-        <div className="w-10 h-10 rounded-lg bg-[#ff3e00]/10 border border-[#ff3e00]/40 flex items-center justify-center text-[#ff3e00] mb-1">
-          <Flame className="w-5 h-5 fill-[#ff3e00]" />
-        </div>
+
 
         {/* NAVIGATION TILES */}
         <nav className="flex flex-col items-center gap-4 w-full" role="tablist">
@@ -447,55 +444,79 @@ export const VitalsPane: React.FC<{
 
       {/* SECTION 2: WATER INTAKE */}
       <div className="mt-1 pt-4 border-t border-[#2a2c31]">
-        <div className="flex items-center justify-between mb-1.5 text-blue-500">
-<div className="flex items-center gap-1">
-          <span className="meta">{isFa ? "مصرف_آب" : "Water_Intake"}</span>
-          <Droplets className="w-4 h-4 text-[#60a5fa]" />
-</div>
-          <span className="font-mono text-xs text-[#60a5fa] font-bold tabular-nums">
+        {/* Header row */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1.5">
+            <div className="w-6 h-6 rounded-md bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
+              <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+            </div>
+            <span className="text-xs font-semibold text-[#c0c0c0]">
+              {isFa ? "آب روزانه" : "Daily Water"}
+            </span>
+          </div>
+          <span className={`text-xs font-mono font-bold tabular-nums px-1.5 py-0.5 rounded-md ${
+            waterPercent >= 100
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+              : waterPercent >= 50
+                ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
+                : "bg-[#27272a] text-[#9ca3af] border border-[#2a2c31]"
+          }`}>
             {waterPercent}%
           </span>
         </div>
 
-        <div className="flex justify-between items-baseline my-1.5">
-          <span className="font-mono text-2xl font-extrabold text-[#e0e0e0] tabular-nums">
-            {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}{" "}
-            <small className="text-xs font-normal text-[#707070] font-sans">
+        {/* Glass count + ml */}
+        <div className="flex items-end justify-between mb-3">
+          <div className="flex items-baseline gap-1">
+            <span className="font-mono text-3xl font-extrabold text-[#e8e8e8] tabular-nums leading-none">
+              {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}
+            </span>
+            <span className="text-xs text-[#707070] font-sans">
               / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses} {isFa ? "لیوان" : "gl"}
-            </small>
-          </span>
-          <span className="font-mono text-xs text-[#707070] tabular-nums">
+            </span>
+          </div>
+          <span className="font-mono text-[11px] text-[#707070] tabular-nums bg-[#18191d] border border-[#27272a] px-2 py-0.5 rounded-md">
             {totalGlasses * 250} ml
           </span>
         </div>
 
-        {/* 4px Progress Bar */}
-        <div className="h-1 bg-[#1f2126] rounded-full overflow-hidden my-2.5">
-          <div
-            className="h-full bg-gradient-to-r from-[#3b82f6] to-[#60a5fa] transition-all duration-300"
-            style={{ width: `${Math.min(waterPercent, 100)}%` }}
-          />
+        {/* Segmented glass indicators */}
+        <div className="flex items-center gap-1 mb-3">
+          {Array.from({ length: targetGlasses }).map((_, i) => (
+            <div
+              key={i}
+              className={`flex-1 h-2 rounded-full transition-all duration-300 ${
+                i < totalGlasses
+                  ? totalGlasses >= targetGlasses
+                    ? "bg-emerald-400"
+                    : "bg-cyan-400"
+                  : "bg-[#27272a]"
+              }`}
+            />
+          ))}
         </div>
 
-        {/* Water Action Buttons */}
-        <div className="flex items-center gap-2 mt-2">
+        {/* Action buttons */}
+        <div className="grid grid-cols-2 gap-2 mt-1">
           <button
             type="button"
             onClick={() => handleLogGlasses(1)}
-            aria-label={isFa ? "نوشیدن ۱ لیوان آب" : "Drink 1 glass of water"}
-            className="p-2.5 w-1/2 flex items-center justify-center bg-blue-400/10 text-blue-300 hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-blue-300 rounded-lg transition-colors cursor-pointer"
+            aria-label={isFa ? "نوشیدن ۱ لیوان آب" : "Drink 1 glass"}
+            className="flex items-center justify-center gap-1.5 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
           >
-            <Plus className="w-3.5 h-3.5 text-blue-500" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>{isFa ? "" : " "}</span>
           </button>
 
           <button
             type="button"
             onClick={handleDecrementLatest}
             disabled={totalGlasses === 0}
-            aria-label={isFa ? "کاهش ۱ لیوان آب" : "Remove 1 glass"}
-            className="p-2.5 w-1/2 flex items-center justify-center bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#e0e0e0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-colors cursor-pointer"
+            aria-label={isFa ? "کاهش ۱ لیوان" : "Remove 1 glass"}
+            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#b0b0b0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
           >
-            <Minus className="w-3.5 h-3.5" />
+            <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>{isFa ? "" : ""}</span>
           </button>
         </div>
       </div>
