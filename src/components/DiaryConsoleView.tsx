@@ -480,14 +480,18 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
 
   // Helper to read water for a given date from localStorage
   const getStoredWaterForDate = (isoDate: string) => {
+    const isToday = isoDate === getLocalIsoDate(0);
+    const activeGoal = userProfile.waterGoalGlasses || 8;
     try {
       const rawV2 = localStorage.getItem(`nutriscan_water_v2_${isoDate}`);
       if (rawV2) {
         const parsed = JSON.parse(rawV2);
         const target =
-          typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0
-            ? parsed.targetGlasses
-            : (userProfile.waterGoalGlasses || 8);
+          isToday
+            ? activeGoal
+            : typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0
+              ? parsed.targetGlasses
+              : activeGoal;
         const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
         const totalGlasses = entries.reduce(
           (s: number, e: { glasses?: number }) => s + (Number(e.glasses) || 0),
@@ -505,11 +509,11 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         return {
           glasses: g,
           ml: g * 250,
-          targetGlasses: userProfile.waterGoalGlasses || 8,
+          targetGlasses: activeGoal,
         };
       }
     } catch {}
-    return { glasses: 0, ml: 0, targetGlasses: userProfile.waterGoalGlasses || 8 };
+    return { glasses: 0, ml: 0, targetGlasses: activeGoal };
   };
 
   // Helper to update water for a date
@@ -567,13 +571,17 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     for (let i = histogramRangeDays - 1; i >= 0; i--) {
       const iso = getLocalIsoDate(i);
       const data = getStoredWaterForDate(iso);
-      const target = data.targetGlasses || 8;
+      const target = data.targetGlasses || userProfile.waterGoalGlasses || 8;
       const pct = Math.round((data.glasses / target) * 100);
 
-      let status: "empty" | "under" | "optimal" | "over" = "optimal";
-      if (data.glasses === 0) status = "empty";
-      else if (pct >= 100) status = "optimal";
-      else if (pct < 60) status = "under";
+      let status: "empty" | "under" | "optimal" | "over" = "under";
+      if (data.glasses === 0) {
+        status = "empty";
+      } else if (data.glasses >= target) {
+        status = data.glasses > target * 1.25 ? "over" : "optimal";
+      } else {
+        status = "under";
+      }
 
       days.push({
         date: iso,
@@ -587,7 +595,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
       });
     }
     return days;
-  }, [histogramRangeDays, isFa, waterDataVersion]);
+  }, [histogramRangeDays, isFa, waterDataVersion, userProfile.waterGoalGlasses]);
 
   // Water histogram summary metrics
   const waterHistogramSummary = useMemo(() => {
@@ -597,8 +605,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     );
     const activeDays = dailyWaterBuckets.filter((b) => b.glasses > 0);
     const targetGlasses =
-      dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses ||
       userProfile.waterGoalGlasses ||
+      dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses ||
       8;
     const maxDayGlasses = Math.max(
       ...dailyWaterBuckets.map((b) => b.glasses),
@@ -650,7 +658,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
   const currentSelectedWater = useMemo(() => {
     void waterDataVersion;
     return getStoredWaterForDate(effectiveSelectedDate);
-  }, [effectiveSelectedDate, waterDataVersion]);
+  }, [effectiveSelectedDate, waterDataVersion, userProfile.waterGoalGlasses]);
 
   return (
     <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-6xl mx-auto w-full pb-24 sm:pb-28 lg:pb-10">
@@ -1264,8 +1272,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               <span>
                 {histogramMode === "water"
                   ? isFa
-                    ? `${histogramRangeDays} روز اخیر · هدف ۸ لیوان`
-                    : `Last ${histogramRangeDays} days · 8-glass target`
+                    ? `${histogramRangeDays.toLocaleString("fa-IR")} روز اخیر · هدف ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان (${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml)`
+                    : `Last ${histogramRangeDays} days · ${waterHistogramSummary.targetGlasses}-glass target (${(waterHistogramSummary.targetGlasses * 250).toLocaleString()} ml)`
                   : histogramMode === "daily"
                     ? isFa
                       ? `${histogramRangeDays} روز اخیر · هدف روزانه`
@@ -1413,7 +1421,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   ? waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")
                   : waterHistogramSummary.targetGlasses}{" "}
                 <span className="text-xs font-normal text-[#9ca3af]">
-                  {isFa ? "لیوان (۲۰۰۰ ml)" : "glasses (2,000 ml)"}
+                  {isFa
+                    ? `لیوان (${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml)`
+                    : `glasses (${(waterHistogramSummary.targetGlasses * 250).toLocaleString()} ml)`}
                 </span>
               </span>
             </div>
@@ -1665,20 +1675,16 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                   const isSelected = effectiveSelectedDate === bucket.date;
 
                   let barColorClass = "bg-cyan-500 hover:bg-cyan-400";
-                  let statusText = isFa ? "در حال مصرف" : "In Progress";
-                  if (bucket.status === "empty") {
+                  let statusText = isFa
+                    ? `در حال مصرف (${bucket.percentOfGoal.toLocaleString("fa-IR")}٪)`
+                    : `In Progress (${bucket.percentOfGoal}%)`;
+                  if (bucket.glasses === 0 || bucket.status === "empty") {
                     barColorClass = "bg-[#27272a] hover:bg-[#3f3f46]";
                     statusText = isFa ? "بدون ثبت" : "0 gl";
-                  } else if (
-                    bucket.status === "optimal" ||
-                    bucket.glasses >= bucket.targetGlasses
-                  ) {
+                  } else if (bucket.glasses >= bucket.targetGlasses) {
                     barColorClass =
                       "bg-emerald-400 hover:bg-emerald-300 shadow-[0_0_10px_rgba(52,211,153,0.4)]";
                     statusText = isFa ? "هدف محقق شد" : "Goal Met";
-                  } else if (bucket.status === "under") {
-                    barColorClass = "bg-cyan-600 hover:bg-cyan-500";
-                    statusText = isFa ? "کمتر از هدف" : "Under";
                   }
 
                   return (
@@ -1810,7 +1816,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     updateWaterForDate(
                       effectiveSelectedDate,
                       Math.max(0, currentSelectedWater.glasses - 1),
-                      currentSelectedWater.targetGlasses || 8,
+                      currentSelectedWater.targetGlasses || userProfile.waterGoalGlasses || 8,
                     )
                   }
                   disabled={currentSelectedWater.glasses === 0}
@@ -1825,14 +1831,14 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                     updateWaterForDate(
                       effectiveSelectedDate,
                       currentSelectedWater.glasses + 1,
-                      currentSelectedWater.targetGlasses || 8,
+                      currentSelectedWater.targetGlasses || userProfile.waterGoalGlasses || 8,
                     )
                   }
                   aria-label={isFa ? "افزودن ۱ لیوان آب" : "Add 1 glass"}
                   className="px-3 py-1.5  text-cyan-300 hover:text-cyan-200 border border-cyan-500/40 hover:border-cyan-400 rounded-md font-bold text-xs flex items-center gap-1 cursor-pointer transition-all active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>{isFa ? "۱" : "1"}</span>
+                  <span>{isFa ? "۱+" : "+1"}</span>
                 </button>
               </div>
             </div>
@@ -1855,7 +1861,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-4 border-t border-dashed border-cyan-400" />
                   <span>
-                    {isFa ? "خط هدف ۸ لیوان (۲۰۰۰ ml)" : "Daily 8-Glass Target"}
+                    {isFa
+                      ? `خط هدف ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان (${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml)`
+                      : `Daily ${waterHistogramSummary.targetGlasses}-Glass Target (${(waterHistogramSummary.targetGlasses * 250).toLocaleString()} ml)`}
                   </span>
                 </span>
               </div>

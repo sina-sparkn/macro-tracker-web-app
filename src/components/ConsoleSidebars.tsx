@@ -174,6 +174,9 @@ export const VitalsPane: React.FC<{
 
   // State: daily entries and target
   const [targetGlasses, setTargetGlasses] = useState<number>(() => {
+    if (typeof userProfile.waterGoalGlasses === "number" && userProfile.waterGoalGlasses > 0) {
+      return userProfile.waterGoalGlasses;
+    }
     try {
       const raw = localStorage.getItem(getV2StorageKey());
       if (raw) {
@@ -183,7 +186,7 @@ export const VitalsPane: React.FC<{
         }
       }
     } catch {}
-    return userProfile.waterGoalGlasses && userProfile.waterGoalGlasses > 0 ? userProfile.waterGoalGlasses : 8;
+    return 8;
   });
 
   const [entries, setEntries] = useState<WaterLogEntry[]>(() => {
@@ -270,7 +273,7 @@ export const VitalsPane: React.FC<{
             setEntries(parsed.entries);
           }
           if (typeof parsed.targetGlasses === "number") {
-            setTargetGlasses(parsed.targetGlasses);
+            setTargetGlasses(userProfile.waterGoalGlasses || parsed.targetGlasses);
           }
         }
       } catch {}
@@ -483,7 +486,7 @@ export const VitalsPane: React.FC<{
             </span>
           </div>
           <span className="font-mono text-[11px] text-[#707070] tabular-nums bg-[#18191d] border border-[#27272a] px-2 py-0.5 rounded-md">
-            {totalGlasses * 250} ml
+            {totalGlasses * 250} / {targetGlasses * 250} ml
           </span>
         </div>
 
@@ -512,7 +515,7 @@ export const VitalsPane: React.FC<{
             className="flex items-center justify-center gap-1.5 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
           >
             <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>{isFa ? "" : " "}</span>
+            <span>{isFa ? "+۱ لیوان (۲۵۰ml)" : "+1 Glass (250ml)"}</span>
           </button>
 
           <button
@@ -523,7 +526,7 @@ export const VitalsPane: React.FC<{
             className="flex items-center justify-center gap-1.5 py-2.5 bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#b0b0b0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
           >
             <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>{isFa ? "" : ""}</span>
+            <span>{isFa ? "-۱ لیوان" : "-1 Glass"}</span>
           </button>
         </div>
       </div>
