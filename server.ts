@@ -506,7 +506,7 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
     let successfulModel = "";
     let attempts = 0;
     let lastError: any = null;
-    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
+    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.1-flash-lite"];
     const PER_MODEL_TIMEOUT = 12000; // 12 seconds per candidate model avoids hanging connections
 
     for (const modelCandidate of candidateModels) {

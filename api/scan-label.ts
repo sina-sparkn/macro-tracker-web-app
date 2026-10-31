@@ -365,7 +365,7 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
       },
     });
 
-    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
+    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.1-flash-lite"];
     let responseText = "";
     let successfulModel = "";
     let lastError: any = null;
@@ -475,6 +475,13 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
       } catch (err: any) {
         lastError = err;
         console.warn(`Model ${modelCandidate} failed:`, err.message || String(err));
+        const errStr = String(err).toLowerCase();
+        const isRetryable = err.status === 503 || errStr.includes("503") ||
+                            errStr.includes("unavailable") || errStr.includes("demand") ||
+                            err.status === 429 || errStr.includes("429");
+        if (isRetryable) {
+          await new Promise((resolve) => setTimeout(resolve, 600));
+        }
       }
     }
 
