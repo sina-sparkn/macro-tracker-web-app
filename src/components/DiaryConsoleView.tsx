@@ -2190,23 +2190,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                 : "Scan a meal with your camera, record a past meal entry manually, or load the 7-day sample history into the database."}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-3">
-              {recentScans && recentScans.length > 0 && (
-                <button
-                  onClick={() => {
-                    setScanHistoryTargetDate(selectedDate === "all" ? getLocalIsoDate(0) : selectedDate);
-                    setShowScanHistoryModal(true);
-                  }}
-                  type="button"
-                  className="px-5 py-2.5 bg-[#ff3e00] hover:bg-[#ff5722] text-black rounded-lg cursor-pointer text-xs font-bold flex items-center gap-2 shadow-md transition-colors"
-                >
-                  <History className="w-4 h-4 stroke-[2.5]" />
-                  <span>
-                    {isFa
-                      ? `افزودن از سوابق اسکن (${recentScans.length})`
-                      : `Add from Scan History (${recentScans.length})`}
-                  </span>
-                </button>
-              )}
               <button
                 onClick={onGoToScanner}
                 type="button"
