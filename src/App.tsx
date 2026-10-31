@@ -180,7 +180,7 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
 export const CYBER_RECOMMENDED_DISH = getDailyRecommendedDish();
 
 // Helper function to compress and downscale images client-side for rapid transmission & Vercel serverless safety
-const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDim = 960, quality = 0.72): Promise<string> => {
+const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDim = 1200, quality = 0.82): Promise<string> => {
   return new Promise((resolve) => {
     if (!base64Str || !base64Str.startsWith("data:")) {
       return resolve(base64Str);
@@ -932,7 +932,7 @@ export default function App() {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL("image/jpeg", 0.8);
+        const base64 = canvas.toDataURL("image/jpeg", 0.82);
         stopCamera();
         triggerScan(base64, "image/jpeg");
       }
@@ -955,7 +955,7 @@ export default function App() {
       setIsScanning(true);
       setScanError(null);
       try {
-        const compressed = await compressImage(base64, file.type, 960, 0.72);
+        const compressed = await compressImage(base64, file.type, 1200, 0.82);
         triggerScan(compressed, "image/jpeg");
       } catch (err) {
         // Fallback to second pass compression

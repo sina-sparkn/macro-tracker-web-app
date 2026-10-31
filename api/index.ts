@@ -430,6 +430,7 @@ app.post("/api/scan-label", async (req, res) => {
         ...pool[randomIndex],
         isDemoFallback: true,
         apiKeyMissingNotice: true,
+        modelUsed: "offline-fallback",
       };
       return res.json(fallbackItem);
     }
@@ -444,14 +445,21 @@ app.post("/api/scan-label", async (req, res) => {
 
     let promptString = "";
     if (isFa) {
-      promptString = `دستور حیاتی: شما یک متخصص تغذیه و ارزیاب هزینه مواد غذایی ایرانی هستید.
+      promptString = `دستور حیاتی: شما یک متخصص تغذیه بالینی و ارزیاب دقیق مواد غذایی ایرانی هستید.
 زبان رابط کاربری فارسی است، بنابراین تمامی مقادیر متنی خروجی JSON (شامل productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, ingredientCosts) باید حتماً و بدون استثنا به زبان فارسی روان، اصیل و طبیعی نوشته شوند. هیچ فیلد متنی انگلیسی نباید در خروجی باشد.
 
-تصویر پیوست را با دقت تحلیل کنید. این تصویر می‌تواند یکی از موارد زیر باشد:
+تصویر پیوست را با دقت میلی‌متری و علمی تحلیل کنید:
 ۱. یک غذای آماده، بشقاب غذای رستورانی یا خوراک خانگی (مانند قورمه سبزی، چلو کباب کوبیده، جوجه کباب، دیزی، پیتزا، پاستا، سالاد و غیره).
 ۲. یک محصول بسته‌بندی شده یا جدول ارزش غذایی.
 
-مشخصات غذایی شامل کالری، پروتئین، چربی، کربوهیدرات، فیبر، سدیم و ویتامین‌ها را با دقت تخمین بزنید.
+الگوریتم تخمین تغذیه‌ای دقیق با هدف خطای کمتر از ۸٪ (روش جزء‌به‌جزء):
+۱. تفکیک اجزا و اوزان استاندارد (Bottom-up Decomposition):
+   - ابتدا اجزای تشکیل‌دهنده را به گرم تفکیک و تخمین بزنید (مثلاً ۲۰۰ گرم چلو زعفرانی، ۱۲۰ گرم گوشت گوسفندی، ۱۵۰ گرم خورش سبزی، ۱۵ گرم روغن پخت).
+   - مراجع استاندارد اوزان: دیس استاندارد چلو = ۲۰۰ تا ۲۵۰ گرم برنج پخته (~۲۶۰-۳۲۵ کالری)؛ هر سیخ کوبیده = ۸۰ گرم پخته (~۲۰۰ کالری)؛ جوجه کباب = ۲۰۰ گرم فیله پخته (~۳۳۰ کالری)؛ هر کف دست نان سنگک/بربری = ۱۰۰ گرم (~۲۶۰ کالری).
+۲. قانون تعادل انرژی و ثبات فرمول اتواتر (Atwater Consistency Requirement):
+   - مجموع کالری کل (calories) باید الزاماً با رابطه درشت‌مغذی‌ها منطبق باشد:
+     Calories = (Protein * 4) + (Carbohydrate * 4) + (Fat * 9)
+   - خطای مجاز بین کالری اعلامی و این فرمول باید زیر ۵٪ باشد. از تولید اعداد ناسازگار یا حدسی شدیداً خودداری کنید.
 
 دستورالعمل قیمت‌گذاری واقعی و به‌روز بازار ایران:
 - نرخ مبنای محاسبه: هر ۱ دلار آمریکا = ${userRate.toLocaleString("fa-IR")} تومان.
@@ -465,12 +473,22 @@ app.post("/api/scan-label", async (req, res) => {
 - رتبه‌بندی کیفی سلامت (healthRatingLabel) حتماً به فارسی باشد (مانند "A - عالی"، "B - خوب"، "C - متوسط").
 - خروجی را دقیقاً طبق اسکیما به فرمت JSON تولید کنید. اعداد باید عددی باشند نه رشته.`;
     } else {
-      promptString = `Analyze this food image. The image can be either:
+      promptString = `Analyze this food image with high clinical nutritional precision (target error < 8%).
+The image can be either:
 1. A prepared meal, cooked plate of food, or restaurant dish (e.g. Persian Ghormeh Sabzi, Kebab, Rice, Pizza, Pasta, Salad, Burger, Stew, Soup, etc.).
 2. A packaged food product or nutrition facts label.
 
-Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / Iranian", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
-Extract or accurately calculate nutritional values (calories, protein, total fat, carbohydrates, dietary fiber, sugars, sodium, vitamins).
+NUTRITIONAL ACCURACY DIRECTIVE (BOTTOM-UP INGREDIENT DECOMPOSITION):
+1. Break down the visible portion into constituent ingredient masses in grams (e.g. 200g cooked rice, 120g grilled beef, 15g cooking oil/butter, 80g vegetables).
+2. Enforce Atwater Mathematical Consistency: Total calories must closely obey:
+   Calories = (4 * Protein) + (4 * Total Carbohydrate) + (9 * Total Fat)
+   Ensure the reported calorie number matches this macronutrient summation with < 5% divergence.
+3. Reference benchmarks for standard portions:
+   - Cooked Rice: ~130 kcal per 100g (1 standard Iranian kafgir/skimmer ~ 75g; standard plate ~ 200-250g).
+   - Cooked Lean Beef/Lamb: ~250 kcal per 100g (26g protein, 15g fat).
+   - Cooked Chicken Breast: ~165 kcal per 100g (31g protein, 3.6g fat).
+   - Cooking Oil / Butter additions: ~90 kcal per 10g (1 tbsp ~ 120 kcal pure fat).
+
 CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
 - Exchange rate benchmark: 1 USD = ${userRate.toLocaleString("en-US")} Tomans.
 - Current market pricing reality:
@@ -486,19 +504,27 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
     }
 
     let responseText = "";
+    let successfulModel = "";
     let attempts = 0;
     let lastError: any = null;
     const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
+    const PER_MODEL_TIMEOUT = 12000; // 12 seconds per candidate model avoids hanging connections
 
     for (const modelCandidate of candidateModels) {
       if (responseText) break;
       try {
         attempts++;
-        const response = await getAIClient().models.generateContent({
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after ${PER_MODEL_TIMEOUT / 1000}s waiting for model ${modelCandidate}`)), PER_MODEL_TIMEOUT)
+        );
+
+        const generatePromise = getAIClient().models.generateContent({
           model: modelCandidate,
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
             responseMimeType: "application/json",
+            temperature: 0.1,
+            topP: 0.8,
             responseSchema: {
               type: Type.OBJECT,
               properties: {
@@ -662,7 +688,10 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
             },
           },
         });
+
+        const response = await Promise.race([generatePromise, timeoutPromise]);
         responseText = response.text || "";
+        successfulModel = modelCandidate;
         break; // Success! Break out of the retry loop.
       } catch (err: any) {
         lastError = err;
@@ -701,12 +730,14 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
       const fallbackItem = {
         ...pool[randomIndex],
         isDemoFallback: true,
+        modelUsed: "offline-fallback",
         originalScanError: lastError?.message || String(lastError || "Unknown API error")
       };
       return res.json(fallbackItem);
     }
 
     const parsedData = JSON.parse(responseText || "{}");
+    parsedData.modelUsed = successfulModel;
     return res.json(parsedData);
   } catch (error: any) {
     console.error("==================================================");
