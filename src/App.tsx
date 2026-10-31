@@ -273,6 +273,7 @@ export default function App() {
     carbsGoal: 250,
     fatGoal: 65,
     sodiumGoal: 2300,
+    waterGoalGlasses: 8,
     language: "en",
     currency: "IRT",
     dailyBudgetToman: 1800000,
@@ -471,6 +472,7 @@ export default function App() {
             carbsGoal: typeof parsed.carbsGoal === "number" ? parsed.carbsGoal : DEFAULT_USER_PROFILE.carbsGoal,
             fatGoal: typeof parsed.fatGoal === "number" ? parsed.fatGoal : DEFAULT_USER_PROFILE.fatGoal,
             sodiumGoal: typeof parsed.sodiumGoal === "number" ? parsed.sodiumGoal : DEFAULT_USER_PROFILE.sodiumGoal,
+            waterGoalGlasses: typeof parsed.waterGoalGlasses === "number" ? parsed.waterGoalGlasses : (DEFAULT_USER_PROFILE.waterGoalGlasses || 8),
             dailyBudgetToman: typeof parsed.dailyBudgetToman === "number" ? parsed.dailyBudgetToman : DEFAULT_USER_PROFILE.dailyBudgetToman,
             dailyBudgetUSD: typeof parsed.dailyBudgetUSD === "number" ? parsed.dailyBudgetUSD : DEFAULT_USER_PROFILE.dailyBudgetUSD,
             exchangeRateTomanPerUSD: typeof parsed.exchangeRateTomanPerUSD === "number" ? parsed.exchangeRateTomanPerUSD : DEFAULT_USER_PROFILE.exchangeRateTomanPerUSD,
@@ -1147,24 +1149,28 @@ export default function App() {
         newProfile.proteinGoal = 90;
         newProfile.carbsGoal = 180;
         newProfile.fatGoal = 50;
+        newProfile.waterGoalGlasses = 10;
         break;
       case "muscle":
         newProfile.calorieGoal = 2500;
         newProfile.proteinGoal = 140;
         newProfile.carbsGoal = 300;
         newProfile.fatGoal = 75;
+        newProfile.waterGoalGlasses = 12;
         break;
       case "keto":
         newProfile.calorieGoal = 1800;
         newProfile.proteinGoal = 100;
         newProfile.carbsGoal = 30;
         newProfile.fatGoal = 130;
+        newProfile.waterGoalGlasses = 10;
         break;
       case "balanced":
         newProfile.calorieGoal = 2000;
         newProfile.proteinGoal = 80;
         newProfile.carbsGoal = 250;
         newProfile.fatGoal = 65;
+        newProfile.waterGoalGlasses = 8;
         break;
     }
     saveProfile(newProfile);

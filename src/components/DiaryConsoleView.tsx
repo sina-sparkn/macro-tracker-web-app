@@ -487,7 +487,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         const target =
           typeof parsed.targetGlasses === "number" && parsed.targetGlasses > 0
             ? parsed.targetGlasses
-            : 8;
+            : (userProfile.waterGoalGlasses || 8);
         const entries = Array.isArray(parsed.entries) ? parsed.entries : [];
         const totalGlasses = entries.reduce(
           (s: number, e: { glasses?: number }) => s + (Number(e.glasses) || 0),
@@ -505,18 +505,18 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         return {
           glasses: g,
           ml: g * 250,
-          targetGlasses: 8,
+          targetGlasses: userProfile.waterGoalGlasses || 8,
         };
       }
     } catch {}
-    return { glasses: 0, ml: 0, targetGlasses: 8 };
+    return { glasses: 0, ml: 0, targetGlasses: userProfile.waterGoalGlasses || 8 };
   };
 
   // Helper to update water for a date
   const updateWaterForDate = (
     isoDate: string,
     newGlasses: number,
-    target: number = 8,
+    target: number = userProfile.waterGoalGlasses || 8,
   ) => {
     const safeGlasses = Math.max(0, newGlasses);
     const now = Date.now();
@@ -597,7 +597,9 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     );
     const activeDays = dailyWaterBuckets.filter((b) => b.glasses > 0);
     const targetGlasses =
-      dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses || 8;
+      dailyWaterBuckets[dailyWaterBuckets.length - 1]?.targetGlasses ||
+      userProfile.waterGoalGlasses ||
+      8;
     const maxDayGlasses = Math.max(
       ...dailyWaterBuckets.map((b) => b.glasses),
       0,
@@ -1768,7 +1770,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       /{" "}
                       {isFa
                         ? (
-                            currentSelectedWater.targetGlasses || 8
+                            currentSelectedWater.targetGlasses || userProfile.waterGoalGlasses || 8
                           ).toLocaleString("fa-IR")
                         : currentSelectedWater.targetGlasses || 8}{" "}
                       {isFa ? "لیوان" : "gl"}

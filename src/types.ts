@@ -93,6 +93,7 @@ export interface UserProfile {
   carbsGoal: number; // in grams
   fatGoal: number; // in grams
   sodiumGoal: number; // in mg
+  waterGoalGlasses?: number; // in glasses (1 glass = 250ml)
   language?: string; // 'en' | 'fa' | 'es'
   currency?: "IRT" | "USD"; // Toman or USD
   themePreference?: ThemeMode; // 'system' | 'light' | 'dark'

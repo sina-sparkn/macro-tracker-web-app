@@ -9,6 +9,7 @@ import {
   EyeOff,
   Eye,
   Utensils,
+  GlassWater,
 } from "lucide-react";
 import { UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
@@ -500,6 +501,56 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               value={userProfile.fatGoal ?? 65}
               onChange={(e) => handleUpdate("fatGoal", Number(e.target.value))}
               className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
+            />
+          </div>
+
+          {/* Water Goal */}
+          <div>
+            <div className="flex justify-between items-center text-xs mb-2">
+              <label
+                htmlFor="water-slider"
+                className="text-[#f4f4f5] font-medium flex items-center gap-1.5"
+              >
+                <GlassWater className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
+                <span>{isFa ? "هدف آب مصرفی روزانه" : "Daily Water Target"}</span>
+              </label>
+              <div className="flex items-center gap-2">
+                <span className="text-cyan-400 font-bold font-mono text-sm tabular-nums">
+                  {isFa
+                    ? `${(userProfile.waterGoalGlasses ?? 8).toLocaleString("fa-IR")} لیوان`
+                    : `${userProfile.waterGoalGlasses ?? 8} glasses`}
+                </span>
+                <span className="text-[11px] text-[#71717a] font-mono">
+                  {isFa
+                    ? `(${((userProfile.waterGoalGlasses ?? 8) * 250).toLocaleString("fa-IR")} میلی‌لیتر)`
+                    : `(${(userProfile.waterGoalGlasses ?? 8) * 250} ml)`}
+                </span>
+              </div>
+            </div>
+            <input
+              id="water-slider"
+              type="range"
+              min="4"
+              max="20"
+              step="1"
+              aria-label={isFa ? "هدف آب مصرفی روزانه" : "Daily water target"}
+              value={userProfile.waterGoalGlasses ?? 8}
+              onChange={(e) => {
+                const val = Number(e.target.value);
+                handleUpdate("waterGoalGlasses", val);
+                try {
+                  const d = new Date();
+                  const todayKey = `nutriscan_water_v2_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                  const raw = localStorage.getItem(todayKey);
+                  if (raw) {
+                    const parsed = JSON.parse(raw);
+                    parsed.targetGlasses = val;
+                    localStorage.setItem(todayKey, JSON.stringify(parsed));
+                  }
+                  window.dispatchEvent(new Event("nutriscan_water_updated"));
+                } catch {}
+              }}
+              className="w-full accent-cyan-400 bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
             />
           </div>
         </div>

@@ -183,7 +183,7 @@ export const VitalsPane: React.FC<{
         }
       }
     } catch {}
-    return 8;
+    return userProfile.waterGoalGlasses && userProfile.waterGoalGlasses > 0 ? userProfile.waterGoalGlasses : 8;
   });
 
   const [entries, setEntries] = useState<WaterLogEntry[]>(() => {
@@ -251,6 +251,13 @@ export const VitalsPane: React.FC<{
       }
     }
   }, [propWater]);
+
+  // Synchronize when water target in settings changes
+  useEffect(() => {
+    if (typeof userProfile.waterGoalGlasses === "number" && userProfile.waterGoalGlasses > 0) {
+      setTargetGlasses(userProfile.waterGoalGlasses);
+    }
+  }, [userProfile.waterGoalGlasses]);
 
   // Synchronize when water updates in other components (e.g. DiaryConsoleView)
   useEffect(() => {
