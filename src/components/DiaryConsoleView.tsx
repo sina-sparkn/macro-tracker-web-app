@@ -640,17 +640,6 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
     };
   }, [dailyWaterBuckets, histogramRangeDays]);
 
-  const waterGoalLineBottomPercent = Math.min(
-    Math.max(
-      Math.round(
-        (waterHistogramSummary.targetGlasses /
-          waterHistogramSummary.maxScaleGlasses) *
-          100,
-      ),
-      15,
-    ),
-    90,
-  );
 
   // Selected date water data for the quick control strip
   const effectiveSelectedDate =
@@ -1647,21 +1636,47 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
         ) : histogramMode === "water" ? (
           /* MODE 2: DAILY WATER INTAKE BAR HISTOGRAM */
           <div className="pt-6">
-            <div className="relative h-60 sm:h-64 w-full bg-[#08090a] border border-[#27272a] rounded-lg px-3 sm:px-5 pt-8 pb-3 flex flex-col justify-end">
-              {/* HORIZONTAL TARGET WATER GOAL LINE */}
-              <div
-                className="absolute inset-x-3 sm:inset-x-5 border-t border-dashed border-cyan-400/80 z-10 pointer-events-none flex items-center justify-between"
-                style={{ bottom: `${waterGoalLineBottomPercent}%` }}
-              >
-                <span className="bg-[#08090a]/95 px-2 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/30 rounded-xs tabular-nums -mt-5">
-                  {isFa
-                    ? `هدف: ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان ‎(${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml‎)`
-                    : `Target: ${waterHistogramSummary.targetGlasses} gl (${waterHistogramSummary.targetGlasses * 250} ml)`}
-                </span>
+            <div className="w-full bg-[#08090a] border border-[#27272a] rounded-lg px-3 sm:px-5 pt-4 pb-3">
+              {/* TOP LABELS ROW — glasses count per day */}
+              <div className="flex items-end justify-between gap-1.5 sm:gap-3 mb-1">
+                {dailyWaterBuckets.map((bucket) => {
+                  const isSelected = effectiveSelectedDate === bucket.date;
+                  return (
+                    <div key={bucket.date} className="flex-1 text-center">
+                      <span
+                        className={`block text-[10px] sm:text-xs font-mono tabular-nums transition-colors ${
+                          isSelected
+                            ? "text-cyan-300 font-bold"
+                            : bucket.glasses > 0
+                              ? "text-[#d4d4d8]"
+                              : "text-[#71717a]"
+                        }`}
+                      >
+                        {bucket.glasses > 0
+                          ? isFa
+                            ? `${bucket.glasses.toLocaleString("fa-IR")} ل`
+                            : `${bucket.glasses} gl`
+                          : "0"}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* WATER BARS CONTAINER */}
-              <div className="relative z-20 flex items-end justify-between gap-1.5 sm:gap-3 h-full pt-4">
+              {/* CHART AREA — bars + target line share the same coordinate system */}
+              <div className="relative h-40 sm:h-48 flex items-end justify-between gap-1.5 sm:gap-3">
+                {/* HORIZONTAL TARGET WATER GOAL LINE — bottom% relative to this div */}
+                <div
+                  className="absolute inset-x-0 border-t border-dashed border-cyan-400/80 z-10 pointer-events-none flex items-center justify-end"
+                  style={{ bottom: `${Math.min(Math.max(Math.round((waterHistogramSummary.targetGlasses / waterHistogramSummary.maxScaleGlasses) * 100), 6), 94)}%` }}
+                >
+                  <span className="bg-[#08090a]/95 px-2 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/30 rounded-xs tabular-nums -mt-5 mr-1">
+                    {isFa
+                      ? `هدف: ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان ‎(${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml‎)`
+                      : `Target: ${waterHistogramSummary.targetGlasses} gl (${waterHistogramSummary.targetGlasses * 250} ml)`}
+                  </span>
+                </div>
+
                 {dailyWaterBuckets.map((bucket) => {
                   const rawHeightPct =
                     bucket.glasses > 0
@@ -1670,8 +1685,8 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                             waterHistogramSummary.maxScaleGlasses) *
                             100,
                         )
-                      : 4;
-                  const barHeightPct = Math.min(Math.max(rawHeightPct, 6), 96);
+                      : 2;
+                  const barHeightPct = Math.min(Math.max(rawHeightPct, 4), 100);
                   const isSelected = effectiveSelectedDate === bucket.date;
 
                   let barColorClass = "bg-cyan-500 hover:bg-cyan-400";
@@ -1693,54 +1708,52 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
                       type="button"
                       onClick={() => onSelectDate(bucket.date)}
                       aria-label={`${bucket.shortLabel}: ${bucket.glasses} glasses (${bucket.ml} ml)`}
-                      className={`group flex-1 h-full flex flex-col items-center justify-end cursor-pointer rounded-md p-1 transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
-                        isSelected
-                          ? "ring-1 ring-cyan-400"
-                          : ""
+                      className={`group flex-1 h-full flex items-end cursor-pointer rounded-md transition-colors focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:outline-none ${
+                        isSelected ? "ring-1 ring-cyan-400" : ""
                       }`}
                     >
-                      {/* WATER GLASSES TOP LABEL */}
+                      <div
+                        className={`w-full rounded-t transition-transform duration-150 group-hover:scale-y-[1.02] origin-bottom ${barColorClass}`}
+                        style={{ height: `${barHeightPct}%` }}
+                        title={statusText}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* BOTTOM LABELS ROW — date + status per day */}
+              <div className="flex items-start justify-between gap-1.5 sm:gap-3 mt-2">
+                {dailyWaterBuckets.map((bucket) => {
+                  const isSelected = effectiveSelectedDate === bucket.date;
+                  const statusText2 = (() => {
+                    if (bucket.glasses === 0 || bucket.status === "empty") return isFa ? "بدون ثبت" : "0 gl";
+                    if (bucket.glasses >= bucket.targetGlasses) return isFa ? "هدف محقق شد" : "Goal Met";
+                    return isFa
+                      ? `در حال مصرف (${bucket.percentOfGoal.toLocaleString("fa-IR")}٪)`
+                      : `In Progress (${bucket.percentOfGoal}%)`;
+                  })();
+                  return (
+                    <button
+                      key={bucket.date}
+                      type="button"
+                      onClick={() => onSelectDate(bucket.date)}
+                      className="flex-1 text-center cursor-pointer focus-visible:outline-none"
+                    >
                       <span
-                        className={`text-[10px] sm:text-xs font-mono tabular-nums mb-1 transition-colors ${
-                          isSelected
-                            ? "text-cyan-300 font-bold"
-                            : bucket.glasses > 0
-                              ? "text-[#d4d4d8]"
-                              : "text-[#71717a]"
+                        className={`block text-[10px] sm:text-xs font-semibold truncate ${
+                          isSelected ? "text-cyan-400" : "text-[#f4f4f5]"
                         }`}
                       >
+                        {bucket.shortLabel}
+                      </span>
+                      <span className="hidden sm:block text-[10px] text-[#9ca3af] font-mono tabular-nums mt-0.5 truncate">
                         {bucket.glasses > 0
                           ? isFa
-                            ? `${bucket.glasses.toLocaleString("fa-IR")} ل`
-                            : `${bucket.glasses} gl`
-                          : "0"}
+                            ? `${bucket.ml.toLocaleString("fa-IR")} ml · ${statusText2}`
+                            : `${bucket.ml} ml · ${statusText2}`
+                          : statusText2}
                       </span>
-
-                      {/* BAR TRACK */}
-                      <div className="w-full max-w-[44px] flex-1 flex items-end justify-center">
-                        <div
-                          className={`w-full rounded-t transition-transform duration-150 group-hover:scale-y-[1.02] origin-bottom ${barColorClass}`}
-                          style={{ height: `${barHeightPct}%` }}
-                        />
-                      </div>
-
-                      {/* DATE & HYDRATION FOOTER */}
-                      <div className="mt-2 text-center leading-tight w-full truncate">
-                        <span
-                          className={`block text-[10px] sm:text-xs font-semibold truncate ${
-                            isSelected ? "text-cyan-400" : "text-[#f4f4f5]"
-                          }`}
-                        >
-                          {bucket.shortLabel}
-                        </span>
-                        <span className="hidden sm:block text-[10px] text-[#9ca3af] font-mono tabular-nums mt-0.5">
-                          {bucket.glasses > 0
-                            ? isFa
-                              ? `${bucket.ml.toLocaleString("fa-IR")} ml · ${statusText}`
-                              : `${bucket.ml} ml · ${statusText}`
-                            : statusText}
-                        </span>
-                      </div>
                     </button>
                   );
                 })}
