@@ -71,25 +71,6 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
                 <span className="text-[#ff3e00] font-semibold">{isFa ? "سهم:" : "Serving:"}</span>
                 <span className="truncate max-w-[220px]">{scannedResult.servingSize || (isFa ? "۱ سهم" : "1 serving")}</span>
               </span>
-              {scannedResult.modelUsed && (
-                <>
-                  <span className="text-[#52525b] select-none" aria-hidden="true">•</span>
-                  <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
-                      scannedResult.modelUsed === "offline-fallback"
-                        ? "bg-amber-950/40 text-amber-400 border border-amber-800/50"
-                        : "bg-emerald-950/40 text-emerald-400 border border-emerald-800/50"
-                    }`}
-                  >
-                    <span className={`w-1.5 h-1.5 rounded-full ${scannedResult.modelUsed === "offline-fallback" ? "bg-amber-400" : "bg-emerald-400"}`} />
-                    <span>
-                      {scannedResult.modelUsed === "offline-fallback"
-                        ? (isFa ? "دموی آفلاین" : "Demo Fallback")
-                        : `AI: ${scannedResult.modelUsed}`}
-                    </span>
-                  </span>
-                </>
-              )}
             </div>
           </div>
 
