@@ -1655,7 +1655,7 @@ export const DiaryConsoleView: React.FC<DiaryConsoleViewProps> = ({
               >
                 <span className="bg-[#08090a]/95 px-2 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/30 rounded-xs tabular-nums -mt-5">
                   {isFa
-                    ? `هدف: ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان (${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml)`
+                    ? `هدف: ${waterHistogramSummary.targetGlasses.toLocaleString("fa-IR")} لیوان ‎(${(waterHistogramSummary.targetGlasses * 250).toLocaleString("fa-IR")} ml‎)`
                     : `Target: ${waterHistogramSummary.targetGlasses} gl (${waterHistogramSummary.targetGlasses * 250} ml)`}
                 </span>
               </div>
