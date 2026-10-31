@@ -7,7 +7,6 @@ import {
   insertDiaryEntry,
   deleteDiaryEntryById,
   clearDiaryEntries,
-  seedSampleHistory,
   getDatabaseStats,
   resolveLiveOrIndexedExchangeRate,
   getAllWaterRecords,
@@ -809,13 +808,12 @@ app.post("/api/diary", (req, res) => {
 
 app.post("/api/diary/seed", (req, res) => {
   try {
-    seedSampleHistory(true);
     const entries = getAllDiaryEntries();
     const stats = getDatabaseStats();
     return res.json({ entries, stats });
   } catch (error: any) {
     console.error("SQLite POST /api/diary/seed error:", error);
-    return res.status(500).json({ error: error.message || "Failed to seed SQLite diary" });
+    return res.status(500).json({ error: error.message || "Failed to query SQLite diary" });
   }
 });
 
