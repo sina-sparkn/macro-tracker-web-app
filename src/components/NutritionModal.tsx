@@ -71,6 +71,25 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
                 <span className="text-[#ff3e00] font-semibold">{isFa ? "سهم:" : "Serving:"}</span>
                 <span className="truncate max-w-[220px]">{scannedResult.servingSize || (isFa ? "۱ سهم" : "1 serving")}</span>
               </span>
+              {scannedResult.modelUsed && (
+                <>
+                  <span className="text-[#52525b] select-none" aria-hidden="true">•</span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-medium ${
+                      scannedResult.modelUsed === "offline-fallback"
+                        ? "bg-amber-950/40 text-amber-400 border border-amber-800/50"
+                        : "bg-emerald-950/40 text-emerald-400 border border-emerald-800/50"
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${scannedResult.modelUsed === "offline-fallback" ? "bg-amber-400" : "bg-emerald-400"}`} />
+                    <span>
+                      {scannedResult.modelUsed === "offline-fallback"
+                        ? (isFa ? "دموی آفلاین" : "Demo Fallback")
+                        : `AI: ${scannedResult.modelUsed}`}
+                    </span>
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -86,6 +105,37 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
 
         {/* MODAL BODY (SCROLLABLE) */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
+          {/* STATUS BANNER */}
+          {scannedResult.apiKeyMissingNotice ? (
+            <div className="p-3.5 bg-rose-950/30 border border-rose-800/60 rounded-lg flex items-start gap-2.5 text-xs text-rose-200 leading-relaxed">
+              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-rose-300 uppercase tracking-wider text-[10px] mb-0.5 font-mono">
+                  {isFa ? "کلید API تنظیم نشده است (حالت دمو)" : "API Key Missing (Demo Mode)"}
+                </p>
+                <p className="text-[#d4d4d8]">
+                  {isFa
+                    ? "متغیر GEMINI_API_KEY روی سرور تعریف نشده است. این آیتم به صورت نمونه شبیه‌سازی شده است. برای اسکن هوش مصنوعی زنده، کلید API را در فایل .env تعریف نمایید."
+                    : "The GEMINI_API_KEY environment variable is not configured on the server. Displaying high-fidelity simulated demo dish. Add GEMINI_API_KEY to your .env to enable live AI scanning."}
+                </p>
+              </div>
+            </div>
+          ) : scannedResult.isDemoFallback ? (
+            <div className="p-3.5 bg-amber-950/30 border border-amber-800/60 rounded-lg flex items-start gap-2.5 text-xs text-amber-200 leading-relaxed">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold text-amber-300 uppercase tracking-wider text-[10px] mb-0.5 font-mono">
+                  {isFa ? "استفاده از داده‌های آفلاین پشتیبان" : "AI Service Overloaded (Fallback Active)"}
+                </p>
+                <p className="text-[#d4d4d8]">
+                  {isFa
+                    ? "تمام مدل‌های هوش مصنوعی ناموفق بودند یا در دسترس نبودند. برای تداوم کار برنامه، داده‌های غذایی نمونه جایگزین شد."
+                    : "All AI model candidates in the cascade were busy or unavailable. Activated local high-fidelity fallback data to keep the app running smoothly."}
+                </p>
+              </div>
+            </div>
+          ) : null}
+
           {/* PORTION ADJUSTER */}
           <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>

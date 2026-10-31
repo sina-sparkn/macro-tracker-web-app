@@ -283,6 +283,7 @@ export default async function handler(req: any, res: any) {
         ...pool[Math.floor(Math.random() * pool.length)],
         isDemoFallback: true,
         apiKeyMissingNotice: true,
+        modelUsed: "offline-fallback",
       };
       return res.status(200).json(fallbackItem);
     }
@@ -325,13 +326,15 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
 
     const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
     let responseText = "";
+    let successfulModel = "";
     let lastError: any = null;
+    const PER_MODEL_TIMEOUT = 8500; // 8.5 seconds per model candidate fits safely within Vercel execution limits
 
     for (const modelCandidate of candidateModels) {
       if (responseText) break;
       try {
         const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout after 18s waiting for model ${modelCandidate}`)), 18000)
+          setTimeout(() => reject(new Error(`Timeout after ${PER_MODEL_TIMEOUT / 1000}s waiting for model ${modelCandidate}`)), PER_MODEL_TIMEOUT)
         );
 
         const generatePromise = aiClient.models.generateContent({
@@ -424,6 +427,7 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
 
         const response = await Promise.race([generatePromise, timeoutPromise]);
         responseText = response.text || "";
+        successfulModel = modelCandidate;
         break;
       } catch (err: any) {
         lastError = err;
@@ -437,12 +441,14 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
       const fallbackItem = {
         ...pool[Math.floor(Math.random() * pool.length)],
         isDemoFallback: true,
+        modelUsed: "offline-fallback",
         originalScanError: lastError?.message || String(lastError || "API error"),
       };
       return res.status(200).json(fallbackItem);
     }
 
     const parsed = JSON.parse(responseText || "{}");
+    parsed.modelUsed = successfulModel;
     return res.status(200).json(parsed);
   } catch (err: any) {
     console.error("Vercel Serverless Function error in /api/scan-label:", err);
@@ -450,6 +456,7 @@ Format the output strictly according to the provided JSON schema. Ensure numeric
     const fallbackItem = {
       ...FALLBACK_FOODS[0],
       isDemoFallback: true,
+      modelUsed: "offline-fallback",
       originalScanError: err.message || String(err),
     };
     return res.status(200).json(fallbackItem);

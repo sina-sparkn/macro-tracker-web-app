@@ -429,6 +429,7 @@ app.post("/api/scan-label", async (req, res) => {
         ...pool[randomIndex],
         isDemoFallback: true,
         apiKeyMissingNotice: true,
+        modelUsed: "offline-fallback",
       };
       return res.json(fallbackItem);
     }
@@ -485,15 +486,21 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
     }
 
     let responseText = "";
+    let successfulModel = "";
     let attempts = 0;
     let lastError: any = null;
     const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.1-flash-lite"];
+    const PER_MODEL_TIMEOUT = 12000; // 12 seconds per candidate model avoids hanging connections
 
     for (const modelCandidate of candidateModels) {
       if (responseText) break;
       try {
         attempts++;
-        const response = await getAIClient().models.generateContent({
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`Timeout after ${PER_MODEL_TIMEOUT / 1000}s waiting for model ${modelCandidate}`)), PER_MODEL_TIMEOUT)
+        );
+
+        const generatePromise = getAIClient().models.generateContent({
           model: modelCandidate,
           contents: { parts: [imagePart, { text: promptString }] },
           config: {
@@ -661,11 +668,14 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
             },
           },
         });
+
+        const response = await Promise.race([generatePromise, timeoutPromise]);
         responseText = response.text || "";
+        successfulModel = modelCandidate;
         break; // Success! Break out of the retry loop.
       } catch (err: any) {
         lastError = err;
-        console.warn(`Attempt ${attempts} failed:`, err.message || String(err));
+        console.warn(`Attempt ${attempts} (${modelCandidate}) failed:`, err.message || String(err));
         
         // Check if retryable
         const errStr = String(err).toLowerCase();
@@ -700,12 +710,14 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
       const fallbackItem = {
         ...pool[randomIndex],
         isDemoFallback: true,
+        modelUsed: "offline-fallback",
         originalScanError: lastError?.message || String(lastError || "Unknown API error")
       };
       return res.json(fallbackItem);
     }
 
     const parsedData = JSON.parse(responseText || "{}");
+    parsedData.modelUsed = successfulModel;
     return res.json(parsedData);
   } catch (error: any) {
     console.error("==================================================");
