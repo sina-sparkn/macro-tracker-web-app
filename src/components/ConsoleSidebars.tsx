@@ -103,7 +103,7 @@ export const NavPane: React.FC<{
       <TooltipProvider>
         <nav
           role="tablist"
-          className="apple-glass-bar border rounded-full p-2 flex flex-col items-center gap-3 shadow-sm"
+          className="apple-glass-bar backdrop-blur-xl border rounded-full p-2 flex flex-col items-center gap-3 shadow-sm transition-colors"
         >
           {navItems.map((item) => {
             const Icon = item.icon;

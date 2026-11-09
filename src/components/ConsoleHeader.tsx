@@ -32,7 +32,7 @@ export const ConsoleHeader: React.FC<ConsoleHeaderProps> = ({
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
   return (
-    <header className="sticky top-0 z-40 w-full apple-glass-bar border-b transition-colors">
+    <header className="sticky top-0 z-40 w-full apple-glass-bar backdrop-blur-xl border-b transition-colors">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
         {/* START SIDE: BRAND IDENTITY */}
         <div className="flex items-center gap-3 shrink-0">

@@ -1480,7 +1480,7 @@ export default function App() {
         {/* MOBILE NAVIGATION DOCK (IOS-STYLE FROSTED GLASS TAB BAR) */}
         <nav
           aria-label={currentLang === "fa" ? "ناوبری موبایل" : "Mobile Navigation"}
-          className="lg:hidden apple-glass-bar border-t pt-2 pb-5 px-6 flex justify-around items-center shrink-0 z-40 fixed bottom-0 inset-x-0 shadow-lg"
+          className="lg:hidden apple-glass-bar backdrop-blur-xl border-t pt-2 pb-5 px-6 flex justify-around items-center shrink-0 z-40 fixed bottom-0 inset-x-0 shadow-lg transition-colors"
         >
           <button
             onClick={() => setActiveTab("scan")}

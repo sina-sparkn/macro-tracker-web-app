@@ -17,7 +17,7 @@ html[data-theme="dark"] {
   --apple-surface: #161618;
   --apple-surface-secondary: #1c1c1e;
   --apple-surface-tertiary: #2c2c2e;
-  --apple-glass: rgba(22, 22, 24, 0.78);
+  --apple-glass: rgba(22, 22, 24, 0.72);
   --apple-glass-border: rgba(255, 255, 255, 0.08);
 
   --apple-text-primary: #f5f5f7;
@@ -55,7 +55,7 @@ html[data-theme="light"] {
   --apple-surface: #ffffff;
   --apple-surface-secondary: #f2f2f7;
   --apple-surface-tertiary: #e5e5ea;
-  --apple-glass: rgba(255, 255, 255, 0.82);
+  --apple-glass: rgba(255, 255, 255, 0.72);
   --apple-glass-border: rgba(0, 0, 0, 0.06);
 
   --apple-text-primary: #1d1d1f;
@@ -150,9 +150,15 @@ span.number,
 /* Glass Top Bar & Rail Vibrancy */
 .apple-glass-bar {
   background: var(--apple-glass);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border-color: var(--apple-glass-border);
+}
+
+@supports not ((backdrop-filter: blur(20px)) or (-webkit-backdrop-filter: blur(20px))) {
+  .apple-glass-bar {
+    background: var(--apple-surface);
+  }
 }
 
 /* Apple Card */
