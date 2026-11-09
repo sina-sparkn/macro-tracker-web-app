@@ -1,8 +1,16 @@
 import React from "react";
-import { X, Plus, AlertTriangle, CheckCircle2, ShieldCheck, Scale, Receipt } from "lucide-react";
+import { Plus } from "lucide-react";
 import { ScannedLabel, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
-import { formatSmartPrice } from "../utils/dishLocalization";
+import { formatNumber, formatPriceDisplay } from "../utils/formatters";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "./ui/dialog";
+import { Button } from "./ui/button";
 
 interface NutritionModalProps {
   scannedResult: ScannedLabel | null;
@@ -27,13 +35,6 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
   const isFa = currentLang === "fa";
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
 
-  const formatPrice = (toman?: number, usd?: number) => {
-    if (userProfile.hidePrices) {
-      return isFa ? "حالت فقط کالری" : "Calorie-Only Mode";
-    }
-    return formatSmartPrice(toman, usd, userProfile, portionServings) || "-";
-  };
-
   const calories = Math.round(scannedResult.calories * portionServings);
   const protein = Number((scannedResult.protein * portionServings).toFixed(1));
   const carbs = Number((scannedResult.totalCarbohydrate * portionServings).toFixed(1));
@@ -41,236 +42,208 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
   const sodium = Math.round(scannedResult.sodium * portionServings);
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
-      className="fixed inset-0 z-50 bg-[#08090a]/90 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto"
-    >
-      <div className="bg-[#111214] border border-[#27272a] rounded-xl w-full max-w-2xl my-auto shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
-        {/* MODAL HEADER */}
-        <div className="p-4 sm:p-5 border-b border-[#27272a] flex items-start justify-between gap-3 bg-[#18191d]">
-          <div className="min-w-0 flex-1">
-            <div className="inline-flex items-center gap-1.5 text-xs text-[#ff3e00] font-bold uppercase tracking-wide mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#ff3e00]" />
-              <span>{isFa ? "ارزش غذایی" : "Nutrition Facts"}</span>
-            </div>
-            <h3 id="modal-title" className="font-syne sm:font-vazirmatn text-lg sm:text-xl font-extrabold text-[#f4f4f5] leading-snug break-words">
+    <Dialog open={!!scannedResult} onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent className="max-w-xl max-h-[90vh] p-0 overflow-hidden flex flex-col rounded-[28px] border-[var(--apple-border)]">
+        {/* HEADER */}
+        <DialogHeader className="p-5 sm:p-6 border-b border-[var(--apple-border)] text-start">
+          <div className="flex flex-col gap-1 min-w-0 pr-8 rtl:pr-0 rtl:pl-8">
+            <span className="text-xs font-semibold text-[#ff3b30] uppercase tracking-wider">
+              {isFa ? "ارزش و مشخصات غذایی" : "Nutrition Facts"}
+            </span>
+            <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-[var(--apple-text-primary)] leading-snug break-words">
               {scannedResult.productName}
-            </h3>
-            <div className="flex flex-wrap items-center gap-2 mt-1.5 text-xs">
-              {scannedResult.brand && (
-                <span className="text-[#a1a1aa] font-medium truncate max-w-[200px]">
-                  {scannedResult.brand}
-                </span>
-              )}
-              {scannedResult.brand && (
-                <span className="text-[#52525b] select-none" aria-hidden="true">•</span>
-              )}
-              <span className="inline-flex items-center gap-1 text-[#d4d4d8] font-mono text-xs">
-                <span className="text-[#ff3e00] font-semibold">{isFa ? "سهم:" : "Serving:"}</span>
-                <span className="truncate max-w-[220px]">{scannedResult.servingSize || (isFa ? "۱ سهم" : "1 serving")}</span>
-              </span>
-            </div>
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 text-xs text-[var(--apple-text-secondary)] mt-0.5">
+              {scannedResult.brand && <span>{scannedResult.brand}</span>}
+              {scannedResult.brand && <span>•</span>}
+              <span>{scannedResult.servingSize || (isFa ? "۱ سهم" : "1 serving")}</span>
+            </DialogDescription>
           </div>
+        </DialogHeader>
 
-          <button
-            onClick={onClose}
-            type="button"
-            aria-label={isFa ? "بستن پنجره" : "Close dialog"}
-            className="min-h-[40px] min-w-[40px] p-2 text-[#9ca3af] hover:text-[#f4f4f5] hover:bg-[#27272a] rounded-lg transition-colors cursor-pointer flex items-center justify-center shrink-0"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* MODAL BODY (SCROLLABLE) */}
-        <div className="p-4 sm:p-5 overflow-y-auto space-y-4">
-          {/* STATUS BANNER */}
-          {scannedResult.apiKeyMissingNotice ? (
-            <div className="p-3.5 bg-rose-950/30 border border-rose-800/60 rounded-lg flex items-start gap-2.5 text-xs text-rose-200 leading-relaxed">
-              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-extrabold text-rose-300 uppercase tracking-wider text-[10px] mb-0.5 font-mono">
-                  {isFa ? "کلید API تنظیم نشده است (حالت دمو)" : "API Key Missing (Demo Mode)"}
-                </p>
-                <p className="text-[#d4d4d8]">
-                  {isFa
-                    ? "متغیر GEMINI_API_KEY روی سرور تعریف نشده است. این آیتم به صورت نمونه شبیه‌سازی شده است. برای اسکن هوش مصنوعی زنده، کلید API را در فایل .env تعریف نمایید."
-                    : "The GEMINI_API_KEY environment variable is not configured on the server. Displaying high-fidelity simulated demo dish. Add GEMINI_API_KEY to your .env to enable live AI scanning."}
-                </p>
-              </div>
-            </div>
-          ) : scannedResult.isDemoFallback ? (
-            <div className="p-3.5 bg-amber-950/30 border border-amber-800/60 rounded-lg flex items-start gap-2.5 text-xs text-amber-200 leading-relaxed">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <p className="font-extrabold text-amber-300 uppercase tracking-wider text-[10px] mb-0.5 font-mono">
-                  {isFa ? "استفاده از داده‌های آفلاین پشتیبان" : "AI Service Overloaded (Fallback Active)"}
-                </p>
-                <p className="text-[#d4d4d8]">
-                  {isFa
-                    ? "تمام مدل‌های هوش مصنوعی ناموفق بودند یا در دسترس نبودند. برای تداوم کار برنامه، داده‌های غذایی نمونه جایگزین شد."
-                    : "All AI model candidates in the cascade were busy or unavailable. Activated local high-fidelity fallback data to keep the app running smoothly."}
-                </p>
-              </div>
-            </div>
-          ) : null}
-
+        {/* BODY (SCROLLABLE) */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
           {/* PORTION ADJUSTER */}
-          <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] flex items-center justify-between">
             <div>
-              <span className="text-sm text-[#f4f4f5] block font-bold">
-                {isFa ? "تعداد سهم" : "Portion Multiplier"}
+              <span className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] block">
+                {isFa ? "تعداد سهم مصرفی" : "Portion Multiplier"}
               </span>
-              <span className="text-xs text-[#9ca3af]">
-                {isFa ? "تنظیم ضریب سهم مصرفی" : "Scales nutrition and cost"}
+              <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+                {isFa ? "تنظیم متناسب کالری و درشت‌مغذی‌ها" : "Scales all nutritional values"}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 self-end sm:self-auto">
-              <button
+            <div className="flex items-center gap-2.5">
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setPortionServings(Math.max(0.5, portionServings - 0.5))}
-                type="button"
                 aria-label={isFa ? "کاهش سهم" : "Decrease portion"}
-                className="w-9 h-9 rounded-lg bg-[#111214] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] flex items-center justify-center font-bold text-base cursor-pointer"
+                className="w-8 h-8 rounded-full border border-[var(--apple-border)] hover:border-[#ff3b30] font-bold text-sm"
               >
                 -
-              </button>
-              <span className="font-syne text-base font-bold text-[#ff3e00] w-10 text-center font-mono">
-                {portionServings}x
+              </Button>
+              <span className="text-sm font-bold text-[var(--apple-text-primary)] w-10 text-center tabular-nums">
+                {isFa ? `${formatNumber(portionServings, true, 1)}×` : `${portionServings}×`}
               </span>
-              <button
+              <Button
+                variant="secondary"
+                size="icon"
                 onClick={() => setPortionServings(portionServings + 0.5)}
-                type="button"
                 aria-label={isFa ? "افزایش سهم" : "Increase portion"}
-                className="w-9 h-9 rounded-lg bg-[#111214] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] flex items-center justify-center font-bold text-base cursor-pointer"
+                className="w-8 h-8 rounded-full border border-[var(--apple-border)] hover:border-[#ff3b30] font-bold text-sm"
               >
                 +
-              </button>
+              </Button>
             </div>
           </div>
 
-          {/* MACRONUTRIENT HIGHLIGHTS GRID */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 font-mono">
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-2.5 text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] uppercase block truncate">{isFa ? "انرژی" : "ENERGY"}</span>
-              <span className="font-syne text-xl sm:text-2xl font-extrabold text-[#ff3e00] block my-0.5 truncate">
-                {isFa ? calories.toLocaleString("fa-IR") : calories}
+          {/* HERO CALORIES & 3 MACROS */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {/* Calories (Hero) */}
+            <div className="p-3 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-center flex flex-col justify-center">
+              <span className="text-[10px] text-[var(--apple-text-secondary)] font-medium uppercase">
+                {isFa ? "انرژی کل" : "Energy"}
               </span>
-              <span className="text-xs text-[#9ca3af]">{isFa ? "کالری" : "kcal"}</span>
+              <span className="text-xl sm:text-2xl font-extrabold text-[#ff3b30] tabular-nums my-0.5">
+                {formatNumber(calories, isFa)}
+              </span>
+              <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+                {isFa ? "کالری" : "kcal"}
+              </span>
             </div>
 
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-2.5 text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] uppercase block truncate">{isFa ? "پروتئین" : "PROTEIN"}</span>
-              <span className="font-syne text-xl sm:text-2xl font-extrabold text-sky-400 block my-0.5 truncate">
-                {isFa ? `${protein.toLocaleString("fa-IR")}g` : `${protein}g`}
+            {/* Protein */}
+            <div className="p-3 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-center flex flex-col justify-center">
+              <span className="text-[10px] text-[var(--apple-text-secondary)] font-medium uppercase">
+                {isFa ? "پروتئین" : "Protein"}
               </span>
-              <span className="text-xs text-[#9ca3af]">{isFa ? "گرم" : "g"}</span>
+              <span className="text-xl sm:text-2xl font-bold text-[#0a84ff] tabular-nums my-0.5">
+                {formatNumber(protein, isFa, 1)}
+              </span>
+              <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+                {isFa ? "گرم" : "g"}
+              </span>
             </div>
 
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-2.5 text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] uppercase block truncate">{isFa ? "کربوهیدرات" : "CARBS"}</span>
-              <span className="font-syne text-xl sm:text-2xl font-extrabold text-amber-400 block my-0.5 truncate">
-                {isFa ? `${carbs.toLocaleString("fa-IR")}g` : `${carbs}g`}
+            {/* Carbs */}
+            <div className="p-3 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-center flex flex-col justify-center">
+              <span className="text-[10px] text-[var(--apple-text-secondary)] font-medium uppercase">
+                {isFa ? "کربوهیدرات" : "Carbs"}
               </span>
-              <span className="text-xs text-[#9ca3af]">{isFa ? "گرم" : "g"}</span>
+              <span className="text-xl sm:text-2xl font-bold text-[#ff9f0a] tabular-nums my-0.5">
+                {formatNumber(carbs, isFa, 1)}
+              </span>
+              <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+                {isFa ? "گرم" : "g"}
+              </span>
             </div>
 
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-2.5 text-center min-w-0">
-              <span className="text-[11px] text-[#9ca3af] uppercase block truncate">{isFa ? "چربی" : "FAT"}</span>
-              <span className="font-syne text-xl sm:text-2xl font-extrabold text-rose-400 block my-0.5 truncate">
-                {isFa ? `${fat.toLocaleString("fa-IR")}g` : `${fat}g`}
+            {/* Fat */}
+            <div className="p-3 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-center flex flex-col justify-center">
+              <span className="text-[10px] text-[var(--apple-text-secondary)] font-medium uppercase">
+                {isFa ? "چربی" : "Fat"}
               </span>
-              <span className="text-xs text-[#9ca3af]">{isFa ? "گرم" : "g"}</span>
+              <span className="text-xl sm:text-2xl font-bold text-[#ff375f] tabular-nums my-0.5">
+                {formatNumber(fat, isFa, 1)}
+              </span>
+              <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+                {isFa ? "گرم" : "g"}
+              </span>
             </div>
           </div>
 
-          {/* SECONDARY VITALS & COST */}
+          {/* SECONDARY MICROS & COST */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 space-y-2">
+            <div className="p-4 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] space-y-2">
               <div className="flex justify-between">
-                <span className="text-[#9ca3af]">{isFa ? "سدیم:" : "Sodium:"}</span>
-                <span className="text-[#f4f4f5] font-bold">
-                  {isFa ? `${sodium.toLocaleString("fa-IR")} mg` : `${sodium} mg`}
+                <span className="text-[var(--apple-text-secondary)]">{isFa ? "سدیم:" : "Sodium:"}</span>
+                <span className="font-semibold text-[var(--apple-text-primary)] tabular-nums">
+                  {isFa ? `${formatNumber(sodium, true)} میلی‌گرم` : `${formatNumber(sodium, false)} mg`}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#9ca3af]">{isFa ? "کلسترول:" : "Cholesterol:"}</span>
-                <span className="text-[#f4f4f5] font-bold">
-                  {isFa ? `${(scannedResult.cholesterol || 0).toLocaleString("fa-IR")} mg` : `${scannedResult.cholesterol || 0} mg`}
+                <span className="text-[var(--apple-text-secondary)]">{isFa ? "کلسترول:" : "Cholesterol:"}</span>
+                <span className="font-semibold text-[var(--apple-text-primary)] tabular-nums">
+                  {isFa ? `${formatNumber(scannedResult.cholesterol || 0, true)} میلی‌گرم` : `${formatNumber(scannedResult.cholesterol || 0, false)} mg`}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#9ca3af]">{isFa ? "فیبر:" : "Fiber:"}</span>
-                <span className="text-[#f4f4f5] font-bold">
-                  {isFa ? `${(scannedResult.dietaryFiber || 0).toLocaleString("fa-IR")} g` : `${scannedResult.dietaryFiber || 0} g`}
+                <span className="text-[var(--apple-text-secondary)]">{isFa ? "فیبر:" : "Fiber:"}</span>
+                <span className="font-semibold text-[var(--apple-text-primary)] tabular-nums">
+                  {isFa ? `${formatNumber(scannedResult.dietaryFiber || 0, true)} گرم` : `${formatNumber(scannedResult.dietaryFiber || 0, false)} g`}
                 </span>
               </div>
             </div>
 
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 flex flex-col justify-between">
-              <span className="text-[#9ca3af] text-xs font-medium">
-                {isFa ? "هزینه این سهم" : "Portion Cost"}
-              </span>
-              <div className="font-syne text-xl font-bold text-[#ff3e00] my-1">
-                {formatPrice(
-                  scannedResult.estimatedPrice?.amountToman,
-                  scannedResult.estimatedPrice?.amountUSD
-                )}
+            {!userProfile.hidePrices && (
+              <div className="p-4 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] flex flex-col justify-between">
+                <span className="text-[var(--apple-text-secondary)]">
+                  {isFa ? "برآورد هزینه این سهم" : "Estimated Portion Cost"}
+                </span>
+                <div className="text-lg font-bold text-[var(--apple-text-primary)] tabular-nums my-1">
+                  {formatPriceDisplay(
+                    scannedResult.estimatedPrice?.amountToman,
+                    scannedResult.estimatedPrice?.amountUSD,
+                    userProfile,
+                    portionServings
+                  )}
+                </div>
+                <span className="text-[10px] text-[var(--apple-text-tertiary)]">
+                  {isFa ? "بر اساس میانگین بازار روز ایران" : "Based on domestic market index"}
+                </span>
               </div>
-              <span className="text-xs text-[#9ca3af]">
-                {isFa ? "برآورد بر مبنای قیمت بازار" : "Market ingredient estimate"}
-              </span>
-            </div>
+            )}
           </div>
 
-          {/* SUMMARY & INTELLIGENCE */}
+          {/* SUMMARY / NOTES */}
           {scannedResult.summary && (
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-4 text-xs text-[#d4d4d8] leading-relaxed">
-              <strong className="text-[#ff3e00] block mb-1">
-                {isFa ? "نکات تغذیه:" : "Nutrition Notes:"}
-              </strong>
+            <div className="p-4 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-xs text-[var(--apple-text-secondary)] leading-relaxed">
+              <span className="font-semibold text-[var(--apple-text-primary)] block mb-1">
+                {isFa ? "تحلیل هوشمند نوتری‌اسکن:" : "Smart Food Analysis:"}
+              </span>
               <p>{scannedResult.summary}</p>
             </div>
           )}
 
           {/* INGREDIENTS LIST */}
           {scannedResult.ingredientsList && scannedResult.ingredientsList.length > 0 && (
-            <div className="bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 text-xs text-[#9ca3af]">
-              <span className="font-semibold text-[#f4f4f5] block mb-1">
-                {isFa ? "مواد تشکیل‌دهنده:" : "Ingredients:"}
+            <div className="p-4 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-xs">
+              <span className="font-semibold text-[var(--apple-text-primary)] block mb-1.5">
+                {isFa ? "ترکیبات و مواد تشکیل‌دهنده:" : "Ingredients:"}
               </span>
-              <p className="leading-relaxed text-[#d4d4d8]">
+              <p className="text-[var(--apple-text-secondary)] leading-relaxed">
                 {scannedResult.ingredientsList.join(" · ")}
               </p>
             </div>
           )}
         </div>
 
-        {/* MODAL FOOTER */}
-        <div className="p-4 sm:p-5 border-t border-[#27272a] bg-[#18191d] flex items-center justify-between gap-3">
-          <button
+        {/* FOOTER */}
+        <div className="p-5 sm:p-6 border-t border-[var(--apple-border)] flex items-center justify-between gap-3">
+          <Button
+            variant="secondary"
             onClick={onClose}
-            type="button"
-            className="btn-cmd-dim px-5 py-2.5 cursor-pointer text-xs"
+            className="px-5 py-3 text-xs sm:text-sm font-medium rounded-full"
           >
             {isFa ? "انصراف" : "Cancel"}
-          </button>
+          </Button>
 
-          <button
+          <Button
             onClick={onLogToDiary}
-            type="button"
-            className="btn-cmd flex-1 py-2.5 cursor-pointer text-xs flex items-center justify-center gap-2 font-bold"
+            className="flex-1 py-3 text-xs sm:text-sm font-semibold shadow-lg rounded-full"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>
-              {isFa ? `ثبت در دفترچه (${calories.toLocaleString("fa-IR")} کالری)` : `Add to Diary (${calories} kcal)`}
+              {isFa
+                ? `ثبت در یادداشت (${formatNumber(calories, true)} کالری)`
+                : `Add to Diary (${formatNumber(calories, false)} kcal)`}
             </span>
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

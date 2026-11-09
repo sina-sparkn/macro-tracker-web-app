@@ -1,25 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Coins,
   DollarSign,
-  ShieldCheck,
   RefreshCw,
   Check,
-  Sparkles,
-  EyeOff,
-  Eye,
-  Utensils,
-  GlassWater,
+  Flame,
+  Zap,
+  Wheat,
+  Droplet,
+  CheckCircle2,
+  Sparkles
 } from "lucide-react";
 import { UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
+import { formatNumber, toPersianDigits } from "../utils/formatters";
+import { AppleSlider } from "./apple/AppleSlider";
+import { AppleStepper } from "./apple/AppleStepper";
+import { AppleEditableValue } from "./apple/AppleEditableValue";
+import { AppleSegmentedControl, SegmentOption } from "./apple/AppleSegmentedControl";
+import { DietPresetsGroup, DIET_PRESETS, PresetId } from "./apple/DietPresetsGroup";
+import { MacroSplitSummary } from "./apple/MacroSplitSummary";
+import { Card, CardContent } from "./ui/card";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface GoalsConsoleViewProps {
   userProfile: UserProfile;
   isSyncingRate?: boolean;
   onSaveProfile: (profile: UserProfile) => void;
   onApplyPreset: (
-    preset: "weight-loss" | "muscle" | "keto" | "balanced",
+    preset: "weight-loss" | "muscle" | "keto" | "balanced"
   ) => void;
   onSyncExchangeRate?: () => void;
 }
@@ -29,111 +40,39 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
   isSyncingRate = false,
   onSaveProfile,
   onApplyPreset,
-  onSyncExchangeRate,
+  onSyncExchangeRate
 }) => {
-  const currentLang = userProfile.language || "en";
+  const currentLang = userProfile.language || "fa";
   const isFa = currentLang === "fa";
-  const t = TRANSLATIONS[currentLang] || TRANSLATIONS.en;
+  const t = TRANSLATIONS[currentLang] || TRANSLATIONS.fa || TRANSLATIONS.en;
+
+  const [savedFeedback, setSavedFeedback] = useState(false);
+
+  const triggerSavedFeedback = () => {
+    setSavedFeedback(true);
+    const timer = setTimeout(() => setSavedFeedback(false), 2000);
+    return () => clearTimeout(timer);
+  };
 
   const handleUpdate = <K extends keyof UserProfile>(
     field: K,
-    value: UserProfile[K],
+    value: UserProfile[K]
   ) => {
     const isGoalField =
       field === "calorieGoal" ||
       field === "proteinGoal" ||
       field === "carbsGoal" ||
       field === "fatGoal";
+
     onSaveProfile({
       ...userProfile,
       [field]: value,
-      ...(isGoalField ? { activePreset: undefined } : {}),
+      ...(isGoalField ? { activePreset: undefined } : {})
     });
+    triggerSavedFeedback();
   };
 
-  const PRESET_CONFIGS = [
-    {
-      id: "balanced" as const,
-      nameFa: "رژیم متعادل",
-      nameEn: "Balanced",
-      calories: 2000,
-      protein: 80,
-      carbs: 250,
-      fat: 65,
-      subtitleFa: "۲۰۰۰ کالری · ۰ گرم پروتئین",
-      subtitleEn: "2000 kcal · 80g P",
-      macroDetailFa: "کربو ۲۵۰g · چربی ۶۵g",
-      macroDetailEn: "250g C · 65g F",
-    },
-    {
-      id: "weight-loss" as const,
-      nameFa: "کاهش وزن",
-      nameEn: "Weight Loss",
-      calories: 1600,
-      protein: 90,
-      carbs: 180,
-      fat: 50,
-      subtitleFa: "۱۶۰۰ کالری · ۹۰ گرم پروتئین",
-      subtitleEn: "1600 kcal · 90g P",
-      macroDetailFa: "کربو ۱۸۰g · چربی ۵۰g",
-      macroDetailEn: "180g C · 50g F",
-    },
-    {
-      id: "muscle" as const,
-      nameFa: "عضله‌سازی",
-      nameEn: "Muscle Gain",
-      calories: 2500,
-      protein: 140,
-      carbs: 300,
-      fat: 75,
-      subtitleFa: "۲۵۰۰ کالری · ۱۴۰ گرم پروتئین",
-      subtitleEn: "2500 kcal · 140g P",
-      macroDetailFa: "کربو ۳۰۰g · چربی ۷۵g",
-      macroDetailEn: "300g C · 75g F",
-    },
-    {
-      id: "keto" as const,
-      nameFa: "کتوژنیک",
-      nameEn: "Keto",
-      calories: 1800,
-      protein: 100,
-      carbs: 30,
-      fat: 130,
-      subtitleFa: "۱۸۰۰ کالری · ۳۰ گرم کربوهیدرات",
-      subtitleEn: "1800 kcal · 30g C",
-      macroDetailFa: "پروتئین ۱۰۰g · چربی ۱۳۰g",
-      macroDetailEn: "100g P · 130g F",
-    },
-  ];
-
-  const PRICING_TIERS = [
-    {
-      id: "home" as const,
-      nameFa: "پخت خانگی / اقتصادی",
-      nameEn: "Home-Cooked / Economy",
-      descFa: "محاسبه بر مبنای خرید مواد اولیه خام خانگی (۲۰٪ اقتصادی‌تر)",
-      descEn: "Raw grocery ingredient cost baseline (-20%)",
-      badge: "0.8×",
-    },
-    {
-      id: "market" as const,
-      nameFa: "میانگین بازار روز",
-      nameEn: "Standard Market Index",
-      descFa: "برآورد استاندارد بر پایه میانگین قیمت روز بازار داخلی ایران",
-      descEn: "Standard domestic market average benchmark (Default)",
-      badge: "1.0×",
-    },
-    {
-      id: "restaurant" as const,
-      nameFa: "رستورانی / بیرون‌بر",
-      nameEn: "Restaurant / Dining Out",
-      descFa: "محاسبه بر اساس میانگین قیمت منوی رستوران‌ها و کترینگ (+۳۵٪)",
-      descEn: "Prepared restaurant & catering menu pricing (+35%)",
-      badge: "1.35×",
-    },
-  ];
-
-  const isPresetActive = (preset: (typeof PRESET_CONFIGS)[number]) => {
+  const isPresetActive = (preset: (typeof DIET_PRESETS)[number]) => {
     if (userProfile.activePreset === preset.id) {
       return true;
     }
@@ -145,416 +84,527 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
     );
   };
 
-  const activePresetConfig = PRESET_CONFIGS.find((p) => isPresetActive(p));
-  const currentTier = userProfile.pricingTier || "market";
-  const hidePrices = Boolean(userProfile.hidePrices);
+  const activePreset = DIET_PRESETS.find((p) => isPresetActive(p));
+
+  const handleSelectPreset = (presetId: PresetId) => {
+    onApplyPreset(presetId);
+    triggerSavedFeedback();
+  };
+
+  // Currency options for segmented control
+  const currencyOptions: SegmentOption<"IRT" | "USD">[] = [
+    { id: "IRT", label: isFa ? "تومان (IRT)" : "Toman (IRT)", icon: Coins },
+    { id: "USD", label: isFa ? "دلار (USD)" : "Dollar (USD)", icon: DollarSign }
+  ];
+
+  const formatTimestamp = (ts?: string) => {
+    if (!ts) return "";
+    try {
+      const d = new Date(ts);
+      if (!isNaN(d.getTime())) {
+        const timeStr = d.toLocaleTimeString(isFa ? "fa-IR" : "en-US", {
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        return `${isFa ? "امروز ساعت" : "Today at"} ${timeStr}`;
+      }
+    } catch {}
+    return ts;
+  };
+
+  const exchangeRate = userProfile.exchangeRateTomanPerUSD || 230000;
+  const currentCurrency = userProfile.currency || "IRT";
+  const budgetToman = userProfile.dailyBudgetToman ?? 1800000;
+  const budgetUSD = userProfile.dailyBudgetUSD ?? 7.8;
+
+  // Secondary converted budget calculation
+  const convertedBudgetStr =
+    currentCurrency === "IRT"
+      ? (isFa
+          ? `معادل تقریبی: ${formatNumber(Number((budgetToman / exchangeRate).toFixed(1)), true)} دلار`
+          : `Approx: $${(budgetToman / exchangeRate).toFixed(1)} USD`)
+      : (isFa
+          ? `معادل تقریبی: ${formatNumber(Math.round(budgetUSD * exchangeRate), true)} تومان`
+          : `Approx: ${(Math.round(budgetUSD * exchangeRate)).toLocaleString("en-US")} Tomans`);
 
   return (
-    <div className="p-4 sm:p-6 xl:p-8 flex flex-col gap-6 max-w-4xl mx-auto w-full pb-6 sm:pb-8 lg:pb-6">
-      {/* HEADER */}
-      <div className="border-b border-[#27272a] pb-3">
-        <span className="text-xs text-[#ff3e00] font-bold uppercase tracking-wider block">
-          {isFa ? "تنظیمات" : "Settings"}
-        </span>
-        <h2 className="font-syne text-xl sm:text-2xl font-extrabold text-[#f4f4f5] mt-1">
-          {isFa ? "اهداف تغذیه و بودجه" : "Goals & Budget"}
-        </h2>
-      </div>
+    <div className="p-4 sm:p-6 lg:p-8 flex flex-col gap-8 max-w-4xl mx-auto w-full select-none pb-28 lg:pb-12">
+      {/* ====================================================================
+          1. PAGE HEADER (IOS SETTINGS STYLE)
+          ==================================================================== */}
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--apple-border)] pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs font-semibold text-[var(--apple-accent)] uppercase tracking-wider">
+              {isFa ? "تنظیمات" : "Settings"}
+            </span>
+            <span className="text-xs text-[var(--apple-text-tertiary)]">›</span>
+            <span className="text-xs text-[var(--apple-text-secondary)] font-medium">
+              {isFa ? "اهداف و بودجه" : "Goals & Budget"}
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--apple-text-primary)]">
+            {isFa ? "اهداف تغذیه و بودجه" : "Nutrition & Budget Goals"}
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--apple-text-secondary)] mt-1">
+            {isFa
+              ? "شخصی‌سازی سقف کالری، سهم درشت‌مغذی‌ها و تنظیم بودجه روزانه خوراک"
+              : "Customize daily energy targets, macronutrient split and meal budgets"}
+          </p>
+        </div>
 
-      {/* QUICK PRESET SELECTORS */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5">
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block">
-            {isFa ? "الگوهای رژیمی" : "Dietary Presets"}
-          </h3>
-          {activePresetConfig && (
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#ff3e00]">
-              <Check className="w-3.5 h-3.5 stroke-[3] text-[#ff3e00]" />
+        {/* Saved confirmation badge */}
+        <div
+          className={`self-start sm:self-center transition-all duration-300 ${
+            savedFeedback
+              ? "opacity-100 scale-100"
+              : "opacity-0 scale-95 pointer-events-none"
+          }`}
+        >
+          <Badge variant="success" className="px-3 py-1.5 text-xs font-semibold gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>{isFa ? "تنظیمات ذخیره شد" : "Changes Saved"}</span>
+          </Badge>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          2. DIET PRESETS (BALANCED, WEIGHT LOSS, MUSCLE GAIN, KETO)
+          ==================================================================== */}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2 px-1">
+          <span className="text-xs font-semibold uppercase tracking-wider text-[var(--apple-text-secondary)]">
+            {isFa ? "الگوهای رژیمی استاندارد" : "Dietary Presets"}
+          </span>
+          {activePreset && (
+            <span className="text-xs text-[var(--apple-accent)] font-semibold inline-flex items-center gap-1">
+              <Check className="w-3 h-3 stroke-[3]" />
               <span>
-                {isFa
-                  ? `الگوی فعال: ${activePresetConfig.nameFa}`
-                  : `Active: ${activePresetConfig.nameEn}`}
+                {isFa ? `الگوی فعال: ${activePreset.nameFa}` : `Active: ${activePreset.nameEn}`}
               </span>
             </span>
           )}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-          {PRESET_CONFIGS.map((preset) => {
-            const isActive = isPresetActive(preset);
-            return (
-              <button
-                key={preset.id}
-                onClick={() => onApplyPreset(preset.id)}
-                type="button"
-                aria-pressed={isActive}
-                className={`min-h-[76px] p-3 rounded-lg text-left rtl:text-right transition-all cursor-pointer group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none relative overflow-hidden min-w-0 ${
-                  isActive
-                    ? "bg-[#ff3e00]/15 border-2 border-[#ff3e00] ring-1 ring-[#ff3e00]/40"
-                    : "bg-[#18191d] border border-[#27272a] hover:border-[#ff3e00]/60 hover:bg-[#1a1c22]"
-                }`}
-              >
-                {isActive && (
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-[#ff3e00]" />
-                )}
+        <DietPresetsGroup
+          activePresetId={activePreset?.id}
+          onSelectPreset={handleSelectPreset}
+          isFa={isFa}
+        />
+      </section>
 
-                <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
-                  <span
-                    className={`font-bold text-xs sm:text-sm block truncate ${
-                      isActive
-                        ? "text-[#ff3e00] font-extrabold"
-                        : "text-[#f4f4f5] group-hover:text-[#ff3e00]"
-                    }`}
-                  >
-                    {isFa ? preset.nameFa : preset.nameEn}
+      {/* ====================================================================
+          3. EXCHANGE RATE & CURRENCY GROUPED CARD
+          ==================================================================== */}
+      <section className="flex flex-col gap-3">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--apple-text-secondary)] px-1">
+          {isFa ? "ارز و سقف بودجه روزانه" : "Currency & Daily Budget"}
+        </span>
+
+        <Card className="apple-card border-[var(--apple-border)] shadow-sm">
+          <CardContent className="p-5 sm:p-6 flex flex-col gap-5">
+            {/* Row A: Live USD Exchange Rate */}
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <DollarSign className="w-5 h-5 stroke-[2.2]" />
+                </div>
+                <div className="min-w-0">
+                  <span className="text-xs font-medium text-[var(--apple-text-secondary)] block truncate">
+                    {isFa ? "نرخ زنده دلار در بازار ایران" : "Live USD Market Exchange Rate"}
                   </span>
-                  {isActive ? (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-mono font-extrabold text-black bg-[#ff3e00] px-1.5 py-0.2 rounded shrink-0">
-                      <Check className="w-2.5 h-2.5 stroke-[3]" />
-                      <span>{isFa ? "فعال" : "ON"}</span>
-                    </span>
-                  ) : null}
+                  <div className="text-lg sm:text-xl font-extrabold text-[var(--apple-text-primary)] tabular-nums mt-0.5 truncate">
+                    {isFa
+                      ? `۱ دلار = ${formatNumber(exchangeRate, true)} تومان`
+                      : `$1 USD = ${exchangeRate.toLocaleString("en-US")} Tomans`}
+                  </div>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)] block mt-0.5">
+                    {userProfile.autoRateUpdatedAt
+                      ? `${isFa ? "آخرین بروزرسانی:" : "Updated:"} ${formatTimestamp(userProfile.autoRateUpdatedAt)}`
+                      : (isFa
+                          ? "بروزرسانی مستقیم از شاخص قدرت خرید و قیمت بازار"
+                          : "Domestic food purchasing-power index")}
+                  </span>
+                </div>
+              </div>
+
+              {onSyncExchangeRate && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={onSyncExchangeRate}
+                        disabled={isSyncingRate}
+                        aria-label={isFa ? "به‌روزرسانی نرخ ارز" : "Refresh exchange rate"}
+                        className="rounded-full w-10 h-10 border border-[var(--apple-border)] shrink-0"
+                      >
+                        <RefreshCw
+                          className={`w-4 h-4 text-[var(--apple-accent)] ${
+                            isSyncingRate ? "animate-spin" : ""
+                          }`}
+                        />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <span>{isFa ? "به‌روزرسانی نرخ زنده" : "Refresh live rate"}</span>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+
+            <div className="border-t border-[var(--apple-border)]" />
+
+            {/* Row B: Currency Unit Selector */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-xs font-semibold text-[var(--apple-text-primary)] block">
+                  {isFa ? "واحد پول پیش‌فرض بودجه" : "Default Currency Unit"}
+                </span>
+                <span className="text-[11px] text-[var(--apple-text-secondary)]">
+                  {isFa
+                    ? "تعیین واحد پولی برای سقف بودجه و برآورد هزینه‌ها"
+                    : "Choose currency for budget caps and meal calculations"}
+                </span>
+              </div>
+
+              <div className="w-full sm:w-64">
+                <AppleSegmentedControl
+                  options={currencyOptions}
+                  value={currentCurrency}
+                  onChange={(val) => {
+                    onSaveProfile({
+                      ...userProfile,
+                      currency: val,
+                      hidePrices: false
+                    });
+                    triggerSavedFeedback();
+                  }}
+                  size="md"
+                />
+              </div>
+            </div>
+
+            <div className="border-t border-[var(--apple-border)]" />
+
+            {/* Row C: Daily Budget Cap */}
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex flex-col">
+                  <span className="text-xs font-semibold text-[var(--apple-text-primary)]">
+                    {isFa ? "سقف بودجه روزانه خوراک" : "Daily Food Budget Cap"}
+                  </span>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)] tabular-nums">
+                    {convertedBudgetStr}
+                  </span>
                 </div>
 
-                <span
-                  className={`text-[11px] sm:text-xs block tabular-nums truncate ${
-                    isActive ? "text-[#ffffff] font-semibold" : "text-[#9ca3af]"
-                  }`}
-                >
-                  {isFa ? preset.subtitleFa : preset.subtitleEn}
-                </span>
-
-                <span
-                  className={`text-[10px] sm:text-[11px] mt-0.5 block font-mono tabular-nums truncate ${
-                    isActive ? "text-[#ff784e] font-medium" : "text-[#71717a]"
-                  }`}
-                >
-                  {isFa ? preset.macroDetailFa : preset.macroDetailEn}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* LIVE DOLLAR RATE IN IRAN & CURRENCY BUDGET */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-4 sm:p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-[#18191d] border border-[#27272a] rounded-lg p-3.5 sm:p-4">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="p-2 bg-[#ff3e00]/15 text-[#ff3e00] rounded-lg border border-[#ff3e00]/30 shrink-0">
-              <DollarSign className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div className="min-w-0">
-              <span className="text-[11px] sm:text-xs text-[#9ca3af] font-medium block truncate">
-                {isFa ? "نرخ زنده دلار در ایران" : "Live Dollar Rate (Iran)"}
-              </span>
-              <div className="font-syne text-lg sm:text-2xl font-extrabold text-[#f4f4f5] font-mono tabular-nums mt-0.5 truncate">
-                {isFa
-                  ? `۱ دلار = ${(userProfile.exchangeRateTomanPerUSD || 230000).toLocaleString("fa-IR")} تومان`
-                  : `$1 USD = ${(userProfile.exchangeRateTomanPerUSD || 230000).toLocaleString("en-US")} Tomans`}
+                <div className="flex items-center gap-2">
+                  {currentCurrency === "IRT" ? (
+                    <>
+                      <AppleEditableValue
+                        value={budgetToman}
+                        min={400000}
+                        max={6000000}
+                        unit={isFa ? "تومان" : "Toman"}
+                        onChange={(val) => handleUpdate("dailyBudgetToman", val)}
+                        isFa={isFa}
+                      />
+                      <AppleStepper
+                        value={budgetToman}
+                        min={400000}
+                        max={6000000}
+                        step={50000}
+                        onChange={(val) => handleUpdate("dailyBudgetToman", val)}
+                        isFa={isFa}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <AppleEditableValue
+                        value={budgetUSD}
+                        min={2}
+                        max={35}
+                        prefix="$"
+                        unit="USD"
+                        onChange={(val) => handleUpdate("dailyBudgetUSD", val)}
+                        isFa={isFa}
+                      />
+                      <AppleStepper
+                        value={budgetUSD}
+                        min={2}
+                        max={35}
+                        step={0.5}
+                        onChange={(val) => handleUpdate("dailyBudgetUSD", val)}
+                        isFa={isFa}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
+
+              {/* Slider */}
+              {currentCurrency === "IRT" ? (
+                <AppleSlider
+                  value={budgetToman}
+                  min={400000}
+                  max={6000000}
+                  step={50000}
+                  onChange={(val) => handleUpdate("dailyBudgetToman", val)}
+                  color="budget"
+                  unit={isFa ? "تومان" : "Toman"}
+                  ariaLabel={isFa ? "سقف بودجه روزانه به تومان" : "Daily budget cap in Toman"}
+                  isFa={isFa}
+                />
+              ) : (
+                <AppleSlider
+                  value={budgetUSD}
+                  min={2}
+                  max={35}
+                  step={0.5}
+                  onChange={(val) => handleUpdate("dailyBudgetUSD", val)}
+                  color="budget"
+                  unit="USD"
+                  ariaLabel={isFa ? "سقف بودجه روزانه به دلار" : "Daily budget cap in USD"}
+                  isFa={isFa}
+                />
+              )}
             </div>
-          </div>
-
-          {onSyncExchangeRate && (
-            <button
-              type="button"
-              onClick={onSyncExchangeRate}
-              disabled={isSyncingRate}
-              className="px-3 py-1.5 bg-[#111214] hover:bg-[#27272a] border border-[#27272a] hover:border-[#ff3e00] text-[#f4f4f5] text-xs font-medium rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 shrink-0 whitespace-nowrap"
-            >
-              <RefreshCw
-                className={`w-3.5 h-3.5 text-[#ff3e00] ${isSyncingRate ? "animate-spin" : ""}`}
-              />
-              <span>{isFa ? "به‌روزرسانی" : "Update"}</span>
-            </button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
-          {/* CURRENCY SELECTOR */}
-          <div>
-            <label className="text-xs text-[#9ca3af] font-medium block mb-2">
-              {isFa ? "واحد پول" : "Currency"}
-            </label>
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                onClick={() => {
-                  onSaveProfile({
-                    ...userProfile,
-                    currency: "IRT",
-                    hidePrices: false,
-                  });
-                }}
-                type="button"
-                aria-pressed={userProfile.currency === "IRT"}
-                className={`min-h-[44px] py-2.5 px-3 border rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
-                  userProfile.currency === "IRT"
-                    ? "bg-[#ff3e00] text-[#08090a] border-[#ff3e00] font-bold"
-                    : "bg-[#18191d] text-[#d4d4d8] border-[#27272a] hover:border-[#ff3e00]"
-                }`}
-              >
-                <Coins className="w-3.5 h-3.5 shrink-0" />
-                <span>تومان (IRT)</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  onSaveProfile({
-                    ...userProfile,
-                    currency: "USD",
-                    hidePrices: false,
-                  });
-                }}
-                type="button"
-                aria-pressed={userProfile.currency === "USD"}
-                className={`min-h-[44px] py-2.5 px-3 border rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${
-                  userProfile.currency === "USD"
-                    ? "bg-[#ff3e00] text-[#08090a] border-[#ff3e00] font-bold"
-                    : "bg-[#18191d] text-[#d4d4d8] border-[#27272a] hover:border-[#ff3e00]"
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5 shrink-0" />
-                <span>{isFa ? "دلار (USD)" : "USD ($)"}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* DAILY FOOD BUDGET */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <label
-                htmlFor={
-                  userProfile.currency === "IRT"
-                    ? "daily-budget-slider-irt"
-                    : "daily-budget-slider-usd"
-                }
-                className="text-xs text-[#9ca3af] font-medium"
-              >
-                {isFa ? "سقف بودجه روزانه" : "Daily Budget"}
-              </label>
-              <span className="text-xs text-[#ff3e00] font-bold font-mono tabular-nums">
-                {userProfile.currency === "IRT"
-                  ? `${(userProfile.dailyBudgetToman ?? 1800000).toLocaleString("fa-IR")} تومان`
-                  : `$${userProfile.dailyBudgetUSD ?? 7.8}`}
-              </span>
-            </div>
-
-            {userProfile.currency === "IRT" ? (
-              <input
-                key="daily-budget-slider-irt"
-                id="daily-budget-slider-irt"
-                type="range"
-                min="400000"
-                max="6000000"
-                step="100000"
-                aria-label={
-                  isFa ? "سقف بودجه روزانه به تومان" : "Daily budget in Toman"
-                }
-                value={userProfile.dailyBudgetToman ?? 1800000}
-                onChange={(e) =>
-                  handleUpdate("dailyBudgetToman", Number(e.target.value))
-                }
-                className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
-              />
-            ) : (
-              <input
-                key="daily-budget-slider-usd"
-                id="daily-budget-slider-usd"
-                type="range"
-                min="2"
-                max="35"
-                step="1"
-                aria-label={
-                  isFa ? "سقف بودجه روزانه به دلار" : "Daily budget in USD"
-                }
-                value={userProfile.dailyBudgetUSD ?? 7.8}
-                onChange={(e) =>
-                  handleUpdate("dailyBudgetUSD", Number(e.target.value))
-                }
-                className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
-              />
-            )}
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </section>
 
-      {/* MACRONUTRIENT & CALORIE TARGET ADJUSTERS */}
-      <section className="bg-[#111214] border border-[#27272a] rounded-lg p-5">
-        <h3 className="text-xs text-[#9ca3af] font-bold uppercase tracking-wider block mb-5">
-          {isFa ? "اهداف روزانه" : "Daily Targets"}
-        </h3>
+      {/* ====================================================================
+          4. DAILY GOALS (CALORIES, PROTEIN, CARBS, FAT)
+          ==================================================================== */}
+      <section className="flex flex-col gap-3">
+        <span className="text-xs font-semibold uppercase tracking-wider text-[var(--apple-text-secondary)] px-1">
+          {isFa ? "اهداف روزانه انرژی و درشت‌مغذی‌ها" : "Daily Energy & Macro Targets"}
+        </span>
 
-        <div className="space-y-6">
-          {/* Calorie Goal */}
-          <div>
-            <div className="flex justify-between text-xs mb-2">
-              <label
-                htmlFor="cal-slider"
-                className="text-[#f4f4f5] font-medium"
-              >
-                {isFa ? "هدف کالری روزانه" : "Daily Calorie Target"}
-              </label>
-              <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
-                {isFa
-                  ? `${(userProfile.calorieGoal ?? 2000).toLocaleString("fa-IR")} کالری`
-                  : `${userProfile.calorieGoal ?? 2000} kcal`}
-              </span>
-            </div>
-            <input
-              id="cal-slider"
-              type="range"
-              min="1200"
-              max="4000"
-              step="50"
-              aria-label={isFa ? "هدف کالری روزانه" : "Daily calorie target"}
-              value={userProfile.calorieGoal ?? 2000}
-              onChange={(e) =>
-                handleUpdate("calorieGoal", Number(e.target.value))
-              }
-              className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
+        <Card className="apple-card border-[var(--apple-border)] shadow-sm">
+          <CardContent className="p-5 sm:p-6 flex flex-col gap-6">
+            {/* Derived Macro Energy Split Bar & Alignment Summary */}
+            <MacroSplitSummary
+              calorieGoal={userProfile.calorieGoal ?? 2000}
+              proteinGoal={userProfile.proteinGoal ?? 80}
+              carbsGoal={userProfile.carbsGoal ?? 250}
+              fatGoal={userProfile.fatGoal ?? 65}
+              isFa={isFa}
             />
-          </div>
 
-          {/* Protein Goal */}
-          <div>
-            <div className="flex justify-between text-xs mb-2">
-              <label
-                htmlFor="protein-slider"
-                className="text-[#f4f4f5] font-medium"
-              >
-                {isFa ? "هدف پروتئین روزانه" : "Daily Protein Target"}
-              </label>
-              <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
-                {isFa
-                  ? `${(userProfile.proteinGoal ?? 80).toLocaleString("fa-IR")} گرم`
-                  : `${userProfile.proteinGoal ?? 80}g`}
-              </span>
-            </div>
-            <input
-              id="protein-slider"
-              type="range"
-              min="40"
-              max="250"
-              step="5"
-              aria-label={isFa ? "هدف پروتئین روزانه" : "Daily protein target"}
-              value={userProfile.proteinGoal ?? 80}
-              onChange={(e) =>
-                handleUpdate("proteinGoal", Number(e.target.value))
-              }
-              className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
-            />
-          </div>
+          <div className="border-t border-[var(--apple-border)]" />
 
-          {/* Carbs Goal */}
-          <div>
-            <div className="flex justify-between text-xs mb-2">
-              <label
-                htmlFor="carbs-slider"
-                className="text-[#f4f4f5] font-medium"
-              >
-                {isFa ? "هدف کربوهیدرات روزانه" : "Daily Carbs Target"}
-              </label>
-              <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
-                {isFa
-                  ? `${(userProfile.carbsGoal ?? 250).toLocaleString("fa-IR")} گرم`
-                  : `${userProfile.carbsGoal ?? 250}g`}
-              </span>
-            </div>
-            <input
-              id="carbs-slider"
-              type="range"
-              min="20"
-              max="450"
-              step="5"
-              aria-label={isFa ? "هدف کربوهیدرات روزانه" : "Daily carbs target"}
-              value={userProfile.carbsGoal ?? 250}
-              onChange={(e) =>
-                handleUpdate("carbsGoal", Number(e.target.value))
-              }
-              className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
-            />
-          </div>
+          {/* ROW 1: CALORIES */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#ff3b30]/10 text-[#ff3b30] flex items-center justify-center shrink-0">
+                  <Flame className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] block">
+                    {isFa ? "هدف کالری روزانه" : "Daily Calorie Target"}
+                  </span>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+                    {isFa ? "سهمیه کل انرژی روزانه" : "Total daily energy allowance"}
+                  </span>
+                </div>
+              </div>
 
-          {/* Fat Goal */}
-          <div>
-            <div className="flex justify-between text-xs mb-2">
-              <label
-                htmlFor="fat-slider"
-                className="text-[#f4f4f5] font-medium"
-              >
-                {isFa ? "هدف چربی سالم روزانه" : "Daily Fat Target"}
-              </label>
-              <span className="text-[#ff3e00] font-bold font-mono text-sm tabular-nums">
-                {isFa
-                  ? `${(userProfile.fatGoal ?? 65).toLocaleString("fa-IR")} گرم`
-                  : `${userProfile.fatGoal ?? 65}g`}
-              </span>
-            </div>
-            <input
-              id="fat-slider"
-              type="range"
-              min="20"
-              max="150"
-              step="5"
-              aria-label={isFa ? "هدف چربی روزانه" : "Daily fat target"}
-              value={userProfile.fatGoal ?? 65}
-              onChange={(e) => handleUpdate("fatGoal", Number(e.target.value))}
-              className="w-full accent-[#ff3e00] bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
-            />
-          </div>
-
-          {/* Water Goal */}
-          <div>
-            <div className="flex justify-between items-center text-xs mb-2">
-              <label
-                htmlFor="water-slider"
-                className="text-[#f4f4f5] font-medium flex items-center gap-1.5"
-              >
-                <GlassWater className="w-3.5 h-3.5 text-cyan-400 stroke-[2.5]" />
-                <span>{isFa ? "هدف آب مصرفی روزانه" : "Daily Water Target"}</span>
-              </label>
               <div className="flex items-center gap-2">
-                <span className="text-cyan-400 font-bold font-mono text-sm tabular-nums">
-                  {isFa
-                    ? `${(userProfile.waterGoalGlasses ?? 8).toLocaleString("fa-IR")} لیوان`
-                    : `${userProfile.waterGoalGlasses ?? 8} glasses`}
-                </span>
-                <span className="text-[11px] text-[#71717a] font-mono">
-                  {isFa
-                    ? `(${((userProfile.waterGoalGlasses ?? 8) * 250).toLocaleString("fa-IR")} میلی‌لیتر)`
-                    : `(${(userProfile.waterGoalGlasses ?? 8) * 250} ml)`}
-                </span>
+                <AppleEditableValue
+                  value={userProfile.calorieGoal ?? 2000}
+                  min={1200}
+                  max={4000}
+                  unit={isFa ? "کالری" : "kcal"}
+                  onChange={(val) => handleUpdate("calorieGoal", val)}
+                  isFa={isFa}
+                />
+                <AppleStepper
+                  value={userProfile.calorieGoal ?? 2000}
+                  min={1200}
+                  max={4000}
+                  step={50}
+                  onChange={(val) => handleUpdate("calorieGoal", val)}
+                  isFa={isFa}
+                />
               </div>
             </div>
-            <input
-              id="water-slider"
-              type="range"
-              min="4"
-              max="20"
-              step="1"
-              aria-label={isFa ? "هدف آب مصرفی روزانه" : "Daily water target"}
-              value={userProfile.waterGoalGlasses ?? 8}
-              onChange={(e) => {
-                const val = Number(e.target.value);
-                handleUpdate("waterGoalGlasses", val);
-                try {
-                  const d = new Date();
-                  const todayKey = `nutriscan_water_v2_${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-                  const raw = localStorage.getItem(todayKey);
-                  if (raw) {
-                    const parsed = JSON.parse(raw);
-                    parsed.targetGlasses = val;
-                    localStorage.setItem(todayKey, JSON.stringify(parsed));
-                  }
-                  window.dispatchEvent(new Event("nutriscan_water_updated"));
-                } catch {}
-              }}
-              className="w-full accent-cyan-400 bg-[#27272a] h-2.5 rounded-lg cursor-pointer"
+
+            <AppleSlider
+              value={userProfile.calorieGoal ?? 2000}
+              min={1200}
+              max={4000}
+              step={50}
+              onChange={(val) => handleUpdate("calorieGoal", val)}
+              color="calorie"
+              unit={isFa ? "کالری" : "kcal"}
+              ariaLabel={isFa ? "هدف کالری روزانه" : "Daily Calorie Target"}
+              isFa={isFa}
             />
           </div>
-        </div>
-      </section>
+
+          <div className="border-t border-[var(--apple-border)]" />
+
+          {/* ROW 2: PROTEIN */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#0a84ff]/10 text-[#0a84ff] flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] block">
+                    {isFa ? "هدف پروتئین روزانه" : "Daily Protein Target"}
+                  </span>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+                    {isFa ? "۴ کالری به ازای هر گرم" : "4 kcal per gram"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <AppleEditableValue
+                  value={userProfile.proteinGoal ?? 80}
+                  min={40}
+                  max={250}
+                  unit={isFa ? "گرم" : "g"}
+                  onChange={(val) => handleUpdate("proteinGoal", val)}
+                  isFa={isFa}
+                />
+                <AppleStepper
+                  value={userProfile.proteinGoal ?? 80}
+                  min={40}
+                  max={250}
+                  step={5}
+                  onChange={(val) => handleUpdate("proteinGoal", val)}
+                  isFa={isFa}
+                />
+              </div>
+            </div>
+
+            <AppleSlider
+              value={userProfile.proteinGoal ?? 80}
+              min={40}
+              max={250}
+              step={5}
+              onChange={(val) => handleUpdate("proteinGoal", val)}
+              color="protein"
+              unit={isFa ? "گرم" : "g"}
+              ariaLabel={isFa ? "هدف پروتئین روزانه" : "Daily Protein Target"}
+              isFa={isFa}
+            />
+          </div>
+
+          <div className="border-t border-[var(--apple-border)]" />
+
+          {/* ROW 3: CARBS */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#ff9f0a]/10 text-[#ff9f0a] flex items-center justify-center shrink-0">
+                  <Wheat className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] block">
+                    {isFa ? "هدف کربوهیدرات روزانه" : "Daily Carbs Target"}
+                  </span>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+                    {isFa ? "۴ کالری به ازای هر گرم" : "4 kcal per gram"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <AppleEditableValue
+                  value={userProfile.carbsGoal ?? 250}
+                  min={20}
+                  max={450}
+                  unit={isFa ? "گرم" : "g"}
+                  onChange={(val) => handleUpdate("carbsGoal", val)}
+                  isFa={isFa}
+                />
+                <AppleStepper
+                  value={userProfile.carbsGoal ?? 250}
+                  min={20}
+                  max={450}
+                  step={5}
+                  onChange={(val) => handleUpdate("carbsGoal", val)}
+                  isFa={isFa}
+                />
+              </div>
+            </div>
+
+            <AppleSlider
+              value={userProfile.carbsGoal ?? 250}
+              min={20}
+              max={450}
+              step={5}
+              onChange={(val) => handleUpdate("carbsGoal", val)}
+              color="carbs"
+              unit={isFa ? "گرم" : "g"}
+              ariaLabel={isFa ? "هدف کربوهیدرات روزانه" : "Daily Carbs Target"}
+              isFa={isFa}
+            />
+          </div>
+
+          <div className="border-t border-[var(--apple-border)]" />
+
+          {/* ROW 4: FAT */}
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#ff375f]/10 text-[#ff375f] flex items-center justify-center shrink-0">
+                  <Droplet className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] block">
+                    {isFa ? "هدف چربی سالم روزانه" : "Daily Healthy Fat Target"}
+                  </span>
+                  <span className="text-[11px] text-[var(--apple-text-tertiary)]">
+                    {isFa ? "۹ کالری به ازای هر گرم" : "9 kcal per gram"}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <AppleEditableValue
+                  value={userProfile.fatGoal ?? 65}
+                  min={20}
+                  max={150}
+                  unit={isFa ? "گرم" : "g"}
+                  onChange={(val) => handleUpdate("fatGoal", val)}
+                  isFa={isFa}
+                />
+                <AppleStepper
+                  value={userProfile.fatGoal ?? 65}
+                  min={20}
+                  max={150}
+                  step={5}
+                  onChange={(val) => handleUpdate("fatGoal", val)}
+                  isFa={isFa}
+                />
+              </div>
+            </div>
+
+            <AppleSlider
+              value={userProfile.fatGoal ?? 65}
+              min={20}
+              max={150}
+              step={5}
+              onChange={(val) => handleUpdate("fatGoal", val)}
+              color="fat"
+              unit={isFa ? "گرم" : "g"}
+              ariaLabel={isFa ? "هدف چربی سالم روزانه" : "Daily Healthy Fat Target"}
+              isFa={isFa}
+            />
+          </div>
+        </CardContent>
+      </Card>
+    </section>
     </div>
   );
 };

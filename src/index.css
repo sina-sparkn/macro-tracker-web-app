@@ -1,661 +1,504 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Poppins:wght@400;600;700;800&family=Syne:wght@700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Vazirmatn:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", "Vazirmatn", "Poppins", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: "Syne", "Inter", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+  --font-vazirmatn: "Vazirmatn", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
 }
+
+/* ==========================================================================
+   DESIGN TOKENS: "Quiet, Spacious, Precise" (Apple Health / apple.com)
+   ========================================================================== */
 
 :root,
 html.dark,
 html[data-theme="dark"] {
-  --bg: #08090a;
-  --surface: #111214;
-  --ink: #e0e0e0;
-  --accent: #ff3e00;
-  --border: #2a2c31;
-  --ink-dim: #707070;
+  --apple-bg: #000000;
+  --apple-surface: #161618;
+  --apple-surface-secondary: #1c1c1e;
+  --apple-surface-tertiary: #2c2c2e;
+  --apple-glass: rgba(22, 22, 24, 0.78);
+  --apple-glass-border: rgba(255, 255, 255, 0.08);
+
+  --apple-text-primary: #f5f5f7;
+  --apple-text-secondary: #8e8e93;
+  --apple-text-tertiary: #636366;
+
+  --apple-border: rgba(255, 255, 255, 0.08);
+  --apple-border-strong: rgba(255, 255, 255, 0.16);
+
+  --apple-card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45), 0 1px 4px -1px rgba(0, 0, 0, 0.2);
+  --apple-card-shadow-hover: 0 12px 32px -4px rgba(0, 0, 0, 0.65), 0 2px 8px -1px rgba(0, 0, 0, 0.3);
+
+  --apple-accent-start: #ff6947;
+  --apple-accent-end: #ff3b30;
+  --apple-accent: #ff453a;
+  --apple-accent-glow: rgba(255, 59, 48, 0.26);
+
+  --macro-protein: #0a84ff;
+  --macro-protein-bg: rgba(10, 132, 255, 0.12);
+  --macro-carbs: #ff9f0a;
+  --macro-carbs-bg: rgba(255, 159, 10, 0.12);
+  --macro-fat: #ff375f;
+  --macro-fat-bg: rgba(255, 55, 95, 0.12);
+  --macro-water: #32ade6;
+  --macro-water-bg: rgba(50, 173, 230, 0.12);
+  --macro-green: #30d158;
+  --macro-green-bg: rgba(48, 209, 88, 0.12);
+
   color-scheme: dark;
 }
 
 html.light,
 html[data-theme="light"] {
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --ink: #0f172a;
-  --accent: #ff3e00;
-  --border: #e2e8f0;
-  --ink-dim: #64748b;
+  --apple-bg: #f5f5f7;
+  --apple-surface: #ffffff;
+  --apple-surface-secondary: #f2f2f7;
+  --apple-surface-tertiary: #e5e5ea;
+  --apple-glass: rgba(255, 255, 255, 0.82);
+  --apple-glass-border: rgba(0, 0, 0, 0.06);
+
+  --apple-text-primary: #1d1d1f;
+  --apple-text-secondary: #6e6e73;
+  --apple-text-tertiary: #86868b;
+
+  --apple-border: rgba(0, 0, 0, 0.07);
+  --apple-border-strong: rgba(0, 0, 0, 0.14);
+
+  --apple-card-shadow: 0 2px 12px -1px rgba(0, 0, 0, 0.04), 0 1px 3px -1px rgba(0, 0, 0, 0.02);
+  --apple-card-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+
+  --apple-accent-start: #ff6239;
+  --apple-accent-end: #ff3b30;
+  --apple-accent: #ff3b30;
+  --apple-accent-glow: rgba(255, 59, 48, 0.2);
+
+  --macro-protein: #007aff;
+  --macro-protein-bg: rgba(0, 122, 255, 0.08);
+  --macro-carbs: #d97706;
+  --macro-carbs-bg: rgba(217, 119, 6, 0.08);
+  --macro-fat: #e11d48;
+  --macro-fat-bg: rgba(225, 29, 72, 0.08);
+  --macro-water: #0284c7;
+  --macro-water-bg: rgba(2, 132, 199, 0.08);
+  --macro-green: #10b981;
+  --macro-green-bg: rgba(16, 185, 129, 0.08);
+
   color-scheme: light;
 }
 
-::selection {
-  background: #ff3e00;
-  color: #08090a;
+/* ==========================================================================
+   GLOBAL RESET & TYPOGRAPHY
+   ========================================================================== */
+
+* {
+  box-sizing: border-box;
 }
 
-html.light ::selection {
-  background: #ff3e00;
-  color: #ffffff;
-}
-
-/* Base typography: Inter & Vazirmatn for Persian, JetBrains Mono for telemetry */
 html,
 body,
 #root {
-  background-color: #08090a;
-  color: #e0e0e0;
-  font-family: "Inter", "Vazirmatn", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--apple-bg);
+  color: var(--apple-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-html.light,
-html.light body,
-html.light #root {
-  background-color: #f8fafc;
-  color: #0f172a;
+/* Tabular figures for all numbers */
+.tabular-nums,
+[data-tabular="true"],
+span.number,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
-/* Form controls and button font inheritance */
-button,
-input,
-optgroup,
-select,
-textarea {
-  font-family: inherit;
-}
-
-/* Direction-specific font cascade - Vazirmatn for Persian */
+/* Direction-specific font rules: Vazirmatn for Persian */
 [dir="rtl"],
 [dir="rtl"] *,
 [lang="fa"],
 [lang="fa"] *,
-.font-vazirmatn,
-.font-persian {
-  font-family: "Vazirmatn", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+.font-vazirmatn {
+  font-family: "Vazirmatn", -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif !important;
   letter-spacing: normal !important;
 }
 
 [dir="ltr"],
-[lang="en"] {
-  font-family: "Poppins", "Vazirmatn", ui-sans-serif, system-ui, sans-serif;
+[dir="ltr"] * {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif;
 }
 
-/* Utility classes for direct font targeting */
-.font-display,
-.font-syne {
-  font-family: "Syne", "Poppins", "Vazirmatn", sans-serif;
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--apple-accent);
+  outline-offset: 2px;
 }
 
-.font-vazirmatn,
-.font-persian {
-  font-family: "Vazirmatn", "Poppins", sans-serif !important;
+/* Selection */
+::selection {
+  background-color: rgba(255, 59, 48, 0.2);
+  color: inherit;
 }
 
-.font-poppins,
-.font-english {
-  font-family: "Poppins", "Vazirmatn", sans-serif !important;
+/* ==========================================================================
+   APPLE COMPONENT PRIMITIVES
+   ========================================================================== */
+
+/* Glass Top Bar & Rail Vibrancy */
+.apple-glass-bar {
+  background: var(--apple-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-color: var(--apple-glass-border);
 }
 
-.font-spacemono {
-  font-family: "Space Mono", "JetBrains Mono", monospace;
+/* Apple Card */
+.apple-card {
+  background-color: var(--apple-surface);
+  border: 1px solid var(--apple-border);
+  border-radius: 24px;
+  box-shadow: var(--apple-card-shadow);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.2s ease,
+              background-color 0.25s ease;
 }
 
-/* Cyber Data Console grid background pattern from Variation 6 */
-.console-grid-bg {
-  background-color: #08090a;
-  background-image: 
-    linear-gradient(#2a2c31 1px, transparent 1px),
-    linear-gradient(90deg, #2a2c31 1px, transparent 1px);
-  background-size: 40px 40px;
+.apple-card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--apple-card-shadow-hover);
 }
 
-.dot-bg {
-  background-color: #08090a;
-  background-image: 
-    linear-gradient(#2a2c31 1px, transparent 1px),
-    linear-gradient(90deg, #2a2c31 1px, transparent 1px);
-  background-size: 40px 40px;
-}
-
-/* Accessible Buttons */
-.btn-cmd {
-  background: #ff3e00;
-  border: 1px solid #ff3e00;
-  color: #08090a;
-  min-height: 44px;
-  padding: 0.65rem 1.5rem;
-  font-family: inherit;
-  font-weight: 700;
+/* Primary CTA Button (Orange-Coral Apple Gradient) */
+.btn-apple-primary {
+  background: linear-gradient(135deg, var(--apple-accent-start) 0%, var(--apple-accent-end) 100%);
+  color: #ffffff !important;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 14px var(--apple-accent-glow);
   cursor: pointer;
-  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 4px;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.15s ease,
+              opacity 0.15s ease;
 }
 
-.btn-cmd:hover {
-  background: #ff5722;
-  border-color: #ff5722;
-  color: #000000;
+.btn-apple-primary:hover {
+  opacity: 0.94;
+  box-shadow: 0 6px 18px var(--apple-accent-glow);
 }
 
-.btn-cmd:focus-visible {
-  outline: 2px solid #ffffff;
-  outline-offset: 2px;
+.btn-apple-primary:active {
+  transform: scale(0.98);
 }
 
-.btn-cmd-dim {
-  background: #18191d;
-  border: 1px solid #3f3f46;
-  color: #f4f4f5;
-  min-height: 44px;
-  padding: 0.65rem 1.25rem;
-  font-family: inherit;
-  font-weight: 600;
+/* Secondary Button (Soft Inset / Tinted) */
+.btn-apple-secondary {
+  background-color: var(--apple-surface-secondary);
+  color: var(--apple-text-primary);
+  font-weight: 500;
+  border-radius: 9999px;
+  border: 1px solid var(--apple-border);
   cursor: pointer;
-  transition: all 0.2s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 4px;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+              background-color 0.15s ease,
+              border-color 0.15s ease;
 }
 
-.btn-cmd-dim:hover {
-  border-color: #ff3e00;
-  background: #23252a;
-  color: #ffffff;
+.btn-apple-secondary:hover {
+  background-color: var(--apple-surface-tertiary);
+  border-color: var(--apple-border-strong);
 }
 
-.btn-cmd-dim:focus-visible {
-  outline: 2px solid #ff3e00;
-  outline-offset: 2px;
+.btn-apple-secondary:active {
+  transform: scale(0.98);
 }
 
-/* Technical mono label */
-.tech-label {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: #ff3e00;
-}
-
-/* Cyber Data Console Meta & Component Architecture */
-.meta {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.65rem;
-  color: #707070;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  font-weight: 700;
-}
-
-.featured-card {
-  background: #111214;
-  border: 1px solid #2a2c31;
-}
-
-.action-btn {
-  background: #111214;
-  border: 1px solid #2a2c31;
-  padding: 1.25rem;
-  border-radius: 8px;
-  color: #e0e0e0;
-  font-weight: 600;
+/* Ghost Button */
+.btn-apple-ghost {
+  background-color: transparent;
+  color: var(--apple-text-secondary);
+  font-weight: 500;
+  border-radius: 9999px;
+  border: 1px solid transparent;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.65rem;
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.action-btn:hover {
-  border-color: #ff3e00;
-  background: #18191d;
+.btn-apple-ghost:hover {
+  background-color: var(--apple-surface-secondary);
+  color: var(--apple-text-primary);
 }
 
-.row-item {
-  display: flex;
-  justify-content: space-between;
+.btn-apple-ghost:active {
+  transform: scale(0.98);
+}
+
+/* Segmented Control Container */
+.apple-segmented-container {
+  background-color: var(--apple-surface-secondary);
+  border: 1px solid var(--apple-border);
+  border-radius: 9999px;
+  padding: 3px;
+  display: inline-flex;
   align-items: center;
-  padding: 0.75rem 0.85rem;
-  background: #111214;
-  border: 1px solid #2a2c31;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  gap: 2px;
 }
 
-.water-btn {
-  background: rgba(59, 130, 246, 0.12);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
-  width: 100%;
-  padding: 0.75rem;
-  border-radius: 6px;
-  font-weight: 700;
+.apple-segmented-item {
+  border-radius: 9999px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--apple-text-secondary);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.water-btn:hover {
-  background: rgba(59, 130, 246, 0.22);
-  border-color: rgba(59, 130, 246, 0.5);
+.apple-segmented-item-active {
+  background-color: var(--apple-surface);
+  color: var(--apple-text-primary);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
 }
 
-/* Custom Dark CSS Scrollbar */
+/* Activity Ring Utility */
+.apple-ring-glow {
+  filter: drop-shadow(0 2px 8px var(--apple-accent-glow));
+}
+
+/* Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #08090a;
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a2c31;
-  border-radius: 0px;
+  background: var(--apple-border-strong);
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff3e00;
-}
-
-@keyframes pulse-slow {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 0.7; }
-}
-
-.animate-pulse-slow {
-  animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-@keyframes loading-progress {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(0%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-loading-progress {
-  animation: loading-progress 1.5s ease-in-out infinite;
+  background: var(--apple-text-tertiary);
 }
 
 /* ==========================================================================
-   COMPREHENSIVE LIGHT THEME DESIGN SYSTEM & HIGH-CONTRAST OVERRIDES
+   GLOBAL COMPATIBILITY MAPPINGS FOR DIARY & GOALS VIEWS
    ========================================================================== */
 
-/* 1. Global Light Background & Console Grid */
-html.light,
-html[data-theme="light"] {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-  color-scheme: light;
+/* Surfaces */
+.bg-\[\#08090a\],
+[class*="bg-[#08090a]"] {
+  background-color: var(--apple-bg) !important;
 }
 
-html.light body,
-html.light #root,
-html.light .console-grid-bg,
-html.light .dot-bg {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-  background-image: 
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px) !important;
+.bg-\[\#111214\],
+.bg-\[\#0e1013\],
+[class*="bg-[#111214]"],
+[class*="bg-[#0e1013]"] {
+  background-color: var(--apple-surface) !important;
 }
 
-/* 2. All Core Surfaces & Backgrounds */
-/* Main page level dark surfaces -> light slate */
-html.light .bg-\[\#08090a\],
-html.light [class*="bg-[#08090a]"]:not(.fixed):not([role="dialog"]):not([role="dialog"] *) {
-  background-color: #f8fafc !important;
+.bg-\[\#18191d\],
+.bg-\[\#1a1c22\],
+[class*="bg-[#18191d]"],
+[class*="bg-[#1a1c22]"] {
+  background-color: var(--apple-surface-secondary) !important;
 }
 
-/* Primary cards, containers, sidebars, headers, mobile dock -> crisp white */
-html.light .bg-\[\#111214\],
-html.light [class*="bg-[#111214]"],
-html.light .bg-\[\#0e1013\],
-html.light [class*="bg-[#0e1013]"],
-html.light .bg-zinc-900,
-html.light .bg-zinc-950 {
-  background-color: #ffffff !important;
+.bg-\[\#23252a\],
+.bg-\[\#27272a\],
+[class*="bg-[#23252a]"],
+[class*="bg-[#27272a]"] {
+  background-color: var(--apple-surface-tertiary) !important;
 }
 
-/* Secondary cards, inset panels, chips, metric badges -> subtle light slate */
-html.light .bg-\[\#18191d\],
-html.light [class*="bg-[#18191d]"],
-html.light .bg-\[\#1a1c22\],
-html.light [class*="bg-[#1a1c22]"],
-html.light .bg-zinc-800 {
-  background-color: #f1f5f9 !important;
+/* Borders */
+.border-\[\#2a2c31\],
+.border-\[\#27272a\],
+.border-\[\#1f2024\],
+[class*="border-[#2a2c31]"],
+[class*="border-[#27272a]"],
+[class*="border-[#1f2024]"] {
+  border-color: var(--apple-border) !important;
 }
 
-/* Progress tracks, separators, tertiary controls -> clean slate border-shade */
-html.light .bg-\[\#1a1b1e\],
-html.light [class*="bg-[#1a1b1e]"],
-html.light .bg-\[\#1f2126\],
-html.light [class*="bg-[#1f2126]"],
-html.light .bg-\[\#23252a\],
-html.light [class*="bg-[#23252a]"],
-html.light .bg-\[\#27272a\],
-html.light [class*="bg-[#27272a]"] {
-  background-color: #e2e8f0 !important;
+/* Text */
+.text-\[\#e0e0e0\],
+.text-\[\#f4f4f5\],
+[class*="text-[#e0e0e0]"],
+[class*="text-[#f4f4f5]"] {
+  color: var(--apple-text-primary) !important;
 }
 
-html.light .bg-\[\#3f3f46\],
-html.light [class*="bg-[#3f3f46]"] {
-  background-color: #cbd5e1 !important;
+.text-\[\#707070\],
+.text-\[\#9ca3af\],
+.text-\[\#a1a1aa\],
+[class*="text-[#707070]"],
+[class*="text-[#9ca3af]"],
+[class*="text-[#a1a1aa]"] {
+  color: var(--apple-text-secondary) !important;
 }
 
-/* 3. Text & Typography - High Contrast Slate Palette */
-html.light .text-\[\#e0e0e0\],
-html.light [class*="text-[#e0e0e0]"],
-html.light .text-\[\#f4f4f5\],
-html.light [class*="text-[#f4f4f5]"],
-html.light .text-zinc-100,
-html.light .text-zinc-200 {
-  color: #0f172a !important;
-}
-
-/* Explicit white text that was hardcoded in headers/stats */
-html.light .text-\[\#ffffff\],
-html.light [class*="text-[#ffffff]"] {
-  color: #0f172a !important;
-}
-
-/* Secondary values & labels */
-html.light .text-\[\#d4d4d8\],
-html.light [class*="text-[#d4d4d8]"],
-html.light .text-zinc-300 {
-  color: #1e293b !important;
-}
-
-/* Metadata, descriptions, icon captions */
-html.light .text-\[\#9ca3af\],
-html.light [class*="text-[#9ca3af]"],
-html.light .text-\[\#a1a1aa\],
-html.light [class*="text-[#a1a1aa]"],
-html.light .text-zinc-400 {
-  color: #475569 !important;
-}
-
-html.light .text-\[\#707070\],
-html.light [class*="text-[#707070]"],
-html.light .text-\[\#71717a\],
-html.light [class*="text-[#71717a]"],
-html.light .text-zinc-500,
-html.light .meta {
-  color: #64748b !important;
-}
-
-html.light .text-\[\#52525b\],
-html.light [class*="text-[#52525b]"],
-html.light .text-\[\#3f3f46\],
-html.light [class*="text-[#3f3f46]"] {
-  color: #94a3b8 !important;
-}
-
-/* Ensure headings in light mode are always bold slate-900 */
-html.light h1,
-html.light h2,
-html.light h3,
-html.light h4,
-html.light h5,
-html.light h6 {
-  color: #0f172a !important;
-}
-
-/* High contrast on primary colored buttons and badges */
-html.light button.btn-cmd,
-html.light .btn-cmd,
-html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]):not([class*="ring"]) {
-  color: #000000 !important;
-}
-html.light .btn-cmd span,
-html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]) span,
-html.light [class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]) strong {
-  color: #000000 !important;
-}
-html.light .bg-red-600,
-html.light .bg-red-500 {
+/* Accent Button & Text */
+.bg-\[\#ff3e00\],
+[class*="bg-[#ff3e00]"]:not([class*="/"]):not([class*="hover"]):not([class*="ring"]) {
+  background: linear-gradient(135deg, var(--apple-accent-start) 0%, var(--apple-accent-end) 100%) !important;
   color: #ffffff !important;
-}
-html.light .bg-red-600 *,
-html.light .bg-red-500 * {
-  color: #ffffff !important;
-}
-html.light .bg-emerald-500,
-html.light .bg-emerald-400 {
-  color: #064e3b !important;
-}
-html.light .bg-cyan-500,
-html.light .bg-cyan-400 {
-  color: #082f49 !important;
+  border-radius: 9999px;
 }
 
-/* High contrast colored metrics in light mode */
-html.light .text-sky-400 {
-  color: #0284c7 !important;
-}
-html.light .text-amber-400 {
-  color: #d97706 !important;
-}
-html.light .text-rose-400 {
-  color: #e11d48 !important;
-}
-html.light .text-emerald-400 {
-  color: #059669 !important;
-}
-html.light .text-cyan-400 {
-  color: #0284c7 !important;
-}
-html.light .text-cyan-300 {
-  color: #0369a1 !important;
+.text-\[\#ff3e00\],
+[class*="text-[#ff3e00]"] {
+  color: var(--apple-accent) !important;
 }
 
-/* 4. Borders & Dividers */
-html.light .border-\[\#2a2c31\],
-html.light [class*="border-[#2a2c31]"],
-html.light .border-\[\#27272a\],
-html.light [class*="border-[#27272a]"],
-html.light .border-\[\#1f2024\],
-html.light [class*="border-[#1f2024]"],
-html.light .border-zinc-800,
-html.light .border-zinc-700 {
-  border-color: #e2e8f0 !important;
+.border-\[\#ff3e00\],
+[class*="border-[#ff3e00]"] {
+  border-color: var(--apple-accent) !important;
 }
 
-html.light .border-\[\#3f3f46\],
-html.light [class*="border-[#3f3f46]"],
-html.light .border-\[\#707070\],
-html.light [class*="border-[#707070]"] {
-  border-color: #cbd5e1 !important;
+/* Modern Form Controls */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+select,
+textarea {
+  background-color: var(--apple-surface-secondary) !important;
+  color: var(--apple-text-primary) !important;
+  border: 1px solid var(--apple-border) !important;
+  border-radius: 12px !important;
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-html.light .divide-\[\#2a2c31\] > * + *,
-html.light .divide-\[\#27272a\] > * + * {
-  border-color: #e2e8f0 !important;
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--apple-accent) !important;
+  box-shadow: 0 0 0 3px var(--apple-accent-glow) !important;
+  outline: none !important;
 }
 
-/* 5. Hover & Interactive States */
-html.light .hover\:bg-\[\#18191d\]:hover {
-  background-color: #f1f5f9 !important;
-}
-html.light .hover\:bg-\[\#23252a\]:hover {
-  background-color: #e2e8f0 !important;
-}
-html.light .hover\:bg-\[\#27272a\]:hover {
-  background-color: #e2e8f0 !important;
-}
-html.light .hover\:bg-\[\#3f3f46\]:hover {
-  background-color: #cbd5e1 !important;
-}
-html.light .hover\:text-\[\#e0e0e0\]:hover,
-html.light .hover\:text-\[\#f4f4f5\]:hover,
-html.light .hover\:text-white:hover {
-  color: #0f172a !important;
+input::placeholder,
+textarea::placeholder {
+  color: var(--apple-text-tertiary) !important;
 }
 
-/* 6. Form Controls & Sliders */
-html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
-html.light select,
-html.light textarea {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+input[type="range"] {
+  accent-color: var(--apple-accent) !important;
 }
 
-html.light input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):focus,
-html.light select:focus,
-html.light textarea:focus {
-  border-color: #ff3e00 !important;
-  box-shadow: 0 0 0 2px rgba(255, 62, 0, 0.15) !important;
+/* Apple Accessible Slider */
+.apple-slider-container {
+  touch-action: pan-y;
+  user-select: none;
 }
 
-html.light input::placeholder,
-html.light textarea::placeholder {
-  color: #94a3b8 !important;
+input[type="range"].apple-slider-input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 36px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  margin: 0;
+  padding: 0;
+  outline: none;
 }
 
-html.light input[type="range"] {
-  background-color: #e2e8f0 !important;
-  accent-color: #ff3e00 !important;
+input[type="range"].apple-slider-input::-webkit-slider-runnable-track {
+  background: transparent !important;
+  height: 6px;
+  border: none;
 }
 
-/* 7. Components & Cards Specifics */
-html.light .featured-card {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+input[type="range"].apple-slider-input::-moz-range-track {
+  background: transparent !important;
+  height: 6px;
+  border: none;
 }
 
-html.light .action-btn {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+input[type="range"].apple-slider-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-top: -11px;
+  cursor: grab;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
 }
 
-html.light .action-btn:hover {
-  background: #f8fafc !important;
-  border-color: #ff3e00 !important;
+html.dark input[type="range"].apple-slider-input::-webkit-slider-thumb {
+  background: #f5f5f7;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-html.light .row-item {
-  background: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  color: #0f172a !important;
+input[type="range"].apple-slider-input:active::-webkit-slider-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22), 0 1px 3px rgba(0, 0, 0, 0.12);
 }
 
-html.light .btn-cmd-dim {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+input[type="range"].apple-slider-input::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16), 0 1px 2px rgba(0, 0, 0, 0.1);
+  cursor: grab;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-html.light .btn-cmd-dim:hover {
-  background: #e2e8f0 !important;
-  color: #000000 !important;
+html.dark input[type="range"].apple-slider-input::-moz-range-thumb {
+  background: #f5f5f7;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-html.light .water-btn {
-  background: #eff6ff !important;
-  border: 1px solid #bfdbfe !important;
-  color: #1d4ed8 !important;
-  font-weight: 700 !important;
+input[type="range"].apple-slider-input:active::-moz-range-thumb {
+  transform: scale(1.08);
+  cursor: grabbing;
 }
 
-html.light .water-btn:hover {
-  background: #dbeafe !important;
-  border-color: #93c5fd !important;
-  color: #1e40af !important;
+input[type="range"].apple-slider-input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--apple-accent-glow), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-/* 8. Modals, Dialogs & Backdrop Overlays */
-html.light [role="dialog"],
-html.light [aria-modal="true"],
-html.light .fixed.inset-0.z-50 {
-  background-color: rgba(15, 23, 42, 0.5) !important;
-  backdrop-filter: blur(4px) !important;
+input[type="range"].apple-slider-input:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--apple-accent-glow), 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-html.light [role="dialog"] > div,
-html.light [aria-modal="true"] > div {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+/* Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
-
-html.light [role="dialog"] .bg-\[\#18191d\],
-html.light [aria-modal="true"] .bg-\[\#18191d\] {
-  background-color: #f8fafc !important;
-  border-color: #e2e8f0 !important;
-}
-
-html.light [role="dialog"] .bg-\[\#111214\],
-html.light [aria-modal="true"] .bg-\[\#111214\] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-}
-
-/* 9. Processing Overlay */
-html.light .fixed.inset-0.bg-\[\#08090a\]\/95 {
-  background-color: rgba(248, 250, 252, 0.95) !important;
-  backdrop-filter: blur(8px) !important;
-}
-
-/* 10. Mobile Bottom Dock */
-html.light nav.fixed.bottom-0 {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06) !important;
-}
-
-/* 11. SVG Graphics & Charts */
-html.light circle[stroke="#1f2126"] {
-  stroke: #e2e8f0 !important;
-}
-
-/* 12. Water & Calorie Histogram Charts in Light Mode */
-html.light .h-60.bg-\[\#08090a\],
-html.light .h-64.bg-\[\#08090a\],
-html.light .h-72.bg-\[\#08090a\],
-html.light [class*="h-60"][class*="bg-[#08090a]"],
-html.light [class*="h-64"][class*="bg-[#08090a]"],
-html.light [class*="h-72"][class*="bg-[#08090a]"] {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-}
-
-/* Goal indicator tags on charts */
-html.light span[class*="bg-[#08090a]/9"] {
-  background-color: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-/* 13. Subtle Watermarks in Light Mode */
-html.light [class*="text-white/[0.02]"],
-html.light [class*="text-white/[0.03]"] {
-  color: rgba(15, 23, 42, 0.04) !important;
-}
-
-/* 14. Light Mode Scrollbars */
-html.light ::-webkit-scrollbar-track {
-  background: #f8fafc;
-}
-html.light ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: #ff3e00;
-}
-
-
-

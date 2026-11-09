@@ -1,22 +1,20 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Droplets, Plus, Minus, Camera, BookOpen, Sliders, PlusIcon } from "lucide-react";
+import { Camera, BookOpen, Sliders, Droplets, CreditCard } from "lucide-react";
 import { UserProfile, DailyTotals } from "../types";
-import { formatSmartPrice } from "../utils/dishLocalization";
+import { formatNumber, formatPriceDisplay } from "../utils/formatters";
+import { ActivityRing } from "./apple/ActivityRing";
+import { MacroBar } from "./apple/MacroBar";
+import { WaterTracker } from "./apple/WaterTracker";
+import { Card, CardContent } from "./ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 export interface WaterLogEntry {
   id: string;
-  time: string; // e.g. "09:30 AM" or "۰۹:۳۰"
+  time: string;
   timestamp: number;
   glasses: number;
   ml: number;
   label?: string;
-}
-
-export interface WaterReminderConfig {
-  enabled: boolean;
-  intervalMinutes: number; // 0 = Smart Adaptive (60-90m), 45, 60, 90, 120
-  soundEnabled: boolean;
-  browserNotifications: boolean;
 }
 
 // Gentle 2-tone water drop chime using Web Audio API
@@ -29,7 +27,6 @@ export const playWaterDropChime = () => {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // Note 1: gentle bubble rise D5 -> A5
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = "sine";
@@ -42,7 +39,6 @@ export const playWaterDropChime = () => {
     osc1.start(now);
     osc1.stop(now + 0.3);
 
-    // Note 2: high clean water droplet D6
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = "sine";
@@ -55,17 +51,9 @@ export const playWaterDropChime = () => {
     osc2.start(now + 0.14);
     osc2.stop(now + 0.45);
   } catch (e) {
-    console.debug("Chime playback error:", e);
+    // Audio context may be restricted without gesture
   }
 };
-
-interface SidebarsProps {
-  activeTab: "scan" | "diary" | "profile";
-  setActiveTab: (tab: "scan" | "diary" | "profile") => void;
-  userProfile: UserProfile;
-  dailyTotals: DailyTotals;
-  diaryCount: number;
-}
 
 export const IconBar: React.FC<{
   activeTab: "scan" | "diary" | "profile";
@@ -73,10 +61,12 @@ export const IconBar: React.FC<{
   diaryCount: number;
   currentLang?: string;
 }> = () => {
-  // Merged into NavPane to eliminate redundant sidebars and reduce clutter
   return null;
 };
 
+/* ==========================================================================
+   ICON RAIL: FLOATING PILL-SHAPED DOCK WITH SF-STYLE LINE ICONS & TOOLTIPS
+   ========================================================================== */
 export const NavPane: React.FC<{
   activeTab: "scan" | "diary" | "profile";
   setActiveTab: (tab: "scan" | "diary" | "profile") => void;
@@ -85,74 +75,72 @@ export const NavPane: React.FC<{
 }> = ({ activeTab, setActiveTab, diaryCount, currentLang }) => {
   const isFa = currentLang === "fa";
 
+  const navItems = [
+    {
+      id: "scan" as const,
+      label: isFa ? "اسکن غذا" : "Scan",
+      icon: Camera
+    },
+    {
+      id: "diary" as const,
+      label: isFa ? "یادداشت روزانه" : "Diary",
+      icon: BookOpen,
+      count: diaryCount
+    },
+    {
+      id: "profile" as const,
+      label: isFa ? "اهداف و تنظیمات" : "Goals",
+      icon: Sliders
+    }
+  ];
+
   return (
     <aside
       aria-label={isFa ? "ناوبری اصلی" : "Main Navigation"}
-      className="hidden lg:flex w-20 border-r border-[#2a2c31] rtl:border-r-0 rtl:border-l py-6 bg-[#111214] flex-col items-center justify-between shrink-0 select-none z-20"
+      className="hidden lg:flex w-20 py-8 px-2.5 flex-col items-center justify-start shrink-0 select-none z-30"
     >
-      <div className="flex flex-col items-center gap-5 w-full">
-
-
-        {/* NAVIGATION TILES */}
-        <nav className="flex flex-col items-center gap-4 w-full" role="tablist">
-          {/* SCAN TAB */}
-          <button
-            onClick={() => setActiveTab("scan")}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "scan"}
-            title={isFa ? "اسکن با دوربین" : "Scan Meal"}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
-              activeTab === "scan"
-                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
-                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
-            }`}
-          >
-            <Camera className="w-5 h-5 stroke-[2.2]" />
-          </button>
-
-          {/* DIARY TAB */}
-          <button
-            onClick={() => setActiveTab("diary")}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "diary"}
-            title={isFa ? "یادداشت روزانه" : "Food Diary"}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
-              activeTab === "diary"
-                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
-                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
-            }`}
-          >
-            <BookOpen className="w-5 h-5 stroke-[2.2]" />
-            {diaryCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-[#ff3e00] text-black text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-full min-w-4 text-center shadow-sm">
-                {isFa ? diaryCount.toLocaleString("fa-IR") : diaryCount}
-              </span>
-            )}
-          </button>
-
-          {/* GOALS TAB */}
-          <button
-            onClick={() => setActiveTab("profile")}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === "profile"}
-            title={isFa ? "اهداف و بودجه" : "Goals & Budget"}
-            className={`w-12 h-12 rounded-lg flex items-center justify-center cursor-pointer transition-all duration-200 relative group focus-visible:ring-2 focus-visible:ring-[#ff3e00] focus-visible:outline-none ${
-              activeTab === "profile"
-                ? "bg-[#ff3e00] text-black font-bold shadow-[0_2px_14px_rgba(255,62,0,0.35)]"
-                : "text-[#707070] hover:text-[#e0e0e0] hover:bg-[#18191d]"
-            }`}
-          >
-            <Sliders className="w-5 h-5 stroke-[2.2]" />
-          </button>
+      {/* Floating Pill Dock */}
+      <TooltipProvider>
+        <nav
+          role="tablist"
+          className="apple-glass-bar border rounded-full p-2 flex flex-col items-center gap-3 shadow-sm"
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setActiveTab(item.id)}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-label={item.label}
+                    className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 cursor-pointer relative ${
+                      isActive
+                        ? "bg-[var(--apple-surface)] dark:bg-white/12 text-[#ff3b30] shadow-sm"
+                        : "text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)] hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 stroke-[2]" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side={isFa ? "left" : "right"}>
+                  <span>{item.label}</span>
+                </TooltipContent>
+              </Tooltip>
+            );
+          })}
         </nav>
-      </div>
+      </TooltipProvider>
     </aside>
   );
 };
 
+/* ==========================================================================
+   HEALTH SUMMARY & VITALS SIDEBAR (APPLE HEALTH / FITNESS STYLE)
+   ========================================================================== */
 export const VitalsPane: React.FC<{
   userProfile: UserProfile;
   dailyTotals: DailyTotals;
@@ -163,7 +151,6 @@ export const VitalsPane: React.FC<{
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
 
-  // Persistent water intake storage keys for today
   const getTodayDateStr = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -172,11 +159,7 @@ export const VitalsPane: React.FC<{
   const getV2StorageKey = () => `nutriscan_water_v2_${getTodayDateStr()}`;
   const getLegacyStorageKey = () => `nutriscan_water_${getTodayDateStr()}`;
 
-  // State: daily entries and target
   const [targetGlasses, setTargetGlasses] = useState<number>(() => {
-    if (typeof userProfile.waterGoalGlasses === "number" && userProfile.waterGoalGlasses > 0) {
-      return userProfile.waterGoalGlasses;
-    }
     try {
       const raw = localStorage.getItem(getV2StorageKey());
       if (raw) {
@@ -233,36 +216,6 @@ export const VitalsPane: React.FC<{
     return [];
   });
 
-  // Synchronize when propWater changes from outside
-  useEffect(() => {
-    if (typeof propWater === "number") {
-      const currentTotal = entries.reduce((sum, e) => sum + e.glasses, 0);
-      if (propWater !== currentTotal) {
-        if (propWater === 0) {
-          setEntries([]);
-        } else if (propWater > currentTotal) {
-          const delta = propWater - currentTotal;
-          const newEntry: WaterLogEntry = {
-            id: `entry-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-            time: "Sync",
-            timestamp: Date.now(),
-            glasses: delta,
-            ml: delta * 250
-          };
-          setEntries((prev) => [...prev, newEntry]);
-        }
-      }
-    }
-  }, [propWater]);
-
-  // Synchronize when water target in settings changes
-  useEffect(() => {
-    if (typeof userProfile.waterGoalGlasses === "number" && userProfile.waterGoalGlasses > 0) {
-      setTargetGlasses(userProfile.waterGoalGlasses);
-    }
-  }, [userProfile.waterGoalGlasses]);
-
-  // Synchronize when water updates in other components (e.g. DiaryConsoleView)
   useEffect(() => {
     const handleWaterEvent = () => {
       try {
@@ -273,7 +226,7 @@ export const VitalsPane: React.FC<{
             setEntries(parsed.entries);
           }
           if (typeof parsed.targetGlasses === "number") {
-            setTargetGlasses(userProfile.waterGoalGlasses || parsed.targetGlasses);
+            setTargetGlasses(parsed.targetGlasses);
           }
         }
       } catch {}
@@ -282,13 +235,9 @@ export const VitalsPane: React.FC<{
     return () => window.removeEventListener("nutriscan_water_updated", handleWaterEvent);
   }, []);
 
-  // Persist whenever entries or targetGlasses change
   const totalGlasses = useMemo(() => {
     return Math.max(0, entries.reduce((sum, e) => sum + e.glasses, 0));
   }, [entries]);
-
-  const glassVolumeMl = 250;
-  const waterPercent = Math.min(Math.round((totalGlasses / targetGlasses) * 100), 100);
 
   const saveState = (newEntries: WaterLogEntry[], newTarget: number = targetGlasses) => {
     setEntries(newEntries);
@@ -311,27 +260,27 @@ export const VitalsPane: React.FC<{
     }
   };
 
-  const handleLogGlasses = (glassesCount: number = 1) => {
-    if (glassesCount <= 0) return;
+  const handleAddGlass = (count: number = 1) => {
+    if (count <= 0) return;
     const now = Date.now();
     const newEntry: WaterLogEntry = {
       id: `water-${now}-${Math.random().toString(36).slice(2, 6)}`,
       time: new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       timestamp: now,
-      glasses: glassesCount,
-      ml: glassesCount * glassVolumeMl
+      glasses: count,
+      ml: count * 250
     };
     saveState([...entries, newEntry]);
   };
 
-  const handleDecrementLatest = () => {
+  const handleRemoveGlass = () => {
     if (entries.length === 0) return;
     const last = entries[entries.length - 1];
     if (last.glasses > 1) {
       const updated = entries.slice(0, -1).concat({
         ...last,
         glasses: last.glasses - 1,
-        ml: (last.glasses - 1) * glassVolumeMl
+        ml: (last.glasses - 1) * 250
       });
       saveState(updated);
     } else {
@@ -339,197 +288,95 @@ export const VitalsPane: React.FC<{
     }
   };
 
-  const formatPrice = (toman: number, usd: number) => {
-    if (userProfile.hidePrices) {
-      return isFa ? "فقط کالری" : "Calorie-Only";
-    }
-    return formatSmartPrice(toman, usd, userProfile, 1) || "-";
-  };
-
-  const currentSpend = userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;
-  const budgetCap = userProfile.currency === "IRT" ? userProfile.dailyBudgetToman : userProfile.dailyBudgetUSD;
-  const budgetPercent = Math.min(Math.round((currentSpend / (budgetCap || 1)) * 100), 100);
-  const calPercent = Math.min(Math.round((dailyTotals.calories / (userProfile.calorieGoal || 2000)) * 100), 100);
-
-  // SVG Donut calculation
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (calPercent / 100) * circumference;
+  const currentSpend =
+    userProfile.currency === "IRT" ? dailyTotals.costTomanTotal : dailyTotals.costUSDTotal;
+  const budgetCap =
+    userProfile.currency === "IRT" ? userProfile.dailyBudgetToman : userProfile.dailyBudgetUSD;
 
   return (
     <aside
-      aria-label={isFa ? "ماتریس سلامت روزانه" : "Health Matrix Sidebar"}
-      className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-[#2a2c31] rtl:border-l-0 rtl:border-r p-5 pb-24 lg:pb-6 bg-[#0e1013] flex flex-col gap-5 shrink-0 select-none overflow-y-auto z-10"
+      aria-label={isFa ? "خلاصه سلامت روزانه" : "Health Summary Sidebar"}
+      className="w-full lg:w-80 p-4 sm:p-6 flex flex-col gap-5 shrink-0 select-none overflow-y-auto"
     >
-      {/* SECTION 1: HEALTH MATRIX & DONUT STAT */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <span className="meta">{isFa ? "ماتریس_سلامت" : "Health_Matrix"}</span>
-          <span className="font-mono text-xs text-[#ff3e00] font-bold">
-            {calPercent}%
-          </span>
-        </div>
+      {/* CARD 1: ACTIVITY RING & MACRO PROGRESS */}
+      <Card className="apple-card border-[var(--apple-border)]">
+        <CardContent className="p-5 flex flex-col gap-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-[var(--apple-text-primary)]">
+              {isFa ? "خلاصه سلامت" : "Activity Summary"}
+            </h3>
+            <span className="text-xs font-medium text-[#ff3b30] tabular-nums">
+              {userProfile.calorieGoal > 0
+                ? `${formatNumber(Math.round((dailyTotals.calories / userProfile.calorieGoal) * 100), isFa)}%`
+                : "0%"}
+            </span>
+          </div>
 
-        {/* DONUT STAT CIRCULAR GAUGE */}
-        <div className="w-[140px] h-[140px] mx-auto my-3 relative flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 128 128">
-            <circle
-              cx="64"
-              cy="64"
-              r={radius}
-              stroke="#1f2126"
-              strokeWidth="9"
-              fill="transparent"
+          {/* Apple Fitness Activity Ring */}
+          <div className="flex justify-center py-2">
+            <ActivityRing
+              current={dailyTotals.calories}
+              goal={userProfile.calorieGoal || 2000}
+              size={170}
+              strokeWidth={13}
+              isFa={isFa}
+              label={isFa ? "کالری ثبت‌شده" : "Active Calories"}
             />
-            <circle
-              cx="64"
-              cy="64"
-              r={radius}
-              stroke="#ff3e00"
-              strokeWidth="9"
-              fill="transparent"
-              strokeDasharray={circumference}
-              strokeDashoffset={strokeDashoffset}
-              strokeLinecap="round"
-              className="transition-all duration-500 ease-out"
+          </div>
+
+          {/* Slim Macro Progress Bars */}
+          <div className="flex flex-col gap-3.5 pt-2 border-t border-[var(--apple-border)]">
+            <MacroBar
+              type="protein"
+              label={isFa ? "پروتئین" : "Protein"}
+              current={dailyTotals.protein}
+              goal={userProfile.proteinGoal || 80}
+              isFa={isFa}
             />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="font-mono font-extrabold text-2xl text-[#e0e0e0] tabular-nums leading-none">
-              {isFa ? dailyTotals.calories.toLocaleString("fa-IR") : dailyTotals.calories}
-            </span>
-            <span className="meta text-[9px] text-[#707070] mt-1">
-              {isFa ? "کالری_ثبت_شده" : "KCAL_LOGGED"}
-            </span>
-          </div>
-        </div>
-
-        {/* METRIC ROWS */}
-        <div className="flex flex-col gap-2 mt-3">
-          {/* PROTEIN ROW */}
-          <div className="row-item">
-            <span className="text-[#707070] text-xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#3b82f6]" />
-              <span>{isFa ? "پروتئین" : "Protein"}</span>
-            </span>
-            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
-              {Math.round(dailyTotals.protein)}g / {userProfile.proteinGoal || 80}g
-            </span>
+            <MacroBar
+              type="carbs"
+              label={isFa ? "کربوهیدرات" : "Carbohydrates"}
+              current={dailyTotals.carbs}
+              goal={userProfile.carbsGoal || 250}
+              isFa={isFa}
+            />
+            <MacroBar
+              type="fat"
+              label={isFa ? "چربی" : "Fat"}
+              current={dailyTotals.fat}
+              goal={userProfile.fatGoal || 65}
+              isFa={isFa}
+            />
           </div>
 
-          {/* CARBS ROW */}
-          <div className="row-item">
-            <span className="text-[#707070] text-xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#eab308]" />
-              <span>{isFa ? "کربوهیدرات" : "Carbs"}</span>
-            </span>
-            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
-              {Math.round(dailyTotals.carbs)}g / {userProfile.carbsGoal || 250}g
-            </span>
-          </div>
-
-          {/* FAT ROW */}
-          <div className="row-item">
-            <span className="text-[#707070] text-xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#f43f5e]" />
-              <span>{isFa ? "چربی" : "Fat"}</span>
-            </span>
-            <span className="font-mono text-xs text-[#e0e0e0] font-semibold tabular-nums">
-              {Math.round(dailyTotals.fat)}g / {userProfile.fatGoal || 65}g
-            </span>
-          </div>
-
-          {/* REMAINING BUDGET ROW */}
-          <div className="row-item">
-            <span className="text-[#707070] text-xs flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#ff3e00]" />
-              <span>{isFa ? "هزینه وعده‌ها" : "Meal Spend"}</span>
-            </span>
-            <span className="font-mono text-xs text-[#ff3e00] font-bold tabular-nums">
-              {formatPrice(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal)}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION 2: WATER INTAKE */}
-      <div className="mt-1 pt-4 border-t border-[#2a2c31]">
-        {/* Header row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-1.5">
-            <div className="w-6 h-6 rounded-md bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center">
-              <Droplets className="w-3.5 h-3.5 text-cyan-400" />
+          {/* Daily Spend Row */}
+          {!userProfile.hidePrices && (
+            <div className="pt-3 border-t border-[var(--apple-border)] flex items-center justify-between text-xs">
+              <span className="text-[var(--apple-text-secondary)] flex items-center gap-1.5">
+                <CreditCard className="w-3.5 h-3.5 text-[var(--apple-text-tertiary)]" />
+                <span>{isFa ? "هزینه وعده‌های امروز" : "Today's Meal Spend"}</span>
+              </span>
+              <span className="font-semibold text-[var(--apple-text-primary)] tabular-nums">
+                {formatPriceDisplay(dailyTotals.costTomanTotal, dailyTotals.costUSDTotal, userProfile)}
+              </span>
             </div>
-            <span className="text-xs font-semibold text-[#c0c0c0]">
-              {isFa ? "آب روزانه" : "Daily Water"}
-            </span>
-          </div>
-          <span className={`text-xs font-mono font-bold tabular-nums px-1.5 py-0.5 rounded-md ${
-            waterPercent >= 100
-              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
-              : waterPercent >= 50
-                ? "bg-cyan-500/15 text-cyan-400 border border-cyan-500/30"
-                : "bg-[#27272a] text-[#9ca3af] border border-[#2a2c31]"
-          }`}>
-            {waterPercent}%
-          </span>
-        </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Glass count + ml */}
-        <div className="flex items-end justify-between mb-3">
-          <div className="flex items-baseline gap-1">
-            <span className="font-mono text-3xl font-extrabold text-[#e8e8e8] tabular-nums leading-none">
-              {isFa ? totalGlasses.toLocaleString("fa-IR") : totalGlasses}
-            </span>
-            <span className="text-xs text-[#707070] font-sans">
-              / {isFa ? targetGlasses.toLocaleString("fa-IR") : targetGlasses} {isFa ? "لیوان" : "gl"}
-            </span>
-          </div>
-          <span className="font-mono text-[11px] text-[#707070] tabular-nums bg-[#18191d] border border-[#27272a] px-2 py-0.5 rounded-md">
-            {totalGlasses * 250} / {targetGlasses * 250} ml
-          </span>
-        </div>
-
-        {/* Segmented glass indicators */}
-        <div className="flex items-center gap-1 mb-3">
-          {Array.from({ length: targetGlasses }).map((_, i) => (
-            <div
-              key={i}
-              className={`flex-1 h-2 rounded-full transition-all duration-300 ${
-                i < totalGlasses
-                  ? totalGlasses >= targetGlasses
-                    ? "bg-emerald-400"
-                    : "bg-cyan-400"
-                  : "bg-[#27272a]"
-              }`}
-            />
-          ))}
-        </div>
-
-        {/* Action buttons */}
-        <div className="grid grid-cols-2 gap-2 mt-1">
-          <button
-            type="button"
-            onClick={() => handleLogGlasses(1)}
-            aria-label={isFa ? "نوشیدن ۱ لیوان آب" : "Drink 1 glass"}
-            className="flex items-center justify-center gap-1.5 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/60 rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
-          >
-            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>{isFa ? "+۱ لیوان (۲۵۰ml)" : "+1 Glass (250ml)"}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDecrementLatest}
-            disabled={totalGlasses === 0}
-            aria-label={isFa ? "کاهش ۱ لیوان" : "Remove 1 glass"}
-            className="flex items-center justify-center gap-1.5 py-2.5 bg-[#18191d] hover:bg-[#23252a] text-[#707070] hover:text-[#b0b0b0] disabled:opacity-30 disabled:cursor-not-allowed border border-[#2a2c31] rounded-lg transition-all cursor-pointer text-xs font-semibold active:scale-95"
-          >
-            <Minus className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span>{isFa ? "-۱ لیوان" : "-1 Glass"}</span>
-          </button>
-        </div>
-      </div>
+      {/* CARD 2: WATER TRACKER */}
+      <Card className="apple-card border-[var(--apple-border)]">
+        <CardContent className="p-5">
+          <WaterTracker
+            totalGlasses={totalGlasses}
+            targetGlasses={targetGlasses}
+            isFa={isFa}
+            onAddGlass={handleAddGlass}
+            onRemoveGlass={handleRemoveGlass}
+          />
+        </CardContent>
+      </Card>
     </aside>
   );
 };

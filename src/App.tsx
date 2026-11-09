@@ -43,6 +43,7 @@ import ScannerConsoleView from "./components/ScannerConsoleView";
 import DiaryConsoleView, { SqliteDbStats } from "./components/DiaryConsoleView";
 import GoalsConsoleView from "./components/GoalsConsoleView";
 import NutritionModal from "./components/NutritionModal";
+import { Button } from "./components/ui/button";
 import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile, ThemeMode, EffectiveTheme } from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
@@ -180,7 +181,7 @@ export const CYBER_PRESET_DISHES: CyberPresetDish[] = [
 export const CYBER_RECOMMENDED_DISH = getDailyRecommendedDish();
 
 // Helper function to compress and downscale images client-side for rapid transmission & Vercel serverless safety
-const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDim = 1200, quality = 0.82): Promise<string> => {
+const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDim = 960, quality = 0.72): Promise<string> => {
   return new Promise((resolve) => {
     if (!base64Str || !base64Str.startsWith("data:")) {
       return resolve(base64Str);
@@ -236,7 +237,49 @@ const compressImage = (base64Str: string, mimeType: string = "image/jpeg", maxDi
 
 export default function App() {
   // Navigation: 'scan' | 'diary' | 'profile'
-  const [activeTab, setActiveTab] = useState<"scan" | "diary" | "profile">("scan");
+  const getInitialTab = (): "scan" | "diary" | "profile" => {
+    if (typeof window !== "undefined") {
+      try {
+        const qTab = new URLSearchParams(window.location.search).get("tab");
+        if (qTab === "scan" || qTab === "diary" || qTab === "profile") return qTab;
+        const savedTab = localStorage.getItem("nutriscan_active_tab");
+        if (savedTab === "scan" || savedTab === "diary" || savedTab === "profile") {
+          return savedTab;
+        }
+      } catch {}
+    }
+    return "scan";
+  };
+
+  const [activeTab, setActiveTab] = useState<"scan" | "diary" | "profile">(getInitialTab);
+
+  // Synchronize activeTab with URL search params and localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("nutriscan_active_tab", activeTab);
+        const url = new URL(window.location.href);
+        if (url.searchParams.get("tab") !== activeTab) {
+          url.searchParams.set("tab", activeTab);
+          window.history.replaceState(null, "", url.toString());
+        }
+      } catch {}
+    }
+  }, [activeTab]);
+
+  // Handle browser back/forward buttons for tab history
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const qTab = new URLSearchParams(window.location.search).get("tab");
+        if (qTab === "scan" || qTab === "diary" || qTab === "profile") {
+          setActiveTab(qTab);
+        }
+      } catch {}
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   // App State
   const [scannedResult, setScannedResult] = useState<ScannedLabel | null>(null);
@@ -266,6 +309,16 @@ export default function App() {
   });
 
   // User Goals/Profile (Default)
+  const getInitialLang = () => {
+    if (typeof window !== "undefined") {
+      try {
+        const qLang = new URLSearchParams(window.location.search).get("lang");
+        if (qLang === "en" || qLang === "fa") return qLang;
+      } catch {}
+    }
+    return "fa";
+  };
+
   const DEFAULT_USER_PROFILE: UserProfile = {
     name: "Sina",
     calorieGoal: 2000,
@@ -273,8 +326,7 @@ export default function App() {
     carbsGoal: 250,
     fatGoal: 65,
     sodiumGoal: 2300,
-    waterGoalGlasses: 8,
-    language: "en",
+    language: getInitialLang(),
     currency: "IRT",
     dailyBudgetToman: 1800000,
     dailyBudgetUSD: 7.8,
@@ -291,10 +343,16 @@ export default function App() {
   // Theme state: defaults to 'system' so it dynamically mirrors the user's device theme
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
     if (typeof window !== "undefined") {
-      const savedTheme = localStorage.getItem("nutriscan_theme");
-      if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
-        return savedTheme as ThemeMode;
-      }
+      try {
+        const qTheme = new URLSearchParams(window.location.search).get("theme");
+        if (qTheme === "dark" || qTheme === "light" || qTheme === "system") {
+          return qTheme as ThemeMode;
+        }
+        const savedTheme = localStorage.getItem("nutriscan_theme");
+        if (savedTheme === "light" || savedTheme === "dark" || savedTheme === "system") {
+          return savedTheme as ThemeMode;
+        }
+      } catch (e) {}
     }
     return "system";
   });
@@ -472,7 +530,6 @@ export default function App() {
             carbsGoal: typeof parsed.carbsGoal === "number" ? parsed.carbsGoal : DEFAULT_USER_PROFILE.carbsGoal,
             fatGoal: typeof parsed.fatGoal === "number" ? parsed.fatGoal : DEFAULT_USER_PROFILE.fatGoal,
             sodiumGoal: typeof parsed.sodiumGoal === "number" ? parsed.sodiumGoal : DEFAULT_USER_PROFILE.sodiumGoal,
-            waterGoalGlasses: typeof parsed.waterGoalGlasses === "number" ? parsed.waterGoalGlasses : (DEFAULT_USER_PROFILE.waterGoalGlasses || 8),
             dailyBudgetToman: typeof parsed.dailyBudgetToman === "number" ? parsed.dailyBudgetToman : DEFAULT_USER_PROFILE.dailyBudgetToman,
             dailyBudgetUSD: typeof parsed.dailyBudgetUSD === "number" ? parsed.dailyBudgetUSD : DEFAULT_USER_PROFILE.dailyBudgetUSD,
             exchangeRateTomanPerUSD: typeof parsed.exchangeRateTomanPerUSD === "number" ? parsed.exchangeRateTomanPerUSD : DEFAULT_USER_PROFILE.exchangeRateTomanPerUSD,
@@ -934,7 +991,7 @@ export default function App() {
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL("image/jpeg", 0.82);
+        const base64 = canvas.toDataURL("image/jpeg", 0.8);
         stopCamera();
         triggerScan(base64, "image/jpeg");
       }
@@ -957,7 +1014,7 @@ export default function App() {
       setIsScanning(true);
       setScanError(null);
       try {
-        const compressed = await compressImage(base64, file.type, 1200, 0.82);
+        const compressed = await compressImage(base64, file.type, 960, 0.72);
         triggerScan(compressed, "image/jpeg");
       } catch (err) {
         // Fallback to second pass compression
@@ -1149,28 +1206,24 @@ export default function App() {
         newProfile.proteinGoal = 90;
         newProfile.carbsGoal = 180;
         newProfile.fatGoal = 50;
-        newProfile.waterGoalGlasses = 10;
         break;
       case "muscle":
         newProfile.calorieGoal = 2500;
         newProfile.proteinGoal = 140;
         newProfile.carbsGoal = 300;
         newProfile.fatGoal = 75;
-        newProfile.waterGoalGlasses = 12;
         break;
       case "keto":
         newProfile.calorieGoal = 1800;
         newProfile.proteinGoal = 100;
         newProfile.carbsGoal = 30;
         newProfile.fatGoal = 130;
-        newProfile.waterGoalGlasses = 10;
         break;
       case "balanced":
         newProfile.calorieGoal = 2000;
         newProfile.proteinGoal = 80;
         newProfile.carbsGoal = 250;
         newProfile.fatGoal = 65;
-        newProfile.waterGoalGlasses = 8;
         break;
     }
     saveProfile(newProfile);
@@ -1245,9 +1298,12 @@ export default function App() {
     persistSingleEntryToSqlite(newItem);
   };
 
+  // State: mobile health bottom sheet drawer
+  const [showMobileHealthSheet, setShowMobileHealthSheet] = useState(false);
+
   return (
     <AndroidFrame dir={currentLang === "fa" ? "rtl" : "ltr"}>
-      <div className="min-h-screen w-full flex flex-col bg-[#08090a] text-[#e0e0e0]  relative select-none" dir={currentLang === "fa" ? "rtl" : "ltr"}>
+      <div className="min-h-screen w-full flex flex-col bg-[var(--apple-bg)] text-[var(--apple-text-primary)] relative select-none" dir={currentLang === "fa" ? "rtl" : "ltr"}>
         {/* TOP CONSOLE TELEMETRY STRIP */}
         <ConsoleHeader
           userProfile={userProfile}
@@ -1260,55 +1316,32 @@ export default function App() {
           onOpenDiary={() => setActiveTab("diary")}
         />
 
-        {/* PROCESSING LOADING OVERLAY */}
+        {/* PROCESSING LOADING OVERLAY (APPLE INTELLIGENCE STYLE) */}
         {isScanning && (
-          <div className="fixed inset-0 bg-[#08090a]/95 backdrop-blur-md z-50 flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.2s_ease-out]">
-            <div className="relative w-28 h-28 flex items-center justify-center mb-6">
-              <div className="absolute inset-0 rounded-full border border-[#ff3e00]/20 animate-ping" />
-              <div className="absolute -inset-2 rounded-full border border-dashed border-[#ff3e00]/40 animate-[spin_10s_linear_infinite]" />
-              <div className="w-16 h-16 bg-[#111214] border border-[#ff3e00] flex items-center justify-center shadow-lg">
-                <Sparkles className="w-8 h-8 text-[#ff3e00] animate-pulse" />
-              </div>
+          <div className="fixed inset-0 bg-black/40 dark:bg-black/75 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-6 text-center animate-[fadeIn_0.2s_ease-out]">
+            <div className="relative w-20 h-20 flex items-center justify-center mb-5">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#ff6947] to-[#ff3b30] opacity-25 blur-xl animate-pulse" />
+              <div className="w-14 h-14 rounded-full border-2 border-[var(--apple-border)] border-t-[#ff3b30] animate-spin" />
+              <Sparkles className="w-6 h-6 text-[#ff3b30] absolute" />
             </div>
 
-            <h3 className="text-base font-extrabold text-[#e0e0e0] font-mono tracking-wider uppercase">
-              {t.processingLabel}
+            <h3 className="text-base font-bold text-[var(--apple-text-primary)] tracking-tight">
+              {isFa ? "در حال تحلیل هوشمند تصویر..." : "Analyzing Nutrition Label..."}
             </h3>
 
-            <p className="text-xs text-[#707070] font-mono mt-2.5 max-w-[280px] h-8 leading-relaxed">
+            <p className="text-xs text-[var(--apple-text-secondary)] mt-2 max-w-[280px] h-8 leading-relaxed">
               {getLoaderMessage()}
             </p>
 
-            <div className="w-48 bg-[#1a1b1e] h-1.5 overflow-hidden mt-5 relative border border-[#2a2c31]">
-              <div className="h-full bg-[#ff3e00] w-24 absolute left-0 top-0 animate-loading-progress" />
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-[280px] font-mono text-[9px]">
-              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00] flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-[#ff3e00] animate-ping" />
-                {currentLang === "fa" ? "حسگر بینایی" : "OCR_SENSOR"}
-              </span>
-              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#ff3e00]">
-                {currentLang === "fa" ? "هوش مصنوعی" : "GEMINI_AI"}
-              </span>
-              <span className="bg-[#111214] border border-[#2a2c31] px-2 py-1 text-[#707070]">
-                {currentLang === "fa" ? "شاخص درشت‌مغذی" : "MACRO_INDEX"}
-              </span>
+            <div className="w-44 bg-[var(--apple-surface-secondary)] h-1 rounded-full overflow-hidden mt-4 relative">
+              <div className="h-full bg-gradient-to-r from-[#ff6947] to-[#ff3b30] w-20 absolute left-0 top-0 rounded-full animate-loading-progress" />
             </div>
           </div>
         )}
 
-        {/* MAIN MULTI-COLUMN CONSOLE GRID (VARIATION 6 ARCHITECTURE) */}
-        <div className="flex-1 flex flex-col lg:flex-row min-h-0">
-          {/* COLUMN 1: ICON BAR */}
-          <IconBar
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            diaryCount={diaryItems.length}
-            currentLang={currentLang}
-          />
-
-          {/* COLUMN 2: NAV PANE */}
+        {/* MAIN RESPONSIVE CONTAINER (12-COLUMN ARCHITECTURE, MAX WIDTH ~1280px) */}
+        <div className="max-w-[1280px] w-full mx-auto flex-1 flex flex-col lg:flex-row min-h-0">
+          {/* COLUMN 1: ICON BAR (DOCK RAIL) */}
           <NavPane
             activeTab={activeTab}
             setActiveTab={setActiveTab}
@@ -1316,8 +1349,8 @@ export default function App() {
             currentLang={currentLang}
           />
 
-          {/* COLUMN 3: MAIN DISPLAY AREA */}
-          <main className="flex-1 overflow-y-auto bg-transparent flex flex-col min-h-0 pb-20 lg:pb-6">
+          {/* COLUMN 2: MAIN DISPLAY AREA */}
+          <main className="flex-1 overflow-y-auto bg-transparent flex flex-col min-h-0 pb-24 lg:pb-8">
             {activeTab === "scan" && (
               <ScannerConsoleView
                 userProfile={userProfile}
@@ -1372,14 +1405,65 @@ export default function App() {
             )}
           </main>
 
-          {/* COLUMN 4: RIGHT VITALS PANE (ONLY ON SCAN VIEW) */}
+          {/* COLUMN 3: VITALS SIDEBAR (DESKTOP) */}
           {activeTab === "scan" && (
-            <VitalsPane
-              userProfile={userProfile}
-              dailyTotals={dailyTotals}
-            />
+            <div className="hidden lg:block shrink-0">
+              <VitalsPane
+                userProfile={userProfile}
+                dailyTotals={dailyTotals}
+              />
+            </div>
           )}
         </div>
+
+        {/* MOBILE FLOATING HEALTH SUMMARY BUTTON (WHEN ON SCAN TAB) */}
+        {activeTab === "scan" && (
+          <div className="lg:hidden fixed bottom-20 left-4 rtl:left-auto rtl:right-4 z-30">
+            <Button
+              size="default"
+              onClick={() => setShowMobileHealthSheet(true)}
+              aria-label={isFa ? "مشاهده خلاصه سلامت" : "Open Health Summary"}
+              className="h-11 px-4 text-xs font-semibold shadow-xl rounded-full gap-2"
+            >
+              <Activity className="w-4 h-4" />
+              <span>{isFa ? "خلاصه سلامت" : "Vitals"}</span>
+            </Button>
+          </div>
+        )}
+
+        {/* MOBILE HEALTH SUMMARY BOTTOM SHEET */}
+        {showMobileHealthSheet && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={isFa ? "خلاصه سلامت" : "Health Summary"}
+            className="fixed inset-0 z-50 bg-black/45 backdrop-blur-sm lg:hidden flex flex-col justify-end animate-[fadeIn_0.2s_ease-out]"
+          >
+            <div
+              className="fixed inset-0"
+              onClick={() => setShowMobileHealthSheet(false)}
+            />
+            <div className="relative z-10 apple-card rounded-b-none rounded-t-[32px] p-5 max-h-[85vh] overflow-y-auto border-t border-[var(--apple-border)] shadow-2xl">
+              <div className="w-10 h-1 bg-black/15 dark:bg-white/20 rounded-full mx-auto mb-4" />
+              <div className="flex items-center justify-between mb-2 px-1">
+                <h3 className="font-bold text-base text-[var(--apple-text-primary)]">
+                  {isFa ? "خلاصه سلامت روزانه" : "Daily Health Summary"}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowMobileHealthSheet(false)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-[var(--apple-surface-secondary)] text-[var(--apple-text-secondary)]"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <VitalsPane
+                userProfile={userProfile}
+                dailyTotals={dailyTotals}
+              />
+            </div>
+          </div>
+        )}
 
         {/* DETAILED NUTRITION MODAL */}
         {showResultDetail && (
@@ -1393,21 +1477,23 @@ export default function App() {
           />
         )}
 
-        {/* MOBILE NAVIGATION DOCK (BOTTOM OF SCREEN) */}
+        {/* MOBILE NAVIGATION DOCK (IOS-STYLE FROSTED GLASS TAB BAR) */}
         <nav
           aria-label={currentLang === "fa" ? "ناوبری موبایل" : "Mobile Navigation"}
-          className="lg:hidden bg-[#0e1013] border-t border-[#27272a] py-2 px-4 flex justify-around items-center shrink-0 shadow-2xl z-40 fixed bottom-0 inset-x-0"
+          className="lg:hidden apple-glass-bar border-t pt-2 pb-5 px-6 flex justify-around items-center shrink-0 z-40 fixed bottom-0 inset-x-0 shadow-lg"
         >
           <button
             onClick={() => setActiveTab("scan")}
             type="button"
             aria-selected={activeTab === "scan"}
-            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
-              activeTab === "scan" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
+            className={`min-h-[44px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-full transition-all cursor-pointer ${
+              activeTab === "scan"
+                ? "text-[#ff3b30] font-semibold"
+                : "text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)]"
             }`}
           >
-            <Camera className="w-5 h-5" />
-            <span className="text-xs font-medium">
+            <Camera className="w-5 h-5 stroke-[2.2]" />
+            <span className="text-[11px] font-medium">
               {currentLang === "fa" ? "اسکن" : "Scan"}
             </span>
           </button>
@@ -1416,31 +1502,30 @@ export default function App() {
             onClick={() => setActiveTab("diary")}
             type="button"
             aria-selected={activeTab === "diary"}
-            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer relative ${
-              activeTab === "diary" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
+            className={`min-h-[44px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-full transition-all cursor-pointer relative ${
+              activeTab === "diary"
+                ? "text-[#ff3b30] font-semibold"
+                : "text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)]"
             }`}
           >
-            <BookOpen className="w-5 h-5" />
-            <span className="text-xs font-medium">
+            <BookOpen className="w-5 h-5 stroke-[2.2]" />
+            <span className="text-[11px] font-medium">
               {currentLang === "fa" ? "یادداشت" : "Diary"}
             </span>
-            {diaryItems.length > 0 && (
-              <span className="absolute top-1 right-2 min-w-4 h-4 px-1 rounded-full bg-[#ff3e00] text-black text-[10px] font-bold flex items-center justify-center">
-                {currentLang === "fa" ? diaryItems.length.toLocaleString("fa-IR") : diaryItems.length}
-              </span>
-            )}
           </button>
 
           <button
             onClick={() => setActiveTab("profile")}
             type="button"
             aria-selected={activeTab === "profile"}
-            className={`min-h-[48px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-lg transition-colors cursor-pointer ${
-              activeTab === "profile" ? "text-[#ff3e00] font-bold" : "text-[#9ca3af] hover:text-[#f4f4f5]"
+            className={`min-h-[44px] min-w-[64px] flex flex-col items-center justify-center gap-1 py-1 px-3 rounded-full transition-all cursor-pointer ${
+              activeTab === "profile"
+                ? "text-[#ff3b30] font-semibold"
+                : "text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)]"
             }`}
           >
-            <Sliders className="w-5 h-5" />
-            <span className="text-xs font-medium">
+            <Sliders className="w-5 h-5 stroke-[2.2]" />
+            <span className="text-[11px] font-medium">
               {currentLang === "fa" ? "اهداف" : "Goals"}
             </span>
           </button>
