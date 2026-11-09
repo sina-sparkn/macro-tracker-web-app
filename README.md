@@ -33,7 +33,7 @@
 ## 📸 UI Preview
 
 <p align="center">
-  <img src="public/Pasted%20image.png" alt="NutriScan Web App Interface" width="100%" />
+  <img src="public/NutriScan Nutrition Dashboard Banner.png" alt="NutriScan Web App Interface" width="100%" />
 </p>
 
 ---
