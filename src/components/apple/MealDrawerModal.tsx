@@ -70,17 +70,20 @@ export const MealDrawerModal: React.FC<MealDrawerModalProps> = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-xl max-h-[90dvh] p-0 overflow-hidden flex flex-col rounded-t-[32px] sm:rounded-[28px] border-[var(--apple-border)]">
+      <DialogContent
+        dir={isFa ? "rtl" : "ltr"}
+        className="max-w-xl max-h-[90dvh] p-0 overflow-hidden flex flex-col rounded-t-[32px] sm:rounded-[28px] border-[var(--apple-border)]"
+      >
         {/* Mobile Drag Handle */}
         <div className="w-10 h-1 bg-black/15 dark:bg-white/20 rounded-full mx-auto mt-3 sm:hidden" />
 
         {/* Modal Header */}
-        <DialogHeader className="p-5 sm:p-6 border-b border-[var(--apple-border)] text-start">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff6947] to-[#ff3b30] flex items-center justify-center text-white shadow-xs">
+        <DialogHeader className="p-5 sm:p-6 border-b border-[var(--apple-border)] text-start relative">
+          <div className="flex items-center gap-2.5 pr-10 sm:pr-12 rtl:pr-0 rtl:pl-10 sm:rtl:pl-12">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#ff6947] to-[#ff3b30] flex items-center justify-center text-white shadow-xs shrink-0">
               <Utensils className="w-4 h-4 stroke-[2.2]" />
             </div>
-            <div>
+            <div className="min-w-0">
               <DialogTitle className="font-bold text-base sm:text-lg text-[var(--apple-text-primary)]">
                 {isFa ? "ثبت وعده در تاریخ دلخواه" : "Record Meal on Custom Date"}
               </DialogTitle>

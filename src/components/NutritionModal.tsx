@@ -43,10 +43,13 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
 
   return (
     <Dialog open={!!scannedResult} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <DialogContent className="max-w-xl max-h-[90vh] p-0 overflow-hidden flex flex-col rounded-[28px] border-[var(--apple-border)]">
+      <DialogContent
+        dir={isFa ? "rtl" : "ltr"}
+        className="max-w-xl max-h-[90vh] p-0 overflow-hidden flex flex-col rounded-[28px] border-[var(--apple-border)]"
+      >
         {/* HEADER */}
-        <DialogHeader className="p-5 sm:p-6 border-b border-[var(--apple-border)] text-start">
-          <div className="flex flex-col gap-1 min-w-0 pr-8 rtl:pr-0 rtl:pl-8">
+        <DialogHeader className="p-5 sm:p-6 border-b border-[var(--apple-border)] text-start relative">
+          <div className="flex flex-col gap-1 min-w-0 pr-10 sm:pr-12 rtl:pr-0 rtl:pl-10 sm:rtl:pl-12">
             <span className="text-xs font-semibold text-[#ff3b30] uppercase tracking-wider">
               {isFa ? "ارزش و مشخصات غذایی" : "Nutrition Facts"}
             </span>

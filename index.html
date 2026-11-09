@@ -21,6 +21,15 @@
           var params = new URLSearchParams(window.location.search);
           var qTheme = params.get('theme');
           var qLang = params.get('lang');
+          if (!qLang) {
+            try {
+              var savedProf = localStorage.getItem('nutriscan_profile');
+              if (savedProf) {
+                var p = JSON.parse(savedProf);
+                if (p && p.language) qLang = p.language;
+              }
+            } catch (err) {}
+          }
           var saved = qTheme || localStorage.getItem('nutriscan_theme');
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
           var theme = saved === 'dark' || saved === 'light' ? saved : (prefersDark ? 'dark' : 'light');
@@ -30,6 +39,9 @@
           if (qLang === 'en') {
             document.documentElement.lang = 'en';
             document.documentElement.dir = 'ltr';
+          } else if (qLang === 'fa') {
+            document.documentElement.lang = 'fa';
+            document.documentElement.dir = 'rtl';
           }
         } catch (e) {}
       })();
