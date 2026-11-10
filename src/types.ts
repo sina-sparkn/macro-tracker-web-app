@@ -17,10 +17,23 @@ export interface EstimatedPrice {
   confidence?: "high" | "medium" | "low";
 }
 
+export interface NotFoodState {
+  reason: string;
+  detectedObject?: string;
+  preview?: string;
+}
+
+export interface ModelsBusyState {
+  message: string;
+}
+
 export interface ScannedLabel {
+  isFood?: boolean;
+  notFoodReason?: string;
+  detectedObject?: string;
   productName: string;
   brand: string;
-  foodType?: "dish" | "packaged_food" | "beverage";
+  foodType?: "dish" | "packaged_food" | "beverage" | "not_food";
   cuisine?: string;
   servingSize: string;
   servingsPerContainer: number;
@@ -107,4 +120,6 @@ export interface UserProfile {
   autoRateUpdatedAt?: string;
   isLiveRateFeed?: boolean;
   activePreset?: "weight-loss" | "muscle" | "keto" | "balanced" | "custom";
+  customAiApiKey?: string;
+  preferredAiModel?: string;
 }

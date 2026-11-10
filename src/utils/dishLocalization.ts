@@ -127,6 +127,10 @@ export function normalizeScannedLabel(
   const isFa = targetLang === "fa";
   const cloned: ScannedLabel = JSON.parse(JSON.stringify(label));
 
+  if (cloned.isFood === false) {
+    return cloned;
+  }
+
   // 1. PRICE NORMALIZATION (Eliminate old low price fallbacks)
   let currentToman = cloned.estimatedPrice?.amountToman;
   let currentUSD = cloned.estimatedPrice?.amountUSD;

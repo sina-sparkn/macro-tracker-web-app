@@ -264,7 +264,9 @@ export default async function handler(req: any, res: any) {
       imageBase64,
       mimeType,
       language = "en",
-      exchangeRateTomanPerUSD = 230000
+      exchangeRateTomanPerUSD = 230000,
+      customApiKey,
+      preferredModel
     } = body || {};
 
     const isFa = language === "fa";
@@ -274,18 +276,58 @@ export default async function handler(req: any, res: any) {
       return res.status(400).json({ error: "Missing imageBase64 data in request payload." });
     }
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    // Resolve all available Gemini API keys
+    const geminiKeys: string[] = [];
+    if (typeof customApiKey === "string" && customApiKey.trim()) {
+      const trimmed = customApiKey.trim();
+      if (trimmed.startsWith("AIza") || (!trimmed.startsWith("sk-") && !trimmed.startsWith("gsk_"))) {
+        geminiKeys.push(trimmed);
+      }
+    }
+    const envGeminiKeys = [
+      process.env.GEMINI_API_KEY,
+      process.env.VITE_GEMINI_API_KEY,
+      process.env.GEMINI_API_KEY_1,
+      process.env.GEMINI_API_KEY_2,
+      process.env.GEMINI_API_KEY_3,
+      process.env.GEMINI_API_KEY_4,
+      process.env.GEMINI_API_KEY_5
+    ].filter(Boolean) as string[];
 
-    if (!apiKey) {
-      console.warn("GEMINI_API_KEY is not defined on Vercel environment. Returning localized demo food item...");
-      const pool = isFa ? FALLBACK_FOODS_FA : FALLBACK_FOODS;
-      const fallbackItem = {
-        ...pool[Math.floor(Math.random() * pool.length)],
-        isDemoFallback: true,
-        apiKeyMissingNotice: true,
-        modelUsed: "offline-fallback",
-      };
-      return res.status(200).json(fallbackItem);
+    for (const raw of envGeminiKeys) {
+      for (const part of raw.split(",")) {
+        const k = part.trim();
+        if (k && !geminiKeys.includes(k)) {
+          geminiKeys.push(k);
+        }
+      }
+    }
+
+    // Resolve OpenAI API key
+    let openAiKey = "";
+    if (typeof customApiKey === "string" && customApiKey.trim().startsWith("sk-")) {
+      openAiKey = customApiKey.trim();
+    } else if (process.env.OPENAI_API_KEY) {
+      openAiKey = process.env.OPENAI_API_KEY.trim();
+    }
+
+    // Resolve Groq API key
+    let groqKey = "";
+    if (typeof customApiKey === "string" && customApiKey.trim().startsWith("gsk_")) {
+      groqKey = customApiKey.trim();
+    } else if (process.env.GROQ_API_KEY) {
+      groqKey = process.env.GROQ_API_KEY.trim();
+    }
+
+    if (geminiKeys.length === 0 && !openAiKey && !groqKey) {
+      console.warn("No AI API keys configured on Vercel environment (Gemini/OpenAI/Groq).");
+      return res.status(503).json({
+        error: "models_unavailable",
+        message: isFa
+          ? "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید."
+          : "Models are on heavy usage and try again please later.",
+        code: "MODELS_UNAVAILABLE"
+      });
     }
 
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, "");
@@ -298,12 +340,22 @@ export default async function handler(req: any, res: any) {
 
     let promptString = "";
     if (isFa) {
-      promptString = `دستور حیاتی: شما یک متخصص تغذیه بالینی و ارزیاب دقیق مواد غذایی ایرانی هستید.
-زبان رابط کاربری فارسی است، بنابراین تمامی مقادیر متنی خروجی JSON (شامل productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, ingredientCosts) باید حتماً و بدون استثنا به زبان فارسی روان، اصیل و طبیعی نوشته شوند. هیچ فیلد متنی انگلیسی نباید در خروجی باشد.
+      promptString = `دستور حیاتی: شما یک متخصص و دستیار هوشمند تحلیل تغذیه و مواد غذایی هستید.
+زبان رابط کاربری فارسی است، بنابراین تمامی مقادیر متنی خروجی JSON (شامل productName, brand, cuisine, servingSize, summary, nutritionalHighlights, nutritionalWarnings, culturalNotes, ingredientsList, ingredientCosts, notFoodReason) باید حتماً و بدون استثنا به زبان فارسی روان، اصیل و طبیعی نوشته شوند. هیچ فیلد متنی انگلیسی نباید در خروجی باشد.
 
-تصویر پیوست را با دقت میلی‌متری و علمی تحلیل کنید:
-۱. یک غذای آماده، بشقاب غذای رستورانی یا خوراک خانگی (مانند قورمه سبزی، چلو کباب کوبیده، جوجه کباب، دیزی، پیتزا، پاستا، سالاد و غیره).
-۲. یک محصول بسته‌بندی شده یا جدول ارزش غذایی.
+مرحله ۱ - بررسی قطعی اینکه آیا تصویر مربوط به یک ماده خوراکی هست یا خیر:
+تصویر پیوست را با دقت کامل بررسی کنید. آیا این تصویر نشان‌دهنده یک غذای پخته، بشقاب خوراک، میان‌وعده، میوه، سبزیجات، نوشیدنی، ماده اولیه آشپزی، محصول بسته‌بندی یا جدول ارزش غذایی است؟
+- اگر تصویر مربوط به غذا یا نوشیدنی نیست (مثلاً عکس چهره یا اندام انسان، حیوان، خودرو، وسایل الکترونیکی مانند لپ‌تاپ، مانیتور یا موبایل، پوشاک، کفش، مبلمان، لوازم خانه، کتاب، مدارک، ابزار، منظره یا هر شیء غیرخوراکی دیگر):
+  * حتماً مقدار isFood را برابر false قرار دهید.
+  * در فیلد notFoodReason صراحتاً خاطرنشان کنید که این تصویر در واقع یک ماده غذایی نیست، و شیء مشاهده‌شده در تصویر را نام ببرید (برای نمونه: «این تصویر مربوط به یک لپ‌تاپ است و در واقع یک ماده غذایی نیست. لطفاً تصویری از غذا، نوشیدنی یا برچسب ارزش غذایی قرار دهید.»).
+  * مقدار foodType را "not_food" و مقدار productName را نام شیء شناسایی‌شده (یا «غیرخوراکی») بگذارید.
+  * تمام مقادیر عددی (کالری، چربی، سدیم، کربوهیدرات، فیبر، قند، پروتئین، healthScore) را برابر ۰ بگذارید.
+  * آرایه‌های nutritionalHighlights, nutritionalWarnings, ingredientsList, ingredientCosts, vitamins را خالی بگذارید.
+  * مقدار estimatedPrice را برابر { amountToman: 0, amountUSD: 0 } قرار دهید.
+
+- اگر تصویر مربوط به یک غذای آماده، خوراک، نوشیدنی یا محصول بسته‌بندی/جدول ارزش غذایی است:
+  * مقدار isFood را برابر true قرار دهید.
+  * فیلد notFoodReason را رشته خالی "" بگذارید.
 
 الگوریتم تخمین تغذیه‌ای دقیق با هدف خطای کمتر از ۸٪ (روش جزء‌به‌جزء):
 ۱. تفکیک اجزا و اوزان استاندارد (Bottom-up Decomposition):
@@ -327,9 +379,20 @@ export default async function handler(req: any, res: any) {
 - خروجی را دقیقاً طبق اسکیما به فرمت JSON تولید کنید. اعداد باید عددی باشند نه رشته.`;
     } else {
       promptString = `Analyze this food image with high clinical nutritional precision (target error < 8%).
-The image can be either:
-1. A prepared meal, cooked plate of food, or restaurant dish (e.g. Persian Ghormeh Sabzi, Kebab, Rice, Pizza, Pasta, Salad, Burger, Stew, Soup, etc.).
-2. A packaged food product or nutrition facts label.
+STEP 1: MANDATORY FOOD VERIFICATION:
+Inspect the provided image carefully to verify if it contains an actual food item, cooked dish, restaurant meal, beverage, edible ingredient, snack, or packaged food product / nutrition facts label.
+- IF THE IMAGE IS NOT A FOOD ITEM (e.g. it depicts a person, animal, vehicle, electronic gadget/laptop/phone, clothing, shoe, furniture, room, landscape, document, tool, household item, or any other non-edible object):
+  * Set "isFood": false
+  * Set "notFoodReason": Explicitly point out that this is not a food item in fact, and mention what was detected in the image instead (e.g., "This image appears to show a laptop computer, and is not a food item in fact. NutriScan exclusively analyzes edible foods, beverages, and nutrition facts labels.").
+  * Set "foodType" to "not_food" and "productName" to the concise name of the detected object (or "Not a food item").
+  * Set all numeric nutritional fields (calories, totalFat, saturatedFat, transFat, cholesterol, sodium, totalCarbohydrate, dietaryFiber, totalSugars, addedSugars, protein, healthScore) to 0.
+  * Set nutritionalHighlights, nutritionalWarnings, ingredientsList, ingredientCosts, vitamins to empty arrays [].
+  * Set estimatedPrice to { "amountToman": 0, "amountUSD": 0 }.
+
+- IF THE IMAGE IS A FOOD ITEM (dish, cooked food, packaged food product, beverage, or nutrition facts label):
+  * Set "isFood": true
+  * Set "notFoodReason": ""
+  * Detect the exact type of food or dish, its cuisine origin (e.g. "Persian / Iranian", "Italian", "American", "Middle Eastern", etc.), and whether it is a prepared "dish", "packaged_food", or "beverage".
 
 NUTRITIONAL ACCURACY DIRECTIVE (BOTTOM-UP INGREDIENT DECOMPOSITION):
 1. Break down the visible portion into constituent ingredient masses in grams (e.g. 200g cooked rice, 120g grilled beef, 15g cooking oil/butter, 80g vegetables).
@@ -356,159 +419,359 @@ CRITICAL PRICING DIRECTIVE (IRAN REALISTIC MARKET BENCHMARK):
 - Format the output strictly according to the provided JSON schema. Ensure numeric values are numbers, not strings.`;
     }
 
-    const aiClient = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
-    });
-
-    const candidateModels = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-3.1-flash-lite"];
+    const PER_MODEL_TIMEOUT = 8500; // 8.5s per model candidate
     let responseText = "";
     let successfulModel = "";
     let lastError: any = null;
-    const PER_MODEL_TIMEOUT = 8500; // 8.5 seconds per model candidate fits safely within Vercel execution limits
 
-    for (const modelCandidate of candidateModels) {
-      if (responseText) break;
+    // Helper: call OpenAI vision
+    const tryOpenAiVision = async (model: string, apiKey: string): Promise<string> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT);
       try {
-        const timeoutPromise = new Promise<never>((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout after ${PER_MODEL_TIMEOUT / 1000}s waiting for model ${modelCandidate}`)), PER_MODEL_TIMEOUT)
-        );
-
-        const generatePromise = aiClient.models.generateContent({
-          model: modelCandidate,
-          contents: { parts: [imagePart, { text: promptString }] },
-          config: {
-            responseMimeType: "application/json",
-            temperature: 0.1,
-            topP: 0.8,
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                productName: { type: Type.STRING },
-                brand: { type: Type.STRING },
-                foodType: { type: Type.STRING },
-                cuisine: { type: Type.STRING },
-                servingSize: { type: Type.STRING },
-                servingsPerContainer: { type: Type.NUMBER },
-                calories: { type: Type.NUMBER },
-                totalFat: { type: Type.NUMBER },
-                saturatedFat: { type: Type.NUMBER },
-                transFat: { type: Type.NUMBER },
-                cholesterol: { type: Type.NUMBER },
-                sodium: { type: Type.NUMBER },
-                totalCarbohydrate: { type: Type.NUMBER },
-                dietaryFiber: { type: Type.NUMBER },
-                totalSugars: { type: Type.NUMBER },
-                addedSugars: { type: Type.NUMBER },
-                protein: { type: Type.NUMBER },
-                vitamins: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      name: { type: Type.STRING },
-                      value: { type: Type.STRING },
-                      percentDV: { type: Type.NUMBER },
-                    },
-                    required: ["name", "value"],
-                  },
-                },
-                healthScore: { type: Type.NUMBER },
-                healthRatingLabel: { type: Type.STRING },
-                summary: { type: Type.STRING },
-                nutritionalHighlights: { type: Type.ARRAY, items: { type: Type.STRING } },
-                nutritionalWarnings: { type: Type.ARRAY, items: { type: Type.STRING } },
-                ingredientsList: { type: Type.ARRAY, items: { type: Type.STRING } },
-                estimatedPrice: {
-                  type: Type.OBJECT,
-                  properties: {
-                    amountToman: { type: Type.NUMBER },
-                    amountUSD: { type: Type.NUMBER },
-                    confidence: { type: Type.STRING }
-                  },
-                  required: ["amountToman", "amountUSD"]
-                },
-                ingredientCosts: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      name: { type: Type.STRING },
-                      amount: { type: Type.STRING },
-                      costToman: { type: Type.NUMBER },
-                      costUSD: { type: Type.NUMBER }
-                    },
-                    required: ["name", "amount", "costToman", "costUSD"]
-                  }
-                },
-                culturalNotes: { type: Type.STRING },
-                priceDisclaimer: { type: Type.STRING }
-              },
-              required: [
-                "productName",
-                "brand",
-                "servingSize",
-                "servingsPerContainer",
-                "calories",
-                "totalFat",
-                "sodium",
-                "totalCarbohydrate",
-                "protein",
-                "healthScore",
-                "healthRatingLabel",
-                "summary",
-                "nutritionalHighlights",
-                "nutritionalWarnings",
-              ],
-            },
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
           },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: promptString + "\n\nRespond with strict JSON adhering to the nutritional schema." },
+                  { type: "image_url", image_url: { url: `data:${mimeType || "image/jpeg"};base64,${cleanBase64}` } }
+                ]
+              }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1
+          }),
+          signal: controller.signal
         });
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(`OpenAI HTTP ${response.status}: ${body}`);
+        }
+        const data = await response.json();
+        return data?.choices?.[0]?.message?.content || "";
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
 
-        const response = await Promise.race([generatePromise, timeoutPromise]);
-        responseText = response.text || "";
-        successfulModel = modelCandidate;
-        break;
+    // Helper: call Groq vision
+    const tryGroqVision = async (model: string, apiKey: string): Promise<string> => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), PER_MODEL_TIMEOUT);
+      try {
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "user",
+                content: [
+                  { type: "text", text: promptString + "\n\nRespond with valid JSON only." },
+                  { type: "image_url", image_url: { url: `data:${mimeType || "image/jpeg"};base64,${cleanBase64}` } }
+                ]
+              }
+            ],
+            response_format: { type: "json_object" },
+            temperature: 0.1
+          }),
+          signal: controller.signal
+        });
+        if (!response.ok) {
+          const body = await response.text();
+          throw new Error(`Groq HTTP ${response.status}: ${body}`);
+        }
+        const data = await response.json();
+        return data?.choices?.[0]?.message?.content || "";
+      } finally {
+        clearTimeout(timeoutId);
+      }
+    };
+
+    // If user explicitly preferred an OpenAI model and OpenAI key is available, attempt it first
+    if (preferredModel?.startsWith("gpt-") && openAiKey) {
+      try {
+        console.log(`Attempting user preferred OpenAI model: ${preferredModel}...`);
+        responseText = await tryOpenAiVision(preferredModel, openAiKey);
+        if (responseText) {
+          successfulModel = `openai:${preferredModel}`;
+        }
       } catch (err: any) {
         lastError = err;
-        console.warn(`Model ${modelCandidate} failed:`, err.message || String(err));
-        const errStr = String(err).toLowerCase();
-        const isRetryable = err.status === 503 || errStr.includes("503") ||
-                            errStr.includes("unavailable") || errStr.includes("demand") ||
-                            err.status === 429 || errStr.includes("429");
-        if (isRetryable) {
-          await new Promise((resolve) => setTimeout(resolve, 600));
+        console.warn(`Preferred OpenAI model ${preferredModel} failed, continuing cascade:`, err.message || err);
+      }
+    }
+
+    // Build candidate Gemini models cascade
+    const defaultGeminiCandidates = [
+      "gemini-2.5-flash",
+      "gemini-2.0-flash",
+      "gemini-1.5-flash",
+      "gemini-2.0-flash-lite",
+      "gemini-1.5-flash-8b",
+      "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-3.7-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-3.5-flash-lite",
+      "gemini-flash-latest",
+      "gemini-2.5-pro",
+      "gemini-1.5-pro"
+    ];
+
+    let geminiCandidates = [...defaultGeminiCandidates];
+    if (preferredModel && preferredModel !== "auto" && !preferredModel.startsWith("gpt-") && !preferredModel.startsWith("llama")) {
+      geminiCandidates = [
+        preferredModel,
+        ...defaultGeminiCandidates.filter((m) => m !== preferredModel)
+      ];
+    }
+
+    // Loop through Gemini candidate models and rotate keys on quota limit
+    if (!responseText && geminiKeys.length > 0) {
+      for (const modelCandidate of geminiCandidates) {
+        if (responseText) break;
+
+        for (let keyIdx = 0; keyIdx < geminiKeys.length; keyIdx++) {
+          if (responseText) break;
+          const currentKey = geminiKeys[keyIdx];
+
+          try {
+            const aiClient = new GoogleGenAI({
+              apiKey: currentKey,
+              httpOptions: {
+                headers: {
+                  "User-Agent": "aistudio-build",
+                },
+              },
+            });
+
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(`Timeout after ${PER_MODEL_TIMEOUT / 1000}s waiting for model ${modelCandidate}`)), PER_MODEL_TIMEOUT)
+            );
+
+            const generatePromise = aiClient.models.generateContent({
+              model: modelCandidate,
+              contents: { parts: [imagePart, { text: promptString }] },
+              config: {
+                responseMimeType: "application/json",
+                temperature: 0.1,
+                topP: 0.8,
+                responseSchema: {
+                  type: Type.OBJECT,
+                  properties: {
+                    isFood: {
+                      type: Type.BOOLEAN,
+                      description: "True if the image contains food, a meal, drink, edible ingredient, or nutrition facts label. False if it is NOT a food item in fact.",
+                    },
+                    notFoodReason: {
+                      type: Type.STRING,
+                      description: "If isFood is false, a statement pointing out that this is not a food item in fact and describing what was seen.",
+                    },
+                    productName: { type: Type.STRING },
+                    brand: { type: Type.STRING },
+                    foodType: { type: Type.STRING },
+                    cuisine: { type: Type.STRING },
+                    servingSize: { type: Type.STRING },
+                    servingsPerContainer: { type: Type.NUMBER },
+                    calories: { type: Type.NUMBER },
+                    totalFat: { type: Type.NUMBER },
+                    saturatedFat: { type: Type.NUMBER },
+                    transFat: { type: Type.NUMBER },
+                    cholesterol: { type: Type.NUMBER },
+                    sodium: { type: Type.NUMBER },
+                    totalCarbohydrate: { type: Type.NUMBER },
+                    dietaryFiber: { type: Type.NUMBER },
+                    totalSugars: { type: Type.NUMBER },
+                    addedSugars: { type: Type.NUMBER },
+                    protein: { type: Type.NUMBER },
+                    vitamins: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          name: { type: Type.STRING },
+                          value: { type: Type.STRING },
+                          percentDV: { type: Type.NUMBER },
+                        },
+                        required: ["name", "value"],
+                      },
+                    },
+                    healthScore: { type: Type.NUMBER },
+                    healthRatingLabel: { type: Type.STRING },
+                    summary: { type: Type.STRING },
+                    nutritionalHighlights: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    nutritionalWarnings: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    ingredientsList: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    estimatedPrice: {
+                      type: Type.OBJECT,
+                      properties: {
+                        amountToman: { type: Type.NUMBER },
+                        amountUSD: { type: Type.NUMBER },
+                        confidence: { type: Type.STRING }
+                      },
+                      required: ["amountToman", "amountUSD"]
+                    },
+                    ingredientCosts: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          name: { type: Type.STRING },
+                          amount: { type: Type.STRING },
+                          costToman: { type: Type.NUMBER },
+                          costUSD: { type: Type.NUMBER }
+                        },
+                        required: ["name", "amount", "costToman", "costUSD"]
+                      }
+                    },
+                    culturalNotes: { type: Type.STRING },
+                    priceDisclaimer: { type: Type.STRING }
+                  },
+                  required: [
+                    "isFood",
+                    "productName",
+                    "brand",
+                    "servingSize",
+                    "servingsPerContainer",
+                    "calories",
+                    "totalFat",
+                    "sodium",
+                    "totalCarbohydrate",
+                    "protein",
+                    "healthScore",
+                    "healthRatingLabel",
+                    "summary",
+                    "nutritionalHighlights",
+                    "nutritionalWarnings",
+                  ],
+                },
+              },
+            });
+
+            const response = await Promise.race([generatePromise, timeoutPromise]);
+            responseText = response.text || "";
+            successfulModel = modelCandidate;
+            break;
+          } catch (err: any) {
+            lastError = err;
+            const errStr = String(err).toLowerCase();
+            const isNotFound = err.status === 404 || errStr.includes("404") || errStr.includes("not found");
+            const isQuota = err.status === 429 || errStr.includes("429") || errStr.includes("quota") || errStr.includes("exhausted");
+
+            console.warn(`Model ${modelCandidate} with key #${keyIdx + 1} failed:`, err.message || String(err));
+
+            if (isNotFound) {
+              break;
+            }
+            if (isQuota && keyIdx < geminiKeys.length - 1) {
+              console.log(`Rotating to next Gemini key (#${keyIdx + 2}) on Vercel...`);
+              continue;
+            }
+          }
+        }
+      }
+    }
+
+    // OpenAI Fallback if Gemini models failed or no Gemini keys
+    if (!responseText && openAiKey) {
+      const openAiCandidates = ["gpt-4o-mini", "gpt-4o"];
+      for (const oModel of openAiCandidates) {
+        if (responseText) break;
+        try {
+          console.log(`Failing over to OpenAI vision candidate: ${oModel}...`);
+          responseText = await tryOpenAiVision(oModel, openAiKey);
+          if (responseText) {
+            successfulModel = `openai:${oModel}`;
+            break;
+          }
+        } catch (e: any) {
+          lastError = e;
+          console.warn(`OpenAI candidate ${oModel} failed:`, e.message || e);
+        }
+      }
+    }
+
+    // Groq Fallback if both Gemini and OpenAI failed
+    if (!responseText && groqKey) {
+      const groqCandidates = ["llama-3.2-11b-vision-preview", "llama-3.2-90b-vision-preview"];
+      for (const gModel of groqCandidates) {
+        if (responseText) break;
+        try {
+          console.log(`Failing over to Groq vision candidate: ${gModel}...`);
+          responseText = await tryGroqVision(gModel, groqKey);
+          if (responseText) {
+            successfulModel = `groq:${gModel}`;
+            break;
+          }
+        } catch (e: any) {
+          lastError = e;
+          console.warn(`Groq candidate ${gModel} failed:`, e.message || e);
         }
       }
     }
 
     if (!responseText) {
-      console.warn("All Gemini model candidates failed. Returning demo item fallback gracefully.");
-      const pool = isFa ? FALLBACK_FOODS_FA : FALLBACK_FOODS;
-      const fallbackItem = {
-        ...pool[Math.floor(Math.random() * pool.length)],
-        isDemoFallback: true,
-        modelUsed: "offline-fallback",
+      console.warn("All candidate models failed or unavailable. Returning 503 models_unavailable (no fallback food).");
+      return res.status(503).json({
+        error: "models_unavailable",
+        message: isFa
+          ? "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید."
+          : "Models are on heavy usage and try again please later.",
+        code: "MODELS_UNAVAILABLE",
         originalScanError: lastError?.message || String(lastError || "API error"),
-      };
-      return res.status(200).json(fallbackItem);
+      });
     }
 
     const parsed = JSON.parse(responseText || "{}");
+    const isActuallyFood = parsed.isFood === true || (parsed.isFood !== false && parsed.foodType !== "not_food");
+    if (!isActuallyFood) {
+      parsed.isFood = false;
+      parsed.foodType = "not_food";
+      if (!parsed.notFoodReason) {
+        parsed.notFoodReason = isFa
+          ? "این تصویر در واقع یک ماده غذایی نیست. لطفاً تصویری از غذا، نوشیدنی یا برچسب ارزش غذایی ثبت کنید."
+          : "This is not a food item in fact. Please capture or upload a photo of food, a beverage, or a nutrition facts label.";
+      }
+      parsed.calories = 0;
+      parsed.totalFat = 0;
+      parsed.protein = 0;
+      parsed.totalCarbohydrate = 0;
+      parsed.sodium = 0;
+      parsed.healthScore = 0;
+      parsed.nutritionalHighlights = [];
+      parsed.nutritionalWarnings = [];
+      parsed.ingredientsList = [];
+      parsed.ingredientCosts = [];
+      parsed.vitamins = [];
+      parsed.estimatedPrice = { amountToman: 0, amountUSD: 0 };
+    } else {
+      parsed.isFood = true;
+    }
     parsed.modelUsed = successfulModel;
     return res.status(200).json(parsed);
   } catch (err: any) {
+    const isFa = req.body?.language === "fa";
     console.error("Vercel Serverless Function error in /api/scan-label:", err);
-    // Return graceful fallback so user never gets 500 error page
-    const fallbackItem = {
-      ...FALLBACK_FOODS[0],
-      isDemoFallback: true,
-      modelUsed: "offline-fallback",
-      originalScanError: err.message || String(err),
-    };
-    return res.status(200).json(fallbackItem);
+    return res.status(503).json({
+      error: "models_unavailable",
+      message: isFa
+        ? "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید."
+        : "Models are on heavy usage and try again please later.",
+      code: "MODELS_UNAVAILABLE",
+      details: err.message || String(err),
+    });
   }
 }

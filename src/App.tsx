@@ -44,7 +44,16 @@ import DiaryConsoleView, { SqliteDbStats } from "./components/DiaryConsoleView";
 import GoalsConsoleView from "./components/GoalsConsoleView";
 import NutritionModal from "./components/NutritionModal";
 import { Button } from "./components/ui/button";
-import { ScannedLabel, FoodLogItem, DailyTotals, UserProfile, ThemeMode, EffectiveTheme } from "./types";
+import {
+  ScannedLabel,
+  FoodLogItem,
+  DailyTotals,
+  UserProfile,
+  ThemeMode,
+  EffectiveTheme,
+  NotFoodState,
+  ModelsBusyState
+} from "./types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "./worldFoods";
 import { TRANSLATIONS } from "./translations";
 import { RecommendedDish, getDailyRecommendedDish } from "./recommendedDishes";
@@ -286,6 +295,8 @@ export default function App() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanStep, setScanStep] = useState(0);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [notFoodState, setNotFoodState] = useState<NotFoodState | null>(null);
+  const [modelsBusyState, setModelsBusyState] = useState<ModelsBusyState | null>(null);
   const [portionServings, setPortionServings] = useState<number>(1);
   const [showResultDetail, setShowResultDetail] = useState(false);
 
@@ -714,7 +725,7 @@ export default function App() {
       createdAt: Date.now(),
       productName: normalized.productName,
       brand: normalized.brand || (currentLang === "fa" ? "سوابق اسکنر نوتری‌اسکن" : "NutriScan Scan History"),
-      foodType: normalized.foodType || "dish",
+      foodType: (normalized.foodType && normalized.foodType !== "not_food") ? normalized.foodType : "dish",
       cuisine: normalized.cuisine,
       loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       servingsCount: servings,
@@ -743,6 +754,9 @@ export default function App() {
   // Start real camera
   const startCamera = async () => {
     try {
+      setScanError(null);
+      setNotFoodState(null);
+      setModelsBusyState(null);
       setUseRealCamera(true);
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" }
@@ -777,6 +791,8 @@ export default function App() {
 
     setIsScanning(true);
     setScanError(null);
+    setNotFoodState(null);
+    setModelsBusyState(null);
 
     // Auto-compress safety check if payload is still large
     let finalBase64 = base64Image;
@@ -809,7 +825,9 @@ export default function App() {
           imageBase64: finalBase64,
           mimeType: mime || "image/jpeg",
           language: currentLang,
-          exchangeRateTomanPerUSD: userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD
+          exchangeRateTomanPerUSD: userProfile.exchangeRateTomanPerUSD || TOMAN_PER_USD,
+          customApiKey: userProfile.customAiApiKey,
+          preferredModel: userProfile.preferredAiModel
         })
       });
 
@@ -824,11 +842,23 @@ export default function App() {
 
       if (!response.ok) {
         let errMsg = "Failed to scan label";
+        let isHeavyUsage = response.status === 503;
         try {
           const errJson = JSON.parse(rawText);
-          errMsg = errJson.error || errMsg;
+          errMsg = errJson.message || errJson.error || errMsg;
+          if (
+            errJson.code === "MODELS_UNAVAILABLE" ||
+            errJson.error === "models_unavailable" ||
+            response.status === 503 ||
+            errMsg.toLowerCase().includes("heavy usage") ||
+            errMsg.toLowerCase().includes("سنگین")
+          ) {
+            isHeavyUsage = true;
+          }
         } catch (e) {
-          if (response.status === 504) {
+          if (response.status === 503) {
+            isHeavyUsage = true;
+          } else if (response.status === 504) {
             errMsg = isFa
               ? "زمان پردازش سرور به پایان رسید (Vercel Timeout). تصویر فشرده شد؛ لطفاً مجدداً امتحان کنید."
               : "Server analysis timed out (Vercel 504 Timeout). The image was compressed; please try again.";
@@ -839,6 +869,16 @@ export default function App() {
           } else {
             errMsg = `Server Error (${response.status}): ${response.statusText || "Internal Server Error"}`;
           }
+        }
+
+        if (isHeavyUsage) {
+          const heavyMsg = isFa
+            ? "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید."
+            : "Models are on heavy usage and try again please later.";
+          setModelsBusyState({ message: heavyMsg });
+          setNotFoodState(null);
+          setScanError(null);
+          return;
         }
 
         throw new Error(errMsg);
@@ -852,15 +892,29 @@ export default function App() {
         throw new Error(isFa ? "پاسخ نامعتبر از سرور دریافت شد." : "Invalid response received from the server.");
       }
 
-      console.log("%c[NutriScan] Successfully analyzed food label!", "color: green; font-weight: bold;");
+      // STATE 1: CHECK IF NOT A FOOD ITEM
+      if (data.isFood === false || data.foodType === "not_food") {
+        console.warn("%c[NutriScan] Image was identified as NOT a food item in fact.", "color: #f43f5e; font-weight: bold;");
+        const notFoodMsg = data.notFoodReason || (isFa
+          ? "این تصویر در واقع یک ماده غذایی نیست. لطفاً تصویری از غذا، نوشیدنی یا برچسب ارزش غذایی ثبت کنید."
+          : "This is not a food item in fact. Please capture or upload a photo of food, a beverage, or a nutrition facts label.");
 
-      if (data.isDemoFallback && (data as any).originalScanError) {
-        console.warn(
-          `%c[NutriScan Notice] The scanner was loaded in Demo Fallback Mode because the server-side Gemini call failed. ` +
-          `Original API Error: ${(data as any).originalScanError}`,
-          "color: #d97706; font-weight: bold;"
-        );
+        setNotFoodState({
+          reason: notFoodMsg,
+          detectedObject: data.productName && data.productName !== "Not Food" && data.productName !== "غیرخوراکی" && data.productName !== "Not a food item"
+            ? data.productName
+            : undefined,
+          preview: finalBase64
+        });
+        setModelsBusyState(null);
+        setScanError(null);
+        return;
       }
+
+      console.log("%c[NutriScan] Successfully analyzed food label!", "color: green; font-weight: bold;");
+      setNotFoodState(null);
+      setModelsBusyState(null);
+      setScanError(null);
 
       const normalizedData = normalizeScannedLabel(
         data,
@@ -880,12 +934,27 @@ export default function App() {
     } catch (err: any) {
       clearTimeout(abortTimeout);
       let message = err.message || "An error occurred while analyzing the label.";
-      if (err.name === "AbortError") {
+      const msgLower = (message || "").toLowerCase();
+      if (
+        msgLower.includes("heavy usage") ||
+        msgLower.includes("models are on heavy usage") ||
+        msgLower.includes("models_unavailable") ||
+        msgLower.includes("سنگین")
+      ) {
+        const heavyMsg = isFa
+          ? "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید."
+          : "Models are on heavy usage and try again please later.";
+        setModelsBusyState({ message: heavyMsg });
+        setNotFoodState(null);
+        setScanError(null);
+      } else if (err.name === "AbortError") {
         message = isFa
           ? "درخواست به دلیل طولانی شدن زمان پاسخ سرور متوقف شد (Timeout). لطفاً اتصال یا کلید API را بررسی و مجدداً تلاش کنید."
           : "The scan request timed out. Please check your network or Vercel serverless configuration and try again.";
+        setScanError(message);
+      } else {
+        setScanError(message);
       }
-      setScanError(message);
     } finally {
       setIsScanning(false);
     }
@@ -1013,6 +1082,8 @@ export default function App() {
       const base64 = reader.result as string;
       setIsScanning(true);
       setScanError(null);
+      setNotFoodState(null);
+      setModelsBusyState(null);
       try {
         const compressed = await compressImage(base64, file.type, 960, 0.72);
         triggerScan(compressed, "image/jpeg");
@@ -1043,7 +1114,7 @@ export default function App() {
       createdAt: Date.now(),
       productName: scannedResult.productName,
       brand: scannedResult.brand,
-      foodType: scannedResult.foodType || "dish",
+      foodType: (scannedResult.foodType && scannedResult.foodType !== "not_food") ? scannedResult.foodType : "dish",
       cuisine: scannedResult.cuisine,
       loggedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       servingsCount: portionServings,
@@ -1357,6 +1428,10 @@ export default function App() {
                 useRealCamera={useRealCamera}
                 isScanning={isScanning}
                 scanError={scanError}
+                notFoodState={notFoodState}
+                modelsBusyState={modelsBusyState}
+                onDismissNotFood={() => setNotFoodState(null)}
+                onDismissModelsBusy={() => setModelsBusyState(null)}
                 videoRef={videoRef}
                 recentScans={recentScans}
                 onStartCamera={startCamera}

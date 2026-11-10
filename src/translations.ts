@@ -146,6 +146,26 @@ export interface AppTranslations {
   selectServing: string;
   searchScanHistory: string;
   removeFromHistory: string;
+  notFoodTitle: string;
+  notFoodNotice: string;
+  notFoodBadge: string;
+  detectedObject: string;
+  scanFoodBtn: string;
+  modelsBusyTitle: string;
+  modelsBusyBadge: string;
+  modelsBusyMessage: string;
+  modelsBusyNotice: string;
+  gotItBtn: string;
+  aiEngineTitle: string;
+  aiEngineBadge: string;
+  aiEngineDesc: string;
+  aiPreferredModel: string;
+  aiPreferredModelDesc: string;
+  aiCustomKeyLabel: string;
+  aiCustomKeyDesc: string;
+  aiCustomKeyPlaceholder: string;
+  aiAutoFailover: string;
+  aiModelUsedLabel: string;
 }
 
 export const TRANSLATIONS: Record<string, AppTranslations> = {
@@ -297,6 +317,26 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     selectServing: "Serving",
     searchScanHistory: "Search scan history...",
     removeFromHistory: "Remove from history",
+    notFoodTitle: "This is not a food item in fact",
+    notFoodNotice: "NutriScan is designed exclusively to track nutrition for food, meals, beverages, ingredients, and nutrition facts labels. Please take a photo of an edible item.",
+    notFoodBadge: "Not Food Item",
+    detectedObject: "Detected",
+    scanFoodBtn: "Scan Food Item",
+    modelsBusyTitle: "Models Are on Heavy Usage",
+    modelsBusyBadge: "Heavy Usage",
+    modelsBusyMessage: "Models are on heavy usage and try again please later.",
+    modelsBusyNotice: "AI processing capacity is currently at peak demand. No fallback food was substituted to ensure data accuracy. Please try again in a few moments.",
+    gotItBtn: "Got It",
+    aiEngineTitle: "Multi-Model AI Scanner Engine",
+    aiEngineBadge: "13+ Models Active",
+    aiEngineDesc: "Cascades across Gemini 2.5 Flash, 2.0 Flash, 1.5 Flash, Flash-Lite, Pro, and vision models with automatic failover to maximize scan success rate.",
+    aiPreferredModel: "Preferred AI Model",
+    aiPreferredModelDesc: "Choose a primary model or let Auto Cascade pick the fastest available with instant fallback.",
+    aiCustomKeyLabel: "Custom AI API Key (Optional)",
+    aiCustomKeyDesc: "Supply your own Gemini (AIza...) or OpenAI (sk-...) API key to bypass shared quota limits.",
+    aiCustomKeyPlaceholder: "Paste your custom AI key here...",
+    aiAutoFailover: "Auto Cascade (Highest Success Rate)",
+    aiModelUsedLabel: "AI Model",
   },
   fa: {
     scanner: "اسکنر",
@@ -446,5 +486,25 @@ export const TRANSLATIONS: Record<string, AppTranslations> = {
     selectServing: "سهم",
     searchScanHistory: "جستجو در سوابق اسکن...",
     removeFromHistory: "حذف از تاریخچه",
+    notFoodTitle: "این تصویر در واقع یک ماده غذایی نیست",
+    notFoodNotice: "سامانه نوتریکن منحصراً برای ارزیابی کالری و درشت‌مغذی‌های خوراک، غذا، نوشیدنی‌ها، مواد اولیه و برچسب‌های ارزش غذایی طراحی شده است. لطفاً تصویری از یک خوراکی ثبت کنید.",
+    notFoodBadge: "ماده غیرخوراکی",
+    detectedObject: "مورد شناسایی‌شده",
+    scanFoodBtn: "اسکن ماده غذایی",
+    modelsBusyTitle: "مدل‌ها تحت استفاده سنگین هستند",
+    modelsBusyBadge: "ترافیک سنگین",
+    modelsBusyMessage: "مدل‌ها در حال حاضر تحت استفاده سنگین هستند، لطفاً بعداً دوباره امتحان کنید.",
+    modelsBusyNotice: "برای حفظ صحت اطلاعات، هیچ غذای پیش‌فرضی به عنوان جایگزین نمایش داده نشد. لطفاً اندکی بعد مجدداً تلاش فرمایید.",
+    gotItBtn: "متوجه شدم",
+    aiEngineTitle: "موتور اسکن هوش مصنوعی چندمدلی",
+    aiEngineBadge: "بیش از ۱۳ مدل فعال",
+    aiEngineDesc: "استفاده همزمان از مدل‌های Gemini 2.5 Flash، 2.0 Flash، 1.5 Flash، Flash-Lite، Pro و Vision با جایگزینی خودکار جهت به حداکثر رساندن شانس اسکن موفق.",
+    aiPreferredModel: "مدل هوش مصنوعی ارجح",
+    aiPreferredModelDesc: "مدل مد نظر خود را انتخاب کنید یا اجازه دهید سامانه به صورت خودکار سریع‌ترین مدل در دسترس را به کار گیرد.",
+    aiCustomKeyLabel: "کلید اختصاصی API (اختیاری)",
+    aiCustomKeyDesc: "می‌توانید کلید اختصاصی جمینای (AIza...) یا اوپن‌ای‌آی (sk-...) خود را وارد کنید تا هیچ‌گاه با محدودیت سهمیه مواجه نشوید.",
+    aiCustomKeyPlaceholder: "کلید اختصاصی هوش مصنوعی خود را اینجا وارد کنید...",
+    aiAutoFailover: "آبشار خودکار هوشمند (بیشترین شانس موفقیت)",
+    aiModelUsedLabel: "مدل اسکنر",
   }
 };

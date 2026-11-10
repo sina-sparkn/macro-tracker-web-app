@@ -1,5 +1,5 @@
 import React from "react";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { ScannedLabel, UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
 import { formatNumber, formatPriceDisplay } from "../utils/formatters";
@@ -29,7 +29,7 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
   onClose,
   onLogToDiary
 }) => {
-  if (!scannedResult) return null;
+  if (!scannedResult || scannedResult.isFood === false) return null;
 
   const currentLang = userProfile.language || "en";
   const isFa = currentLang === "fa";
@@ -40,6 +40,25 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
   const carbs = Number((scannedResult.totalCarbohydrate * portionServings).toFixed(1));
   const fat = Number((scannedResult.totalFat * portionServings).toFixed(1));
   const sodium = Math.round(scannedResult.sodium * portionServings);
+
+  const formatModelName = (raw?: string) => {
+    if (!raw) return null;
+    if (raw === "offline-fallback") return isFa ? "حالت آفلاین (پیش‌نمایش)" : "Offline Demo";
+    if (raw.startsWith("openai/")) return raw.replace("openai/", "OpenAI ");
+    if (raw.startsWith("groq/")) return raw.replace("groq/", "Groq ");
+    if (raw.startsWith("openrouter/")) return raw.replace("openrouter/", "OpenRouter ");
+    if (raw === "gemini-2.5-flash") return "Gemini 2.5 Flash";
+    if (raw === "gemini-2.0-flash") return "Gemini 2.0 Flash";
+    if (raw === "gemini-1.5-flash") return "Gemini 1.5 Flash";
+    if (raw === "gemini-2.0-flash-lite") return "Gemini 2.0 Flash-Lite";
+    if (raw === "gemini-1.5-flash-8b") return "Gemini 1.5 Flash (8B)";
+    if (raw === "gemini-3.8-flash") return "Gemini 3.8 Flash";
+    if (raw === "gemini-3.5-flash") return "Gemini 3.5 Flash";
+    if (raw === "gemini-3.7-flash") return "Gemini 3.7 Flash";
+    if (raw === "gemini-2.5-pro") return "Gemini 2.5 Pro";
+    if (raw === "gemini-1.5-pro") return "Gemini 1.5 Pro";
+    return raw;
+  };
 
   return (
     <Dialog open={!!scannedResult} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -56,10 +75,19 @@ export const NutritionModal: React.FC<NutritionModalProps> = ({
             <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-[var(--apple-text-primary)] leading-snug break-words">
               {scannedResult.productName}
             </DialogTitle>
-            <DialogDescription className="flex items-center gap-2 text-xs text-[var(--apple-text-secondary)] mt-0.5">
+            <DialogDescription className="flex items-center gap-2 text-xs text-[var(--apple-text-secondary)] mt-0.5 flex-wrap">
               {scannedResult.brand && <span>{scannedResult.brand}</span>}
               {scannedResult.brand && <span>•</span>}
               <span>{scannedResult.servingSize || (isFa ? "۱ سهم" : "1 serving")}</span>
+              {scannedResult.modelUsed && (
+                <>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[var(--apple-accent)]">
+                    <Sparkles className="w-3 h-3 stroke-[2.2]" />
+                    <span>{formatModelName(scannedResult.modelUsed)}</span>
+                  </span>
+                </>
+              )}
             </DialogDescription>
           </div>
         </DialogHeader>

@@ -7,13 +7,15 @@ import {
   Plus,
   Check,
   Utensils,
+  UtensilsCrossed,
+  Activity,
   History,
   Clock,
   Trash2,
   Search,
   Sparkles
 } from "lucide-react";
-import { ScannedLabel, UserProfile } from "../types";
+import { ScannedLabel, UserProfile, NotFoodState, ModelsBusyState } from "../types";
 import { WORLD_FOODS, WorldFood, getLocalizedWorldFood } from "../worldFoods";
 import { TRANSLATIONS } from "../translations";
 import { CyberPresetDish } from "../App";
@@ -30,6 +32,10 @@ interface ScannerConsoleViewProps {
   useRealCamera: boolean;
   isScanning: boolean;
   scanError: string | null;
+  notFoodState?: NotFoodState | null;
+  modelsBusyState?: ModelsBusyState | null;
+  onDismissNotFood?: () => void;
+  onDismissModelsBusy?: () => void;
   videoRef: React.RefObject<HTMLVideoElement | null>;
   recentScans: ScannedLabel[];
   onStartCamera: () => void;
@@ -50,6 +56,10 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
   useRealCamera,
   isScanning,
   scanError,
+  notFoodState,
+  modelsBusyState,
+  onDismissNotFood,
+  onDismissModelsBusy,
   videoRef,
   recentScans,
   onStartCamera,
@@ -176,6 +186,33 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
           </Button>
         </div>
 
+        {/* Multi-Model AI Engine Status Indicator */}
+        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-[var(--apple-surface-secondary)] border border-[var(--apple-border)] text-xs text-[var(--apple-text-secondary)] shadow-sm">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
+            </span>
+            <div className="flex flex-col min-w-0">
+              <span className="font-semibold text-[var(--apple-text-primary)] truncate text-xs">
+                {isFa
+                  ? "موتور اسکن هوش مصنوعی چندمدلی فعال (۱۳+ مدل)"
+                  : "Multi-Model AI Scanner Active (13+ Models)"}
+              </span>
+              <span className="text-[10px] text-[var(--apple-text-tertiary)] truncate">
+                {isFa
+                  ? "جایگزینی خودکار بین Gemini 2.5 Flash, 2.0 Flash, 1.5 Flash, Pro و Vision جهت بیشترین شانس اسکن موفق"
+                  : "Auto-failover across Gemini 2.5 Flash, 2.0 Flash, 1.5 Flash, Pro & Vision models"}
+              </span>
+            </div>
+          </div>
+          <Badge variant="outline" className="text-[10px] shrink-0 border-[var(--apple-border)] font-semibold text-[var(--apple-accent)] bg-black/5 dark:bg-white/5">
+            {userProfile.preferredAiModel && userProfile.preferredAiModel !== "auto"
+              ? userProfile.preferredAiModel
+              : (isFa ? "آبشار خودکار" : "Auto-Cascade")}
+          </Badge>
+        </div>
+
         {/* Live Camera Viewfinder Modal / Card */}
         {useRealCamera && (
           <div className="apple-card p-4 overflow-hidden relative aspect-[4/3] max-w-xl mx-auto w-full border-2 border-[var(--apple-accent)] shadow-2xl">
@@ -216,6 +253,150 @@ export const ScannerConsoleView: React.FC<ScannerConsoleViewProps> = ({
               </Button>
             </div>
           </div>
+        )}
+
+        {/* ====================================================================
+            STATE 1: NOT A FOOD ITEM STATE
+            ==================================================================== */}
+        {notFoodState && (
+          <Card className="apple-card border-rose-500/30 bg-rose-500/10 dark:bg-rose-950/25 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-300">
+            <CardContent className="p-5 sm:p-6 flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                    <UtensilsCrossed className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <div>
+                    <Badge variant="outline" className="text-[11px] font-semibold border-rose-500/40 text-rose-600 dark:text-rose-400 mb-1">
+                      {t.notFoodBadge}
+                    </Badge>
+                    <h3 className="text-base sm:text-lg font-bold text-[var(--apple-text-primary)]">
+                      {t.notFoodTitle}
+                    </h3>
+                  </div>
+                </div>
+
+                {onDismissNotFood && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDismissNotFood}
+                    className="rounded-full w-8 h-8 p-0 text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)]"
+                    aria-label={isFa ? "بستن پیام" : "Dismiss notice"}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-[var(--apple-surface-secondary)]/70 rounded-2xl p-3.5 border border-rose-500/15">
+                {notFoodState.preview && (
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 border border-rose-500/30">
+                    <img
+                      src={notFoodState.preview}
+                      alt={notFoodState.detectedObject || "Non-food item"}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-rose-900/40 flex items-center justify-center">
+                      <UtensilsCrossed className="w-6 h-6 text-white/90 drop-shadow" />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex-1 flex flex-col gap-1 text-xs sm:text-sm">
+                  {notFoodState.detectedObject && (
+                    <div className="font-semibold text-[var(--apple-text-primary)] flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[var(--apple-text-secondary)] font-normal">
+                        {t.detectedObject}:
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-600 dark:text-rose-400 text-xs">
+                        {notFoodState.detectedObject}
+                      </span>
+                    </div>
+                  )}
+                  <p className="text-[var(--apple-text-secondary)] leading-relaxed">
+                    {notFoodState.reason}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1 text-xs text-[var(--apple-text-secondary)]">
+                <span>{t.notFoodNotice}</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={onStartCamera}
+                    className="rounded-full text-xs font-semibold px-4 h-8 bg-rose-600 hover:bg-rose-700 text-white"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>{t.scanFoodBtn}</span>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* ====================================================================
+            STATE 2: MODELS ON HEAVY USAGE STATE
+            ==================================================================== */}
+        {modelsBusyState && (
+          <Card className="apple-card border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/25 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-300">
+            <CardContent className="p-5 sm:p-6 flex flex-col gap-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <Activity className="w-5 h-5 stroke-[2.2]" />
+                  </div>
+                  <div>
+                    <Badge variant="outline" className="text-[11px] font-semibold border-amber-500/40 text-amber-600 dark:text-amber-400 mb-1">
+                      {t.modelsBusyBadge}
+                    </Badge>
+                    <h3 className="text-base sm:text-lg font-bold text-[var(--apple-text-primary)]">
+                      {t.modelsBusyTitle}
+                    </h3>
+                  </div>
+                </div>
+
+                {onDismissModelsBusy && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDismissModelsBusy}
+                    className="rounded-full w-8 h-8 p-0 text-[var(--apple-text-secondary)] hover:text-[var(--apple-text-primary)]"
+                    aria-label={isFa ? "بستن پیام" : "Dismiss notice"}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+
+              <div className="bg-[var(--apple-surface-secondary)]/70 rounded-2xl p-4 border border-amber-500/15 flex flex-col gap-2">
+                <p className="text-xs sm:text-sm text-[var(--apple-text-primary)] font-medium leading-relaxed">
+                  {modelsBusyState.message}
+                </p>
+                <p className="text-[11px] sm:text-xs text-[var(--apple-text-secondary)] leading-relaxed">
+                  {t.modelsBusyNotice}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <span className="text-xs text-[var(--apple-text-tertiary)] flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>{isFa ? "لطفاً بعداً دوباره امتحان کنید" : "Please try again later"}</span>
+                </span>
+                {onDismissModelsBusy && (
+                  <Button
+                    size="sm"
+                    onClick={onDismissModelsBusy}
+                    className="rounded-full text-xs font-semibold px-4 h-8 bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    <span>{t.gotItBtn}</span>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Scan Error Banner */}

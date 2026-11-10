@@ -1,7 +1,7 @@
 import path from "path";
 import { createRequire } from "module";
 
-const requireNode = createRequire(import.meta.url);
+const requireNode = typeof require !== "undefined" ? require : createRequire(import.meta.url);
 
 export interface SqliteDiaryRow {
   id: string;
