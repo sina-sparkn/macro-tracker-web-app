@@ -43,6 +43,7 @@ import ScannerConsoleView from "./components/ScannerConsoleView";
 import DiaryConsoleView, { SqliteDbStats } from "./components/DiaryConsoleView";
 import GoalsConsoleView from "./components/GoalsConsoleView";
 import NutritionModal from "./components/NutritionModal";
+import { NotFoodModal } from "./components/NotFoodModal";
 import { Button } from "./components/ui/button";
 import {
   ScannedLabel,
@@ -1549,6 +1550,21 @@ export default function App() {
             setPortionServings={setPortionServings}
             onClose={() => setShowResultDetail(false)}
             onLogToDiary={handleLogToDiary}
+          />
+        )}
+
+        {/* NOT FOOD MODAL (MINIMALIST APPLE SHEET/DIALOG) */}
+        {notFoodState && (
+          <NotFoodModal
+            isOpen={!!notFoodState}
+            notFoodState={notFoodState}
+            userProfile={userProfile}
+            onClose={() => setNotFoodState(null)}
+            onScanAgain={() => {
+              setNotFoodState(null);
+              setActiveTab("scan");
+              startCamera();
+            }}
           />
         )}
 

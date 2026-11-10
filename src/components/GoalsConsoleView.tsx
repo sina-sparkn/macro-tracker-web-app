@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Coins,
   DollarSign,
@@ -9,13 +9,7 @@ import {
   Wheat,
   Droplet,
   CheckCircle2,
-  Sparkles,
-  Cpu,
-  Key,
-  Layers,
-  ShieldCheck,
-  Eye,
-  EyeOff
+  Sparkles
 } from "lucide-react";
 import { UserProfile } from "../types";
 import { TRANSLATIONS } from "../translations";
@@ -53,12 +47,6 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
   const t = TRANSLATIONS[currentLang] || TRANSLATIONS.fa || TRANSLATIONS.en;
 
   const [savedFeedback, setSavedFeedback] = useState(false);
-  const [apiKeyInput, setApiKeyInput] = useState(userProfile.customAiApiKey || "");
-  const [showKey, setShowKey] = useState(false);
-
-  useEffect(() => {
-    setApiKeyInput(userProfile.customAiApiKey || "");
-  }, [userProfile.customAiApiKey]);
 
   const triggerSavedFeedback = () => {
     setSavedFeedback(true);
@@ -613,154 +601,6 @@ export const GoalsConsoleView: React.FC<GoalsConsoleViewProps> = ({
               ariaLabel={isFa ? "هدف چربی سالم روزانه" : "Daily Healthy Fat Target"}
               isFa={isFa}
             />
-          </div>
-        </CardContent>
-      </Card>
-    </section>
-
-    {/* ============================================================ */}
-    {/* SECTION 5: MULTI-MODEL AI SCANNER ENGINE                     */}
-    {/* ============================================================ */}
-    <section className="flex flex-col gap-3">
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <Cpu className="w-4 h-4 text-[#bf5af2]" />
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--apple-text-secondary)]">
-            {t.aiEngineTitle}
-          </h3>
-        </div>
-        <Badge
-          variant="outline"
-          className="text-[10px] font-medium bg-[#bf5af2]/10 text-[#bf5af2] border-[#bf5af2]/25 px-2 py-0.5"
-        >
-          {t.aiEngineBadge}
-        </Badge>
-      </div>
-
-      <Card className="border-[var(--apple-border)] bg-[var(--apple-card)] shadow-xs">
-        <CardContent className="p-4 sm:p-5 flex flex-col gap-4">
-          <p className="text-xs text-[var(--apple-text-secondary)] leading-relaxed">
-            {t.aiEngineDesc}
-          </p>
-
-          {/* Active Model Pool Chips */}
-          <div className="flex flex-wrap gap-1.5">
-            {[
-              "Gemini 2.5 Flash",
-              "Gemini 2.0 Flash",
-              "Gemini 1.5 Flash",
-              "Gemini 2.0 Flash Lite",
-              "Gemini 1.5 Flash 8B",
-              "Gemini 3.8 Flash",
-              "Gemini 2.5 Pro",
-              "Gemini 1.5 Pro",
-              "OpenAI GPT-4o",
-              "Groq Vision"
-            ].map((modelName) => (
-              <span
-                key={modelName}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-[var(--apple-fill-tertiary)] text-[var(--apple-text-primary)] border border-[var(--apple-border)]"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                {modelName}
-              </span>
-            ))}
-          </div>
-
-          <div className="border-t border-[var(--apple-border)]" />
-
-          {/* Preferred Model Selector */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-[#0a84ff]" />
-              {t.aiPreferredModel}
-            </label>
-            <p className="text-[11px] text-[var(--apple-text-tertiary)]">
-              {t.aiPreferredModelDesc}
-            </p>
-            <select
-              value={userProfile.preferredAiModel || "auto"}
-              onChange={(e) => handleUpdate("preferredAiModel", e.target.value)}
-              className="mt-1 w-full px-3 py-2 text-xs sm:text-sm rounded-xl border border-[var(--apple-border)] bg-[var(--apple-bg-secondary)] text-[var(--apple-text-primary)] focus:outline-none focus:ring-2 focus:ring-[#0a84ff]/30 transition-colors"
-            >
-              <option value="auto">
-                {isFa ? "⚡ آبشار خودکار (بهترین سرعت و بالاترین شانس اسکن)" : "⚡ Auto Cascade (Fastest & Highest Success Rate)"}
-              </option>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash (Balanced Accuracy & Speed)</option>
-              <option value="gemini-2.0-flash">Gemini 2.0 Flash (Low Latency)</option>
-              <option value="gemini-1.5-flash">Gemini 1.5 Flash (Production Standard)</option>
-              <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite (Lightweight)</option>
-              <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B (High Throughput)</option>
-              <option value="gemini-3.8-flash">Gemini 3.8 Flash (Preview)</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro (Deep Clinical Reasoning)</option>
-              <option value="gemini-1.5-pro">Gemini 1.5 Pro (Clinical Precision)</option>
-              <option value="gpt-4o-mini">OpenAI GPT-4o-mini Vision (Fallback)</option>
-              <option value="gpt-4o">OpenAI GPT-4o Vision (High Precision)</option>
-            </select>
-          </div>
-
-          <div className="border-t border-[var(--apple-border)]" />
-
-          {/* Custom API Key Input */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs sm:text-sm font-semibold text-[var(--apple-text-primary)] flex items-center gap-2">
-                <Key className="w-3.5 h-3.5 text-[#30d158]" />
-                {t.aiCustomKeyLabel}
-              </label>
-              {userProfile.customAiApiKey && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-500">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  {isFa ? "کلید فعال است" : "Key Active"}
-                </span>
-              )}
-            </div>
-            <p className="text-[11px] text-[var(--apple-text-tertiary)]">
-              {t.aiCustomKeyDesc}
-            </p>
-            <div className="flex gap-2">
-              <div className="relative flex-1">
-                <input
-                  type={showKey ? "text" : "password"}
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  placeholder={t.aiCustomKeyPlaceholder}
-                  className="w-full px-3 py-2 pr-9 text-xs sm:text-sm rounded-xl border border-[var(--apple-border)] bg-[var(--apple-bg-secondary)] text-[var(--apple-text-primary)] focus:outline-none focus:ring-2 focus:ring-[#30d158]/30 transition-colors font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--apple-text-tertiary)] hover:text-[var(--apple-text-primary)] p-0.5"
-                  aria-label="Toggle key visibility"
-                >
-                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  handleUpdate("customAiApiKey", apiKeyInput.trim());
-                }}
-                disabled={apiKeyInput.trim() === (userProfile.customAiApiKey || "")}
-                className="h-9 px-3 text-xs font-medium rounded-xl border-[var(--apple-border)]"
-              >
-                {isFa ? "ذخیره" : "Save"}
-              </Button>
-              {userProfile.customAiApiKey && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => {
-                    setApiKeyInput("");
-                    handleUpdate("customAiApiKey", "");
-                  }}
-                  className="h-9 px-2 text-xs text-rose-500 hover:text-rose-600 rounded-xl"
-                >
-                  {isFa ? "حذف" : "Remove"}
-                </Button>
-              )}
-            </div>
           </div>
         </CardContent>
       </Card>
